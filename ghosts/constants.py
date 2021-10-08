@@ -10,3 +10,10 @@ LSST_CAMERA_NOISE = 10  # 10 electrons
 # Notes
 # Filter reflection within the in-band wavelength shall be <0.05%
 # R-band coating report - internal transmittance of internal reflections is 0.1%
+# CCD Reflectance ~ 15%
+# Lens reflectance ~ 0.25%
+
+# from Aurelien's note
+LSST_CAMERA_READOUT_NOISE = 5  # 5 electrons
+LSST_CAMERA_DARK_CURRENT = 2  # electrons per second
+
