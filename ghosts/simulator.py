@@ -1,5 +1,11 @@
+import math
+import numpy as np
+import pandas as pd
+from ghosts.tweak_optics import rotate_optic, make_optics_reflective, translate_optic, randomized_telescope
+from ghosts.beam_configs import BEAM_CONFIG_0
+from ghosts.beam import beam
+from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separations
 
-from tweak_optics import *
 
 # run a ray tracing simulation
 def run_simulation(telescope_setup, beam_config=BEAM_CONFIG_0):
@@ -36,7 +42,7 @@ def full_rotation_L2(telescope, angle=0.1):
 
 
 # Helpers to run and plot a scan in one optical element rotation
-def sim_scan_rotated_optic(telescope, optic_name, min_angle, max_angle, step_angle, ref_data_frame=data_frame_1):
+def sim_scan_rotated_optic(telescope, optic_name, min_angle, max_angle, step_angle, ref_data_frame):
     ''' @TODO handle better reference data frame
     '''
     print(f'Starting {optic_name} rotation scan.')
@@ -66,7 +72,7 @@ def full_translation(telescope, optic_name='L2', distance=0.01, debug=False):
 
 
 # Helpers to run and plot a scan in one optical element translation
-def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_dist, ref_data_frame=data_frame_1):
+def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_dist, ref_data_frame):
     ''' @TODO handle better reference data frame
     '''
     print(f'Starting {optic_name} translation scan.')
@@ -85,7 +91,7 @@ def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_di
 
 
 
-def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_CONFIG_on_axis):
+def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_CONFIG_0):
     rnd_tel = randomized_telescope(telescope, max_angle, max_shift)
     make_optics_reflective(rnd_tel)
     traceFull_r, rForward_r, rReverse_r, rays_r = run_simulation(rnd_tel, beam_config=beam_config)

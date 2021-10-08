@@ -5,8 +5,9 @@ import batoid
 import numpy as np
 from scipy.constants import Planck, lambda2nu, nu2lambda
 from math import floor
+from copy import copy
 
-from beam_configs import *
+from ghosts.beam_configs import BEAM_CONFIG_0
 
 # Functions
 def get_E_ph(nu):

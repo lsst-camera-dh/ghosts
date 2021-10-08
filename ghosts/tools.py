@@ -1,3 +1,6 @@
+import numpy as np
+
+
 # define function to get nice rangs
 def get_ranges(x, y, dr=0.010):
     x_min = x.mean() - dr

@@ -1,5 +1,6 @@
 import batoid
-
+from scipy.spatial.transform import Rotation as R
+import numpy as np
 
 def get_list_of_optics(telescope):
     optics = list()
@@ -20,14 +21,14 @@ def make_optics_reflective(telescope, r_frac=0.02):
 def getOptPosition(telescope, name, i):
     return telescope[name].coordSys.origin[i]
 
-def getOptPosX(name):
+def getOptPosX(telescope, name):
     return getOptPosition(telescope, name, 0)
 
-def getOptPosY(name):
+def getOptPosY(telescope, name):
     return getOptPosition(telescope, name, 1)
 
-def getOptPosZ(name):
-    return getOptPosition(, name, 2)
+def getOptPosZ(telescope, name):
+    return getOptPosition(telescope, name, 2)
 
 # function to rotate one element of a telescope
 def rotate_optic(telescope, name, axis='y', angle=1, verbose=False):

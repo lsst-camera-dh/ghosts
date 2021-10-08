@@ -1,7 +1,10 @@
 import batoid
 import matplotlib.pyplot as plt
+from scipy import stats
 import ipyvolume as ipv
-
+import numpy as np
+from ghosts.tools import get_ranges, get_main_impact_point
+from ghosts.analysis import get_full_light_on_camera, map_ghost, get_ghost_spot_data
 
 def plot_setup(telescope, simulation):
     traceFull = simulation[0]
@@ -20,7 +23,7 @@ def plot_setup(telescope, simulation):
     # Draw camera on the left
     telescope.draw2d(f1_ax1, c='k')
     # now draw ray tracing on top of telescope
-    batoid.drawTrace2d(f1_ax1, traceFull, c=c)
+    batoid.drawTrace2d(f1_ax1, traceFull, c='orange')
 
     # Plot input beam spot full scale
     beam_spot = rays.positionAtTime(3.397)
