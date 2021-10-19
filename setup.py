@@ -22,5 +22,6 @@ setup(
         ],
     install_requires=["batoid",
                       "pandas",
+                      "openpyxl",
                       "setuptools_scm"]
 )
