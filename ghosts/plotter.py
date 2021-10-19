@@ -172,6 +172,13 @@ def plot_ghosts_spots_distances(ghosts_separations):
     print(f'{sum(ghosts_separations["overlap"] < 0)} ghost spots pairs are in overlap out of {len(ghosts_separations)}')
     return ax
 
+def plot_ghosts_displacements(merged_data_frame):
+    fig, ax = plt.subplots(1, 1)
+    fig.set_size_inches(9, 6)
+    ax.hist((merged_data_frame['pos_x_x']-merged_data_frame['pos_x_y'])*1000)
+    ax.set_xlabel('Ghost spot displacement (mm)')
+    return ax
+
 def plot_max_displacement_for_sim_scan(merged_data_frame, scan_angles, trans_type='rotation'):
     # Plot maximum displacement as a function of filter rotation angle
     # Get list of signed maximum displacements in mm
