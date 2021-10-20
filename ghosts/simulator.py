@@ -18,7 +18,7 @@ def run_simulation(telescope_setup, beam_config=BEAM_CONFIG_0):
 
     # Trace full optics and plot on the camera system
     r_forward, r_reverse = telescope_setup.traceSplit(rays, minFlux=1e-4)
-    trace_full = telescope_setup.trace_full(rays)
+    trace_full = telescope_setup.traceFull(rays)
     return trace_full, r_forward, r_reverse, rays
 
 
@@ -32,7 +32,7 @@ def full_rotation(telescope, optic_name='L2', angle=0.1, debug=False):
     make_optics_reflective(rotated_optic)
     trace_full_o, r_forward_o, r_reverse_o, rays_o = run_simulation(rotated_optic, beam_config=BEAM_CONFIG_0)
     spots_data_o, _spots = reduce_ghosts(r_forward_o)
-    data_frame_o = make_data_frame(r_forward_o, spots_data_o)
+    data_frame_o = make_data_frame(spots_data_o)
     ghost_separations_o = compute_ghost_separations(data_frame_o)
     return data_frame_o, ghost_separations_o
 
@@ -67,7 +67,7 @@ def full_translation(telescope, optic_name='L2', distance=0.01):
     make_optics_reflective(translated_optic)
     trace_full_s, r_forward_s, r_reverse_s, rays_s = run_simulation(translated_optic, beam_config=BEAM_CONFIG_0)
     spots_data_s, _spots = reduce_ghosts(r_forward_s)
-    data_frame_s = make_data_frame(r_forward_s, spots_data_s)
+    data_frame_s = make_data_frame(spots_data_s)
     ghost_separations_s = compute_ghost_separations(data_frame_s)
     return data_frame_s, ghost_separations_s
 
@@ -96,6 +96,6 @@ def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_
     make_optics_reflective(rnd_tel)
     trace_full_r, r_forward_r, r_reverse_r, rays_r = run_simulation(rnd_tel, beam_config=beam_config)
     spots_data_r, _spots = reduce_ghosts(r_forward_r)
-    data_frame_r = make_data_frame(r_forward_r, spots_data_r)
+    data_frame_r = make_data_frame(spots_data_r)
     ghost_separations_r = compute_ghost_separations(data_frame_r)
     return data_frame_r, ghost_separations_r
