@@ -10,22 +10,24 @@ from ghosts.beam_configs import BEAM_CONFIG_0
 
 
 # Functions
-def get_E_ph(nu):
-    return Planck*nu
+def get_photon_energy(nu):
+    return Planck * nu
+
 
 def get_n_phot_for_power(p, nu):
-    E_ph = get_E_ph(nu)
-    n_phot = p/E_ph
+    photon_energy = get_photon_energy(nu)
+    n_phot = p / photon_energy
     return n_phot
 
+
 def get_n_phot_for_power_nw_wl_nm(p, wl):
-    return floor(get_n_phot_for_power(p*1e-9, lambda2nu(wl*1e-9)))
+    return floor(get_n_phot_for_power(p * 1e-9, lambda2nu(wl * 1e-9)))
+
 
 def beam(beam_config=BEAM_CONFIG_0):
-    ''' Takes a beam configuration dictionnary
+    """ Takes a beam configuration dictionnary
     Returns a batoid.RayVector of light rays
-    '''
-    c = '#ff7f00'
+    """
     radius = beam_config['radius']
     x_offset = beam_config['x_offset']
     y_offset = beam_config['y_offset']
@@ -51,11 +53,12 @@ def beam(beam_config=BEAM_CONFIG_0):
 
     return rays
 
+
 # define function to generate a round beam of light
 def simple_beam(x_offset=0.1, y_offset=0, wl=500e-9, n=1000):
     beam_config = copy(BEAM_CONFIG_0)
     beam_config['x_offset'] = x_offset
-    beam_config['y_offset'] = x_offset
+    beam_config['y_offset'] = y_offset
     beam_config['wl'] = wl
     beam_config['n_photons'] = n
     return beam(beam_config)

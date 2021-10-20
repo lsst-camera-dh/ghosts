@@ -2,23 +2,24 @@ import pandas as pd
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from ghosts.tools import get_ranges, get_main_impact_point
+from ghosts.tools import get_ranges
 from ghosts.beam import get_n_phot_for_power_nw_wl_nm
 from ghosts.constants import LSST_CAMERA_PIXEL_DENSITY_MM2, LSST_CAMERA_PIXEL_QE
 
 
-def get_full_light_on_camera(rForward):
-    ''' Convert rForward to list of impact points on camera
-    '''
+def get_full_light_on_camera(r_forward):
+    """ Convert r_forward to list of impact points on camera
+    """
     # Plot light on detector on the right
-    all_x = rForward[0].x.tolist()
-    all_y = rForward[0].y.tolist()
-    all_f = rForward[0].flux.tolist()
-    for rr in rForward[1:]:
+    all_x = r_forward[0].x.tolist()
+    all_y = r_forward[0].y.tolist()
+    all_f = r_forward[0].flux.tolist()
+    for rr in r_forward[1:]:
         all_x = all_x + rr.x.tolist()
         all_y = all_y + rr.y.tolist()
         all_f = all_f + rr.flux.tolist()
     return all_x, all_y, all_f
+
 
 def get_ghost_name(ghost, debug=False):
     ghost_tuple = ('main', 'main')
@@ -34,6 +35,7 @@ def get_ghost_name(ghost, debug=False):
                 ghost_tuple = (ghost_tuple[0], ghost.path[i - 1])
     return ghost_tuple
 
+
 def get_ghost_stats(ghost):
     mean_x = ghost.x.mean()
     mean_y = ghost.y.mean()
@@ -45,13 +47,14 @@ def get_ghost_stats(ghost):
     density_phot_mm2 = mean_intensity / spot_surface_mm2
     return mean_x, mean_y, x_width, y_width, weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2
 
+
 def get_ghost_spot_data(i, ghost, p=100, wl=500):
     # identify ghost
     ghost_name = get_ghost_name(ghost)
 
     # normalized stats
-    mean_x, mean_y, x_width, y_width, weights_sum, mean_intensity, \
-    spot_surface_mm2, density_phot_mm2 = get_ghost_stats(ghost)
+    mean_x, mean_y, x_width, y_width, weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2 = \
+        get_ghost_stats(ghost)
     # for 100 nW at 500 nm
     n_phot_total = get_n_phot_for_power_nw_wl_nm(p, wl)
     n_e_pixel = density_phot_mm2 / LSST_CAMERA_PIXEL_DENSITY_MM2 * n_phot_total * LSST_CAMERA_PIXEL_QE
@@ -62,19 +65,21 @@ def get_ghost_spot_data(i, ghost, p=100, wl=500):
                        'photon_density': density_phot_mm2}
     return ghost_spot_data
 
-def map_ghost(ghost, ax, n_bins=100, dr=0.01, wl=500, p=100):
+
+def map_ghost(ghost, ax, n_bins=100, dr=0.01):
     # bin data
     hb = ax.hexbin(ghost.x, ghost.y, C=ghost.flux, reduce_C_function=np.sum,
                    gridsize=n_bins, extent=get_ranges(ghost.x, ghost.y, dr))
     return hb
 
-def reduce_ghosts(rForward):
+
+def reduce_ghosts(r_forward):
     # store some stats roughly
     spots_data = list()
     ghost_maps = list()
-    _fig, ax = plt.subplots(len(rForward))
+    _fig, ax = plt.subplots(len(r_forward))
     axs = ax.ravel()
-    for i, ghost in enumerate(rForward):
+    for i, ghost in enumerate(r_forward):
         # bin data (and make plot)
         hb_map = map_ghost(ghost, axs[i])
         ghost_spot_data = get_ghost_spot_data(i, ghost)
@@ -83,7 +88,8 @@ def reduce_ghosts(rForward):
     plt.close(_fig)
     return spots_data, ghost_maps
 
-def make_data_frame(rForward, spots_data):
+
+def make_data_frame(spots_data):
     # creating a nice pandas data frame
     data_frame = pd.DataFrame(
         {
@@ -100,6 +106,7 @@ def make_data_frame(rForward, spots_data):
         }
     )
     return data_frame
+
 
 def compute_ghost_separations(data_frame):
     # computing distances ghost to ghost, and ghosts overlap
@@ -137,5 +144,3 @@ def compute_ghost_separations(data_frame):
         }
     )
     return ghosts_separation
-
-

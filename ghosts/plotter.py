@@ -1,16 +1,16 @@
 import batoid
 import matplotlib.pyplot as plt
 from scipy import stats
-import ipyvolume as ipv
+# import ipyvolume as ipv
 import numpy as np
 from ghosts.tools import get_ranges, get_main_impact_point
 from ghosts.analysis import get_full_light_on_camera, map_ghost, get_ghost_spot_data
 
 
 def plot_setup(telescope, simulation):
-    traceFull = simulation[0]
-    rForward = simulation[1]
-    rReverse = simulation[2]
+    trace_full = simulation[0]
+    r_forward = simulation[1]
+    # rReverse = simulation[2]
     rays = simulation[3]
 
     # Create figure with 2 columns
@@ -24,7 +24,7 @@ def plot_setup(telescope, simulation):
     # Draw camera on the left
     telescope.draw2d(f1_ax1, c='k')
     # now draw ray tracing on top of telescope
-    batoid.drawTrace2d(f1_ax1, traceFull, c='orange')
+    batoid.drawTrace2d(f1_ax1, trace_full, c='orange')
 
     # Plot input beam spot full scale
     beam_spot = rays.positionAtTime(3.397)
@@ -43,7 +43,7 @@ def plot_setup(telescope, simulation):
     fig1.colorbar(hb2, ax=f1_ax3)
 
     # Plot light on detector on the right
-    all_x, all_y, all_f = get_full_light_on_camera(rForward)
+    all_x, all_y, all_f = get_full_light_on_camera(r_forward)
     hb3 = f1_ax4.hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
                         extent=[-0.35, 0.35, -0.35, 0.35], gridsize=(150, 150))
 
@@ -52,7 +52,7 @@ def plot_setup(telescope, simulation):
     plt.plot(0.32 * np.cos(th), 0.32 * np.sin(th), c='r')
 
     # Plot direct path location on focal plane
-    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(rForward)
+    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(r_forward)
     plt.text(direct_x, direct_y, '+', horizontalalignment='center',
              verticalalignment='center', color='m')
     f1_ax4.set_aspect("equal")
@@ -65,7 +65,7 @@ def plot_setup(telescope, simulation):
     print(f'  transmission is {direct_f:.4f}\n')
 
     # check bins content
-    hex_centers = hb3.get_offsets()
+    # hex_centers = hb3.get_offsets()
     hex_val = hb3.get_array()
     print(f'Maximum expected flux is {max(all_f):.4f}')
     print(f'Maximum bin content is {max(hex_val):.4f}')
@@ -73,17 +73,18 @@ def plot_setup(telescope, simulation):
     # Show plot
     plt.show()
 
-def plot_zoom_on_ghosts(rForward):
+
+def plot_zoom_on_ghosts(r_forward):
     # integrated data
-    all_x, all_y, all_f = get_full_light_on_camera(rForward)
+    all_x, all_y, all_f = get_full_light_on_camera(r_forward)
     # Trying to zoom in on ghosts images
 
     plt.rcParams["figure.figsize"] = [18, 6]
     fig, ax = plt.subplots(2, 1)
     axs = ax.ravel()
     # ghosts images
-    hb1 = axs[0].hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
-                        extent=[-0.02, 0.27, -0.005, 0.005], gridsize=(100, 100))
+    _hb1 = axs[0].hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
+                         extent=[-0.02, 0.27, -0.005, 0.005], gridsize=(100, 100))
     axs[0].set_aspect("equal")
     axs[0].set_title(f"Beam spot")
 
@@ -94,18 +95,19 @@ def plot_zoom_on_ghosts(rForward):
     axs[1].set_ylabel('~n photons')
     plt.show()
 
-def plot_ghosts_map(rForward):
+
+def plot_ghosts_map(r_forward):
     # plot all ghosts
     print("Ghosts map for 100 nW beam at 500 nm with a diameter of 2.5 mm")
     # get main impact point
-    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(rForward)
+    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(r_forward)
     # store some stats roughly
     spots_data = list()
     fig, ax = plt.subplots(7, 6)
     axs = ax.ravel()
-    for i, ghost in enumerate(rForward):
+    for i, ghost in enumerate(r_forward):
         # bin data (and make plot)
-        hb_map = map_ghost(ghost, axs[i])
+        _hb_map = map_ghost(ghost, axs[i])
         axs[i].set_aspect("equal")
         axs[i].set_title(f"Ghost image")
         axs[i].grid(True)
@@ -130,6 +132,7 @@ def plot_ghosts_map(rForward):
     plt.show()
     return spots_data
 
+
 # Looking at overal spots stats
 def plot_spots_stats(data_frame):
     plt.rcParams["figure.figsize"] = [24, 24]
@@ -142,41 +145,44 @@ def plot_spots_stats(data_frame):
 
     axs[2].hist(data_frame['surface'])
     axs[2].set_title('surface', fontsize=22)
-    axs[2].set_xlabel('spot %s (mm$^2$)' % col, fontsize=22)
+    axs[2].set_xlabel('spot width_x (mm$^2$)', fontsize=22)
     axs[3].hist(np.log10(data_frame['pixel_signal']))
     axs[3].set_title('pixel signal', fontsize=22)
     axs[3].set_xlabel('log10(signal) ($e^-$/pixel)', fontsize=22)
     return fig, axs
 
+
 def plot_ghosts_spots_distances(ghosts_separations):
     # plotting distances ghost to ghost centers and borders
     plt.rcParams["figure.figsize"] = [18, 12]
     fig, ax = plt.subplots(2, 2)
-    hd = ax[0][0].hist(ghosts_separations['distance'] * 1000)
+    _hd = ax[0][0].hist(ghosts_separations['distance'] * 1000)
     ax[0][0].set_title('Distance between ghost spot centers', fontsize=22)
     ax[0][0].set_xlabel('distance (mm)', fontsize=16)
 
-    ho = ax[0][1].hist(ghosts_separations['overlap'] * 1000)
+    _ho = ax[0][1].hist(ghosts_separations['overlap'] * 1000)
     ax[0][1].set_title('Distance between ghost spot borders', fontsize=22)
     ax[0][1].set_xlabel('distance (mm)', fontsize=16)
 
-    hs = ax[1][0].hist(np.log10(ghosts_separations['surface_ratio']))
+    _hs = ax[1][0].hist(np.log10(ghosts_separations['surface_ratio']))
     ax[1][0].set_title('Ghost spot surface ratio', fontsize=22)
     ax[1][0].set_xlabel('log10(ratio)', fontsize=16)
 
-    hp = ax[1][1].hist(np.log10(ghosts_separations['signal_ratio']))
+    _hp = ax[1][1].hist(np.log10(ghosts_separations['signal_ratio']))
     ax[1][1].set_title('Ghost spot pixel signal ratio', fontsize=22)
     ax[1][1].set_xlabel('log10(ratio)', fontsize=16)
 
     print(f'{sum(ghosts_separations["overlap"] < 0)} ghost spots pairs are in overlap out of {len(ghosts_separations)}')
     return ax
 
+
 def plot_ghosts_displacements(merged_data_frame):
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches(9, 6)
-    ax.hist((merged_data_frame['pos_x_x']-merged_data_frame['pos_x_y'])*1000)
+    ax.hist((merged_data_frame['pos_x_x'] - merged_data_frame['pos_x_y']) * 1000)
     ax.set_xlabel('Ghost spot displacement (mm)')
     return ax
+
 
 def plot_max_displacement_for_sim_scan(merged_data_frame, scan_angles, trans_type='rotation'):
     # Plot maximum displacement as a function of filter rotation angle
@@ -217,4 +223,3 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_angles, trans_typ
     ax[1].plot(bincenters, y, 'r--', linewidth=2)
     ax[1].set_title('Fit residuals (mm)')
     plt.show()
-

@@ -9,39 +9,43 @@ from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separa
 
 # run a ray tracing simulation
 def run_simulation(telescope_setup, beam_config=BEAM_CONFIG_0):
-    ''' Takes a telescope optical object and a beam configuration as a dictionnary
+    """ Takes a telescope optical object and a beam configuration as a dictionnary
     Simulates the light beam through the optics
     Returns the full ray tracing, including ghosts and the beam as a vector of light rays
-    '''
+    """
     # Beam On
     rays = beam(beam_config)
 
     # Trace full optics and plot on the camera system
-    rForward, rReverse = telescope_setup.traceSplit(rays, minFlux=1e-4)
-    traceFull = telescope_setup.traceFull(rays)
-    return traceFull, rForward, rReverse, rays
+    r_forward, r_reverse = telescope_setup.traceSplit(rays, minFlux=1e-4)
+    trace_full = telescope_setup.trace_full(rays)
+    return trace_full, r_forward, r_reverse, rays
+
 
 # Rotate and simulate
 def full_rotation(telescope, optic_name='L2', angle=0.1, debug=False):
     rotated_optic = rotate_optic(telescope, optic_name, axis='y', angle=angle)
     if debug:
         print(
-            f'{optic_name} rotation of {angle:.3f}° means a displacement of {300 * math.tan(angle * 3.14 / 180.):.3f} mm of the lens border.')
+            f'{optic_name} rotation of {angle:.3f}° means a displacement of {300 * math.tan(angle * 3.14 / 180.):.3f}\
+             mm of the lens border.')
     make_optics_reflective(rotated_optic)
-    traceFull_o, rForward_o, rReverse_o, rays_o = run_simulation(rotated_optic, beam_config=BEAM_CONFIG_0)
-    spots_data_o, _spots = reduce_ghosts(rForward_o)
-    data_frame_o = make_data_frame(rForward_o, spots_data_o)
+    trace_full_o, r_forward_o, r_reverse_o, rays_o = run_simulation(rotated_optic, beam_config=BEAM_CONFIG_0)
+    spots_data_o, _spots = reduce_ghosts(r_forward_o)
+    data_frame_o = make_data_frame(r_forward_o, spots_data_o)
     ghost_separations_o = compute_ghost_separations(data_frame_o)
     return data_frame_o, ghost_separations_o
+
 
 # Rotating L2 specifically
 def full_rotation_L2(telescope, angle=0.1):
     return full_rotation(telescope, optic_name='L2', angle=angle)
 
+
 # Helpers to run and plot a scan in one optical element rotation
 def sim_scan_rotated_optic(telescope, optic_name, min_angle, max_angle, step_angle, ref_data_frame):
-    ''' @TODO handle better reference data frame
-    '''
+    """ @TODO handle better reference data frame
+    """
     print(f'Starting {optic_name} rotation scan.')
     rotation_sims = list()
     scan_angles = list()
@@ -56,20 +60,22 @@ def sim_scan_rotated_optic(telescope, optic_name, min_angle, max_angle, step_ang
     print('Done.')
     return merged_data_frame, scan_angles
 
+
 # Translate and simulate
-def full_translation(telescope, optic_name='L2', distance=0.01, debug=False):
+def full_translation(telescope, optic_name='L2', distance=0.01):
     translated_optic = translate_optic(telescope, optic_name, axis='x', distance=distance)
     make_optics_reflective(translated_optic)
-    traceFull_s, rForward_s, rReverse_s, rays_s = run_simulation(translated_optic, beam_config=BEAM_CONFIG_0)
-    spots_data_s, _spots = reduce_ghosts(rForward_s)
-    data_frame_s = make_data_frame(rForward_s, spots_data_s)
+    trace_full_s, r_forward_s, r_reverse_s, rays_s = run_simulation(translated_optic, beam_config=BEAM_CONFIG_0)
+    spots_data_s, _spots = reduce_ghosts(r_forward_s)
+    data_frame_s = make_data_frame(r_forward_s, spots_data_s)
     ghost_separations_s = compute_ghost_separations(data_frame_s)
     return data_frame_s, ghost_separations_s
 
+
 # Helpers to run and plot a scan in one optical element translation
 def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_dist, ref_data_frame):
-    ''' @TODO handle better reference data frame
-    '''
+    """ @TODO handle better reference data frame
+    """
     print(f'Starting {optic_name} translation scan.')
     sims = list()
     scan_values = list()
@@ -84,11 +90,12 @@ def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_di
     print('Done.')
     return merged_data_frame, scan_values
 
+
 def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_CONFIG_0):
     rnd_tel = randomized_telescope(telescope, max_angle, max_shift)
     make_optics_reflective(rnd_tel)
-    traceFull_r, rForward_r, rReverse_r, rays_r = run_simulation(rnd_tel, beam_config=beam_config)
-    spots_data_r, _spots = reduce_ghosts(rForward_r)
-    data_frame_r = make_data_frame(rForward_r, spots_data_r)
+    trace_full_r, r_forward_r, r_reverse_r, rays_r = run_simulation(rnd_tel, beam_config=beam_config)
+    spots_data_r, _spots = reduce_ghosts(r_forward_r)
+    data_frame_r = make_data_frame(r_forward_r, spots_data_r)
     ghost_separations_r = compute_ghost_separations(data_frame_r)
     return data_frame_r, ghost_separations_r
