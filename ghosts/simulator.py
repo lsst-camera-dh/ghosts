@@ -21,7 +21,6 @@ def run_simulation(telescope_setup, beam_config=BEAM_CONFIG_0):
     traceFull = telescope_setup.traceFull(rays)
     return traceFull, rForward, rReverse, rays
 
-
 # Rotate and simulate
 def full_rotation(telescope, optic_name='L2', angle=0.1, debug=False):
     rotated_optic = rotate_optic(telescope, optic_name, axis='y', angle=angle)
@@ -35,11 +34,9 @@ def full_rotation(telescope, optic_name='L2', angle=0.1, debug=False):
     ghost_separations_o = compute_ghost_separations(data_frame_o)
     return data_frame_o, ghost_separations_o
 
-
 # Rotating L2 specifically
 def full_rotation_L2(telescope, angle=0.1):
     return full_rotation(telescope, optic_name='L2', angle=angle)
-
 
 # Helpers to run and plot a scan in one optical element rotation
 def sim_scan_rotated_optic(telescope, optic_name, min_angle, max_angle, step_angle, ref_data_frame):
@@ -59,7 +56,6 @@ def sim_scan_rotated_optic(telescope, optic_name, min_angle, max_angle, step_ang
     print('Done.')
     return merged_data_frame, scan_angles
 
-
 # Translate and simulate
 def full_translation(telescope, optic_name='L2', distance=0.01, debug=False):
     translated_optic = translate_optic(telescope, optic_name, axis='x', distance=distance)
@@ -69,7 +65,6 @@ def full_translation(telescope, optic_name='L2', distance=0.01, debug=False):
     data_frame_s = make_data_frame(rForward_s, spots_data_s)
     ghost_separations_s = compute_ghost_separations(data_frame_s)
     return data_frame_s, ghost_separations_s
-
 
 # Helpers to run and plot a scan in one optical element translation
 def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_dist, ref_data_frame):
@@ -88,8 +83,6 @@ def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_di
     merged_data_frame = [pd.merge(ref_data_frame, df, how='left', on='name') for df in sims]
     print('Done.')
     return merged_data_frame, scan_values
-
-
 
 def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_CONFIG_0):
     rnd_tel = randomized_telescope(telescope, max_angle, max_shift)
