@@ -2,6 +2,8 @@
 
 Analyzing ghosts from the CCOB Narrow beam and beyond
 
+See donc on ReadTheDocs: [latest](https://ghosts.readthedocs.io/en/latest/ghosts.html)
+
 ## People
 
 * [Johan Bregeon](https://github.com/bregeon) (CNRS IN2P3 LPSC)
