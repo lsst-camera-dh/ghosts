@@ -20,7 +20,7 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         ],
-    install_requires=["batoid",
+    install_requires=[#"batoid",
                       "pandas",
                       "openpyxl",
                       "setuptools_scm"]
