@@ -6,6 +6,7 @@ from ghosts.tools import get_ranges, get_main_impact_point
 from ghosts.beam import get_n_phot_for_power_nw_wl_nm
 from ghosts.constants import LSST_CAMERA_PIXEL_DENSITY_MM2, LSST_CAMERA_PIXEL_QE
 
+
 def get_full_light_on_camera(rForward):
     ''' Convert rForward to list of impact points on camera
     '''
@@ -18,7 +19,6 @@ def get_full_light_on_camera(rForward):
         all_y = all_y + rr.y.tolist()
         all_f = all_f + rr.flux.tolist()
     return all_x, all_y, all_f
-
 
 def get_ghost_name(ghost, debug=False):
     ghost_tuple = ('main', 'main')
@@ -34,7 +34,6 @@ def get_ghost_name(ghost, debug=False):
                 ghost_tuple = (ghost_tuple[0], ghost.path[i - 1])
     return ghost_tuple
 
-
 def get_ghost_stats(ghost):
     mean_x = ghost.x.mean()
     mean_y = ghost.y.mean()
@@ -45,7 +44,6 @@ def get_ghost_stats(ghost):
     spot_surface_mm2 = 3.14 * (x_width * 1000. / 2) * (x_width * 1000. / 2)
     density_phot_mm2 = mean_intensity / spot_surface_mm2
     return mean_x, mean_y, x_width, y_width, weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2
-
 
 def get_ghost_spot_data(i, ghost, p=100, wl=500):
     # identify ghost
@@ -63,7 +61,6 @@ def get_ghost_spot_data(i, ghost, p=100, wl=500):
                        'surface': spot_surface_mm2, 'pixel_signal': n_e_pixel,
                        'photon_density': density_phot_mm2}
     return ghost_spot_data
-
 
 def map_ghost(ghost, ax, n_bins=100, dr=0.01, wl=500, p=100):
     # bin data
@@ -85,7 +82,6 @@ def reduce_ghosts(rForward):
         spots_data.append(ghost_spot_data)
     plt.close(_fig)
     return spots_data, ghost_maps
-
 
 def make_data_frame(rForward, spots_data):
     # creating a nice pandas data frame

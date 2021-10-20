@@ -6,6 +6,7 @@ import numpy as np
 from ghosts.tools import get_ranges, get_main_impact_point
 from ghosts.analysis import get_full_light_on_camera, map_ghost, get_ghost_spot_data
 
+
 def plot_setup(telescope, simulation):
     traceFull = simulation[0]
     rForward = simulation[1]
@@ -72,7 +73,6 @@ def plot_setup(telescope, simulation):
     # Show plot
     plt.show()
 
-
 def plot_zoom_on_ghosts(rForward):
     # integrated data
     all_x, all_y, all_f = get_full_light_on_camera(rForward)
@@ -93,7 +93,6 @@ def plot_zoom_on_ghosts(rForward):
     axs[1].set_xlabel('position x (mm)')
     axs[1].set_ylabel('~n photons')
     plt.show()
-
 
 def plot_ghosts_map(rForward):
     # plot all ghosts

@@ -2,6 +2,7 @@ import batoid
 from scipy.spatial.transform import Rotation as R
 import numpy as np
 
+
 def get_list_of_optics(telescope):
     optics = list()
     for one in telescope.items:
@@ -55,7 +56,6 @@ def translate_optic(telescope, name, axis='x', distance=0.01, verbose=False):
         vector = [0, 0, distance]
     translated_telescope = telescope.withLocallyShiftedOptic(name=name, shift=vector)
     return translated_telescope
-
 
 # function to rotate one element of a telescope
 def rotate_optic_vector(telescope, name, angles=[0.1, 0.1, 0.1], verbose=False):

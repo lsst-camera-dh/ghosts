@@ -1,13 +1,13 @@
-# batoid dependencies to create ray vectors
-import batoid
-
 # Beam intensity, photon energy and number of photons
 import numpy as np
 from scipy.constants import Planck, lambda2nu, nu2lambda
 from math import floor
 from copy import copy
 
+# batoid dependencies to create ray vectors
+import batoid
 from ghosts.beam_configs import BEAM_CONFIG_0
+
 
 # Functions
 def get_E_ph(nu):
@@ -50,7 +50,6 @@ def beam(beam_config=BEAM_CONFIG_0):
     rays = batoid.RayVector(rays_x, rays_y, rays_z, rays_vx, rays_vy, rays_vz, rays_wl, rays_t)
 
     return rays
-
 
 # define function to generate a round beam of light
 def simple_beam(x_offset=0.1, y_offset=0, wl=500e-9, n=1000):
