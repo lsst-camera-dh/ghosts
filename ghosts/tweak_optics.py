@@ -106,4 +106,5 @@ def randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=Fals
 
 if __name__ == '__main__':
     # test list of optics
-    assert get_list_of_optics(telescope) == ['L1', 'L2', 'Filter', 'L3', 'Detector'], 'Not a CCOB optical setup'
+    ccob_telescope = batoid.Optic.fromYaml("LSST_CCOB_r.yaml")
+    assert get_list_of_optics(ccob_telescope) == ['L1', 'L2', 'Filter', 'L3', 'Detector'], 'Not a CCOB optical setup'
