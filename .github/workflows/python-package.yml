@@ -35,7 +35,7 @@ jobs:
         # stop the build if there are Python syntax errors or undefined names
         pylint --reports=no --errors-only ghosts
         # stp the build if there are a lot of messages
-        pylint --reports=no --fail-under=9.5 ghosts
+        pylint --reports=no --fail-under=7 ghosts
         # exit-zero treats all errors as warnings.
         pylint --exit-zero ghosts
     - name: Test with pytest
