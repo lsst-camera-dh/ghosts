@@ -1,4 +1,6 @@
+cmake
 batoid
+matplotlib
+scipy
 pandas
 openpyxl
-cmake
