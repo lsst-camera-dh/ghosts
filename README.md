@@ -2,7 +2,7 @@
 
 Analyzing ghosts from the CCOB Narrow beam and beyond
 
-See donc on ReadTheDocs: [latest](https://ghosts.readthedocs.io/en/latest/ghosts.html)
+Read documentation on ReadTheDocs: [latest](https://ghosts.readthedocs.io/en/latest/ghosts.html)
 
 ## People
 
@@ -12,3 +12,5 @@ See donc on ReadTheDocs: [latest](https://ghosts.readthedocs.io/en/latest/ghosts
 ## License, Contributing etc
 
 The code in this repository is available for re-use under the GPL v3 license.
+
+See code coverage at: [codecov](https://app.codecov.io/gh/bregeon/ghosts)
