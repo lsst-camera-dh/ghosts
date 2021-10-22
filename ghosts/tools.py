@@ -3,6 +3,24 @@ import numpy as np
 
 # define function to get nice rangs
 def get_ranges(x, y, dr=0.010):
+    """ Get x and y ranges around their mean values with a delta of dr
+
+    This is useful to center plots around a region of interest
+
+    Parameters
+    ----------
+    x : `numpy.array`
+        The input array along the x axis
+    y : `numpy.array`
+        The input array along the xy axis
+    dr : `float`
+        The delta around the mean value, or the box size if you wish
+
+    Returns
+    -------
+    x_min, x_max, y_min, y_max : a tuple of 4 'float"
+        The min and max values for x and y axis, aka. the box boundaries.
+    """
     x_min = x.mean() - dr
     x_max = x.mean() + dr
     y_min = y.mean() - dr
