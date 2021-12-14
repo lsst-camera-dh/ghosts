@@ -20,10 +20,10 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         ],
-    install_requires=[#"batoid",
-#                      "matplotlib",
-#                      "scipy",
-#                      "pandas",
+    install_requires=["batoid",
+                      "matplotlib",
+                      "scipy",
+                      "pandas",
                       "openpyxl",
                       "setuptools_scm"]
 )
