@@ -62,6 +62,8 @@ autoclass_content = "class"
 autodoc_default_flags = ["members", "no-special-members"]
 autodoc_member_order = "bysource"
 
+# as sphinx cannot install this properly
+autodoc_mock_imports = ["batoid"]
 
 # -- Options for HTML output -------------------------------------------------
 
