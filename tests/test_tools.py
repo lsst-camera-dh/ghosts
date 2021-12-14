@@ -5,6 +5,7 @@ import numpy as np
 
 from ghosts.tools import get_ranges
 
+
 class ToolsTestCase(unittest.TestCase):
     """ Test class for the ghosts.tools module"""
     def test_get_ranges(self):
