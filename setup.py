@@ -21,6 +21,7 @@ setup(
         "Programming Language :: Python",
         ],
     install_requires=[#"batoid",
+                      "python>=3.9",
                       "matplotlib",
                       "scipy",
                       "pandas",
