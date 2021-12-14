@@ -1,0 +1,10 @@
+name: ghosts
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - matplotlib
+  - scipy
+  - pandas
+  - openpyxl
