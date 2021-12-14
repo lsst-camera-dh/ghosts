@@ -17,7 +17,7 @@ beam interface
     :undoc-members:
 
 tweak optics interface
-===================
+======================
 
 `ghosts.tweak_optics`
 ---------------------
@@ -37,7 +37,7 @@ simulator interface
     :undoc-members:
 
 analysis interface
-===================
+==================
 
 `ghosts.analysis`
 ---------------------
@@ -47,7 +47,7 @@ analysis interface
     :undoc-members:
 
 plotter interface
-===================
+=================
 
 `ghosts.plotter`
 ---------------------
@@ -57,7 +57,7 @@ plotter interface
     :undoc-members:
 
 tools interface
-===================
+===============
 
 `ghosts.tools`
 ---------------------
