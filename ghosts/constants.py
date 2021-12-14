@@ -19,5 +19,6 @@ LSST_CAMERA_DARK_CURRENT = 2  # electrons per second
 
 # From Slack
 # LSST_CAMERA_READOUT_NOISE = 5 to 15, poisson ~ 7.5
-# FULL_WELL = 75k to 130k ~ 120k mostly >100k
+LSST_CAMERA_PIXEL_FULL_WELL = 75000  # 75k to 130k ~ 120k mostly >100k
 # PTC_CALIB = 1.16 e-/ADU
+
