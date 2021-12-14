@@ -10,7 +10,7 @@ At some point you will be able to install `ghosts` with `pip` or from source.
 Installing with pip
 -------------------
 
-This is will work, believe me.
+This is will work one day, believe me.
 
 .. code-block:: bash
 
@@ -21,11 +21,15 @@ This is will work, believe me.
 Installing from source
 -----------------------
 
-Since `ghosts` is all python code, this is pretty easy.
+This is the recommended installation procedure in a conda environment.
+It shall take care of the `batoid` dependency cleanly.
 
 .. code-block:: bash
 
+    conda env create -f environment.yml
+    conda activate combined_fit
     git clone https://github.com/bregeon/ghosts.git
     cd ghosts
-    python setup.py install
+    pip install -r requirements.txt
+    pip install -e .
 
