@@ -22,9 +22,9 @@ setup(
         ],
     install_requires=[#"batoid",
                       "python>=3.9",
-                      "matplotlib",
-                      "scipy",
-                      "pandas",
+#                      "matplotlib",
+#                      "scipy",
+#                      "pandas",
                       "openpyxl",
                       "setuptools_scm"]
 )
