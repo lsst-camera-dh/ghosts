@@ -18,8 +18,8 @@ def get_ranges(x, y, dr=0.010):
 
     Returns
     -------
-    x_min, x_max, y_min, y_max : a tuple of 4 'float"
-        The min and max values for x and y axis, aka. the box boundaries.
+    x_min, x_max, y_min, y_max : a tuple of 4 `floats`
+        The min and max values for x and y axis, i.e. the box boundaries.
     """
     x_min = x.mean() - dr
     x_max = x.mean() + dr
@@ -32,6 +32,8 @@ def get_main_impact_point(r_forward):
     """ Return main image light rays
 
     Direct path will be r_forward with fewest number of things in "path"
+
+    @todo: compute a real baricenter
     """
     i_straight = np.argmin([len(rrr.path) for rrr in r_forward])
     direct_x = np.mean(r_forward[i_straight].x)
