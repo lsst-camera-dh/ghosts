@@ -9,13 +9,33 @@ from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separa
 
 # run a ray tracing simulation
 def run_simulation(telescope_setup, beam_config=BEAM_CONFIG_0):
-    """ Takes a telescope optical object and a beam configuration as a dictionnary
-    Simulates the light beam through the optics
-    Returns the full ray tracing, including ghosts and the beam as a vector of light rays
+    """ Runs a ray tracing simulation of a light beam into the CCOB.
+
+    Takes a telescope optical object and a beam configuration as a dictionary,
+    simulates the light beam through the optics and returns the full ray tracing,
+    including ghosts and the beam as a vector of light ays
+
+    Parameters
+    ----------
+    telescope_setup : `batoid.telescope`
+        the optical setup
+    beam_config : `dict`
+        a dictionary with the light beam configuration, see :ref:`beam_configs`.
+
+    Returns
+    -------
+    trace_full : `batoid.RayVector`
+        the full traces
+    r_forward : `batoid.RayVector`
+        the forward traces
+    r_reverse : `batoid.RayVector`
+        the full reverse traces
+    rays : `batoid.RayVector`
+        the input light beam
     """
+
     # Beam On
     rays = beam(beam_config)
-
     # Trace full optics and plot on the camera system
     r_forward, r_reverse = telescope_setup.traceSplit(rays, minFlux=1e-4)
     trace_full = telescope_setup.traceFull(rays)
