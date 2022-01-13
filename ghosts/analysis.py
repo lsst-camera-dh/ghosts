@@ -8,7 +8,21 @@ from ghosts.constants import LSST_CAMERA_PIXEL_DENSITY_MM2, LSST_CAMERA_PIXEL_QE
 
 
 def get_full_light_on_camera(r_forward):
-    """ Convert r_forward to list of impact points on camera
+    """ Convert list of forward batoid ray vectors to list of impact points on camera
+
+    Parameters
+    ----------
+    r_forward : `batoid.RayVector`
+        a batoid RayVector with a bunch of forward rays propagated  through the system.
+
+    Returns
+    -------
+    all_x : `list`
+        list of x coordinates of all light rays impact points on the detector
+    all_y : `list`
+        list of y coordinates of all light rays impact points on the detector
+    all_f : `list`
+        list of fluxes coordinates of all light rays impact points on the detector
     """
     # Plot light on detector on the right
     all_x = r_forward[0].x.tolist()
@@ -22,18 +36,31 @@ def get_full_light_on_camera(r_forward):
 
 
 def get_ghost_name(ghost, debug=False):
-    ghost_tuple = ('main', 'main')
+    """ Just the name of a ghost spot as a tuple containing the
+    names of the surface on which the first and second light reflection occured.
+
+    Parameters
+    ----------
+    ghost : `batoid.RayVector`
+        a batoid RayVector with a bunch of rays propagated through the system.
+
+    Returns
+    -------
+    ghost_name_tuple : `tuple` of `strings`
+        name of the ghost as a tuple of strings, e.g. ('Filter_entrance', 'L2_exit') or ('L2_entrance', 'L1_entrance')
+    """
+    ghost_name_tuple = ('main', 'main')
     for i, opt in enumerate(ghost.path):
         if debug:
             print(ghost.path[i - 2], opt)
         if i >= 2 and ghost.path[i - 2] == opt:
             if debug:
                 print(f'{i} bounce on {ghost.path[i - 1]} between {ghost.path[i - 2]} and {opt}')
-            if ghost_tuple == ('main', 'main'):
-                ghost_tuple = (ghost.path[i - 1],)
+            if ghost_name_tuple == ('main', 'main'):
+                ghost_name_tuple = (ghost.path[i - 1],)
             else:
-                ghost_tuple = (ghost_tuple[0], ghost.path[i - 1])
-    return ghost_tuple
+                ghost_name_tuple = (ghost_name_tuple[0], ghost.path[i - 1])
+    return ghost_name_tuple
 
 
 def get_ghost_stats(ghost):
@@ -62,7 +89,6 @@ def get_ghost_stats(ghost):
     density_phot_mm2 : `float`
         density of photons per :math:`mm^2`, for one simulated photon, as the `mean_intensity`/`spot_surface_mm2`
     """
-
     mean_x = ghost.x.mean()
     mean_y = ghost.y.mean()
     x_width = ghost.x.max() - ghost.x.min()
@@ -116,13 +142,39 @@ def get_ghost_spot_data(i, ghost, p=100, wl=500):
 
 
 def map_ghost(ghost, ax, n_bins=100, dr=0.01):
+    """ Builds a binned image, as a `matplotlib.hexbin` of a ghost
+
+    Parameters
+    ----------
+    ghost : `batoid.RayVector`
+        a batoid RayVector with a bunch of rays propagated through the system.
+
+    Returns
+    -------
+    ghost_map : `matplotlib.axis.hexbin`
+        a binned image (2D histogram) of the ghost on the detector plane
+    """
     # bin data
-    hb = ax.hexbin(ghost.x, ghost.y, C=ghost.flux, reduce_C_function=np.sum,
+    ghost_map = ax.hexbin(ghost.x, ghost.y, C=ghost.flux, reduce_C_function=np.sum,
                    gridsize=n_bins, extent=get_ranges(ghost.x, ghost.y, dr))
-    return hb
+    return ghost_map
 
 
 def reduce_ghosts(r_forward):
+    """ Builds a binned image, as a `matplotlib.hexbin` of a ghost
+
+    Parameters
+    ----------
+    r_forward : `batoid.RayVector`
+        a batoid RayVector with a bunch of rays propagated through the system.
+
+    Returns
+    -------
+    spots_data : `list` of `dict`
+        a list of dictionnaries of ghost spot data (position, radius, brightness)
+    ghost_maps : `list` of `matplotlib.axis.hexbin`
+        a list of images of ghosts as 2D histograms
+    """
     # store some stats roughly
     spots_data = list()
     ghost_maps = list()
