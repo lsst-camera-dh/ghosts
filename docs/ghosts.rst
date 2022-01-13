@@ -1,4 +1,4 @@
-.. _tables_io:
+.. _ghosts:
 
 
 API Documentation for ghosts
