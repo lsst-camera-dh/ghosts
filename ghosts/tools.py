@@ -33,7 +33,8 @@ def get_main_impact_point(r_forward):
 
     Direct path will be r_forward with fewest number of things in "path"
 
-    @todo: compute a real baricenter
+    .. todo::
+        `get_main_impact_point` should compute a real baricenter
     """
     i_straight = np.argmin([len(rrr.path) for rrr in r_forward])
     direct_x = np.mean(r_forward[i_straight].x)
