@@ -34,8 +34,23 @@ def get_main_impact_point(r_forward):
     Direct path will be r_forward with fewest number of things in "path"
 
     .. todo::
-        `get_main_impact_point` should compute a real baricenter
+        `get_main_impact_point` should compute a real baricenter?
+
+    Parameters
+    ----------
+    r_forward : `batoid.RayVector`
+        a batoid RayVector with a bunch of rays propagated through the system.
+
+    Returns
+    -------
+    i_straight : `int`
+        the index of the main image
+    direct_x, direct_y : `float`, `float`
+        the x and y coordinate of the center of the main image
+    direct_f : `float`
+        the main image flux, relative to 1
     """
+    # the main image corresponds to the "shortest" path
     i_straight = np.argmin([len(rrr.path) for rrr in r_forward])
     direct_x = np.mean(r_forward[i_straight].x)
     direct_y = np.mean(r_forward[i_straight].y)
