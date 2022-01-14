@@ -22,6 +22,7 @@ Beam configurations are defined as simple dictionaries with minimal information.
 
 beam interface
 ===================
+.. _beam:
 
 `ghosts.beam`
 ---------------------
