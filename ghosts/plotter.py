@@ -257,9 +257,6 @@ def plot_ghosts_spots_distances(ghosts_separations):
 def plot_ghosts_displacements(merged_data_frame):
     """ Plots a histogram of the displacement of all the ghosts along the x axis
 
-    .. todo::
-        `plot_ghosts_displacements` should also plot displacement along y
-
     Parameters
     ----------
     merged_data_frame : `pandas.DataFrame`
@@ -272,11 +269,15 @@ def plot_ghosts_displacements(merged_data_frame):
     ax : `matplotlib.Axis`
         the `matplotlib` axis
     """
-    fig, ax = plt.subplots(1, 1)
-    fig.set_size_inches(9, 6)
-    ax.hist((merged_data_frame['pos_x_x'] - merged_data_frame['pos_x_y']) * 1000)
-    ax.set_xlabel('Ghost spot displacement (mm)')
-    return ax
+    fig, axs = plt.subplots(1, 2)
+    fig.set_size_inches(18, 6)
+    dx_mm = (merged_data_frame['pos_x_x'] - merged_data_frame['pos_x_y']) * 1000
+    axs[0].hist(dx_mm)
+    axs[0].set_xlabel('Ghost spot displacement x (mm)')
+    dy_mm = (merged_data_frame['pos_y_x'] - merged_data_frame['pos_y_y']) * 1000
+    axs[1].hist(dy_mm)
+    axs[1].set_xlabel('Ghost spot displacement y (mm)')
+    return axs
 
 
 def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_type='rotation'):
