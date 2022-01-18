@@ -166,7 +166,7 @@ def plot_ghosts_map(forward_rays):
         # make nice plot on axis
         x_min, _x_max, y_min, y_max = get_ranges(ghost.x, ghost.y, dr=0.01)
         axs[i].text(x_min, 0.9 * y_max, f'Pos. x = {ghost_spot_data["pos_x"] * 1000:.2f} mm', color='black')
-        axs[i].text(x_min, 0.7 * y_max, f'Width x = {ghost_spot_data["width_x"] * 1000:.2f} mm', color='black')
+        axs[i].text(x_min, 0.7 * y_max, f'Radius = {ghost_spot_data["radius"] * 1000:.2f} mm', color='black')
         axs[i].text(x_min, 0.5 * y_min, f'Spot S = {ghost_spot_data["surface"]:.3f} mm$^2$', color='black')
         axs[i].text(x_min, 0.7 * y_min, f'Phot. density = {ghost_spot_data["photon_density"]:.2e} ph/mm$^2$',
                     color='black')
@@ -188,7 +188,7 @@ def plot_spots_stats(data_frame):
     """ Plots overall ghosts image spots statistics
 
     .. todo::
-        `plot_spots_stats` should also plots z coordinates, and use radius instead of width_x
+        `plot_spots_stats` should also plots y coordinates
 
     Parameters
     ----------
@@ -205,14 +205,14 @@ def plot_spots_stats(data_frame):
     plt.rcParams["figure.figsize"] = [24, 24]
     fig, ax = plt.subplots(2, 2)
     axs = ax.flatten()
-    for i, col in enumerate(['pos_x', 'width_x']):
+    for i, col in enumerate(['pos_x', 'radius']):
         axs[i].hist(data_frame[col] * 1000)
         axs[i].set_title(col, fontsize=22)
         axs[i].set_xlabel('%s (mm)' % col, fontsize=22)
 
     axs[2].hist(data_frame['surface'])
     axs[2].set_title('surface', fontsize=22)
-    axs[2].set_xlabel('spot width_x (mm$^2$)', fontsize=22)
+    axs[2].set_xlabel('spot surface (mm$^2$)', fontsize=22)
     axs[3].hist(np.log10(data_frame['pixel_signal']))
     axs[3].set_title('pixel signal', fontsize=22)
     axs[3].set_xlabel('log10(signal) ($e^-$/pixel)', fontsize=22)
