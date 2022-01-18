@@ -63,9 +63,10 @@ Documentation Contents
 ----------------------
 
 .. toctree::
-   :includehidden:
-   :maxdepth: 3
+    :includehidden:
+    :maxdepth: 3
 
-   install
-   ghosts
+    install
+    ghosts
+    todo_list
    
