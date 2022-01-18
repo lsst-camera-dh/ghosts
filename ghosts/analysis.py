@@ -171,7 +171,7 @@ def reduce_ghosts(r_forward):
     Returns
     -------
     spots_data : `list` of `dict`
-        a list of dictionnaries of ghost spot data (position, radius, brightness)
+        a list of dictionaries of ghost spot data (position, radius, brightness)
     ghost_maps : `list` of `matplotlib.axis.hexbin`
         a list of images of ghosts as 2D histograms
     """

@@ -8,9 +8,25 @@ from ghosts.analysis import get_full_light_on_camera, map_ghost, get_ghost_spot_
 
 
 def plot_setup(telescope, simulation):
+    """ Plots a standard CCOB optical setup, including wide and close views on the beam
+    and the image obtained on the full focal plane through the simulation
+
+    Parameters
+    ----------
+    telescope : `batoid.telescope`
+        the optical setup as defined in `batoid`
+    simulation : `list` of rays from the simulation
+        a list with like this `[trace_full, forward_rays, rReverse, rays]`, `r_reverse` is not used.
+        This list is provided by the output of :meth:`ghosts.simulator.run_simulation`
+
+    Returns
+    -------
+    0 : 0
+        0 if all is well
+    """
     trace_full = simulation[0]
-    r_forward = simulation[1]
-    # rReverse = simulation[2]
+    forward_rays = simulation[1]
+    # r_reverse = simulation[2]
     rays = simulation[3]
 
     # Create figure with 2 columns
@@ -43,7 +59,7 @@ def plot_setup(telescope, simulation):
     fig1.colorbar(hb2, ax=f1_ax3)
 
     # Plot light on detector on the right
-    all_x, all_y, all_f = get_full_light_on_camera(r_forward)
+    all_x, all_y, all_f = get_full_light_on_camera(forward_rays)
     hb3 = f1_ax4.hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
                         extent=[-0.35, 0.35, -0.35, 0.35], gridsize=(150, 150))
 
@@ -52,7 +68,7 @@ def plot_setup(telescope, simulation):
     plt.plot(0.32 * np.cos(th), 0.32 * np.sin(th), c='r')
 
     # Plot direct path location on focal plane
-    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(r_forward)
+    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(forward_rays)
     plt.text(direct_x, direct_y, '+', horizontalalignment='center',
              verticalalignment='center', color='m')
     f1_ax4.set_aspect("equal")
@@ -72,11 +88,29 @@ def plot_setup(telescope, simulation):
 
     # Show plot
     plt.show()
+    # return 0 if the plot is shown
+    return 0
 
 
-def plot_zoom_on_ghosts(r_forward):
+def plot_zoom_on_ghosts(forward_rays):
+    """ Plots the 2D image of the focal plane, and its projection along the x-axis
+
+    Parameters
+    ----------
+    forward_rays : `list` of `batoid.RayVector`
+        a list of forward rays, as each item in list comes from one distinct path through the optic exiting in
+        the forward direction.  see `batoid.optic.traceSplit`
+
+    .. todo::
+        `plot_zoom_on_ghosts` should automatically zoom on the ghosts, if possible
+
+    Returns
+    -------
+    0 : 0
+        0 if all is well
+    """
     # integrated data
-    all_x, all_y, all_f = get_full_light_on_camera(r_forward)
+    all_x, all_y, all_f = get_full_light_on_camera(forward_rays)
     # Trying to zoom in on ghosts images
 
     plt.rcParams["figure.figsize"] = [18, 6]
@@ -94,18 +128,34 @@ def plot_zoom_on_ghosts(r_forward):
     axs[1].set_xlabel('position x (mm)')
     axs[1].set_ylabel('~n photons')
     plt.show()
+    # return 0 if all is wel
+    return 0
 
 
-def plot_ghosts_map(r_forward):
+def plot_ghosts_map(forward_rays):
+    """ Plots a canvas with thumbnails of each one of the 37 possible images of the input beam
+    on the focal plane, a.k.a. ghosts map.
+
+    Parameters
+    ----------
+    forward_rays : `list` of `batoid.RayVector`
+        a list of forward rays, as each item in list comes from one distinct path through the optic exiting in
+        the forward direction.  see `batoid.optic.traceSplit`
+
+    Returns
+    -------
+    spots_data : `list` of `dict`
+        a list of dictionaries of ghost spot data (position, radius, brightness)
+    """
     # plot all ghosts
     print("Ghosts map for 100 nW beam at 500 nm with a diameter of 2.5 mm")
     # get main impact point
-    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(r_forward)
+    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(forward_rays)
     # store some stats roughly
     spots_data = list()
     fig, ax = plt.subplots(7, 6)
     axs = ax.ravel()
-    for i, ghost in enumerate(r_forward):
+    for i, ghost in enumerate(forward_rays):
         # bin data (and make plot)
         _hb_map = map_ghost(ghost, axs[i])
         axs[i].set_aspect("equal")
@@ -135,6 +185,23 @@ def plot_ghosts_map(r_forward):
 
 # Looking at overal spots stats
 def plot_spots_stats(data_frame):
+    """ Plots overall ghosts image spots statistics
+
+    .. todo::
+        `plot_spots_stats` should also plots z coordinates, and use radius instead of width_x
+
+    Parameters
+    ----------
+    data_frame : `pandas.DataFrame`
+        a pandas data frame with ghost spots data information, including beam configuration
+
+    Returns
+    -------
+    fig : `matplotlib.Figure`
+        the `matplotlib` figure object
+    axs : `matplotlib.Axis`
+        the list of `matplotlib` axis
+    """
     plt.rcParams["figure.figsize"] = [24, 24]
     fig, ax = plt.subplots(2, 2)
     axs = ax.flatten()
@@ -153,7 +220,18 @@ def plot_spots_stats(data_frame):
 
 
 def plot_ghosts_spots_distances(ghosts_separations):
-    # plotting distances ghost to ghost centers and borders
+    """ Plots distances, ghost to ghost centers and borders
+
+    Parameters
+    ----------
+    ghosts_separations : `pandas.DataFrame`
+            a pandas data frame with information on ghost spots data separations and ratios
+
+    Returns
+    -------
+    ax : `matplotlib.Axis`
+        the list of `matplotlib` axis
+    """
     plt.rcParams["figure.figsize"] = [18, 12]
     fig, ax = plt.subplots(2, 2)
     _hd = ax[0][0].hist(ghosts_separations['distance'] * 1000)
@@ -177,6 +255,23 @@ def plot_ghosts_spots_distances(ghosts_separations):
 
 
 def plot_ghosts_displacements(merged_data_frame):
+    """ Plots a histogram of the displacement of all the ghosts along the x axis
+
+    .. todo::
+        `plot_ghosts_displacements` should also plot displacement along y
+
+    Parameters
+    ----------
+    merged_data_frame : `pandas.DataFrame`
+        a pandas data frame with all the ghosts spot data information, for each telescope optics configuration,
+        including beam configuration, see :meth:`ghosts.analysis.make_data_frame` and
+        :meth:`ghosts.sim_scan_translated_optic`
+
+    Returns
+    -------
+    ax : `matplotlib.Axis`
+        the `matplotlib` axis
+    """
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches(9, 6)
     ax.hist((merged_data_frame['pos_x_x'] - merged_data_frame['pos_x_y']) * 1000)
@@ -184,8 +279,29 @@ def plot_ghosts_displacements(merged_data_frame):
     return ax
 
 
-def plot_max_displacement_for_sim_scan(merged_data_frame, scan_angles, trans_type='rotation'):
-    # Plot maximum displacement as a function of filter rotation angle
+def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_type='rotation'):
+    """ Plots the value of the maximum displacement among all the ghosts for a series of translated
+    or rotated telescope simulations, see :meth:`ghosts.sim_scan_translated_optic`.
+
+    A linear fit is also done and plotted.
+
+    .. todo::
+        `plot_ghosts_displacements` should also plot displacement along y
+
+    Parameters
+    ----------
+    merged_data_frame : `pandas.DataFrame`
+        a pandas data frame with all the ghosts spot data information, for each telescope optics configuration,
+        including beam configuration, see :meth:`ghosts.analysis.make_data_frame` and
+        :meth:`ghosts.sim_scan_translated_optic`
+    scan_values : `list` of `floats`
+        the list of angles or shifts of the simulation scan
+
+    Returns
+    -------
+    0 : 0
+        0 if all is well
+    """
     # Get list of signed maximum displacements in mm
     x_max_diff = list()
     for df in merged_data_frame:
@@ -197,15 +313,15 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_angles, trans_typ
             x_max_diff.append(-max_abs * 1000)
 
     # Linear fit
-    lin_fit = stats.linregress(scan_angles, x_max_diff)
+    lin_fit = stats.linregress(scan_values, x_max_diff)
     print(f'Filter fit results: intercept = {lin_fit.intercept:.6f}, slope = {lin_fit.slope:.3f}')
 
     # Scatter plot with fit
     plt.rcParams["figure.figsize"] = [18, 6]
     fig, ax = plt.subplots(1, 2)
-    ax[0].plot(scan_angles, x_max_diff, 'o', label='data')
-    interp_ys = [lin_fit.intercept + lin_fit.slope * x for x in scan_angles]
-    ax[0].plot(scan_angles, interp_ys, 'r', label='linear fit')
+    ax[0].plot(scan_values, x_max_diff, 'o', label='data')
+    interp_ys = [lin_fit.intercept + lin_fit.slope * x for x in scan_values]
+    ax[0].plot(scan_values, interp_ys, 'r', label='linear fit')
     ax[0].legend()
     ax[0].set_title(f'Maximum ghost displacement as a function of element {trans_type}')
     ax[0].set_ylabel('Ghost spot displacement (mm)')
@@ -218,8 +334,10 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_angles, trans_typ
     residuals = np.array(interp_ys) - np.array(x_max_diff)
     (mu, sigma) = stats.norm.fit(residuals)
     n, bins, patches = ax[1].hist(residuals, bins=10, density=True)
-    bincenters = 0.5 * (bins[1:] + bins[:-1])
-    y = stats.norm.pdf(bincenters, mu, sigma)
-    ax[1].plot(bincenters, y, 'r--', linewidth=2)
+    bin_centers = 0.5 * (bins[1:] + bins[:-1])
+    y = stats.norm.pdf(bin_centers, mu, sigma)
+    ax[1].plot(bin_centers, y, 'r--', linewidth=2)
     ax[1].set_title('Fit residuals (mm)')
     plt.show()
+    # return 0 if all is well
+    return 0

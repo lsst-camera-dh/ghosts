@@ -27,10 +27,10 @@ def run_simulation(telescope_setup, beam_config=BEAM_CONFIG_0):
     trace_full : `OrderedDict of dict`
         an ordered dictionary of dictionaries for incoming and outgoing rays for each optics interface,
         see `batoid.optic.traceFull`
-    forwardRays : `list` of `batoid.RayVector`
+    forward_rays : `list` of `batoid.RayVector`
         a list of forward rays, as each item in list comes from one distinct path through the optic exiting in
         the forward direction.  see `batoid.optic.traceSplit`
-    reverseRays : `list` of `batoid.RayVector`
+    reverse_rays : `list` of `batoid.RayVector`
         the list of reverse rays, as each item in list comes from one distinct path through the optic exiting
         in the reverse direction., see `batoid.optic.traceSplit`
     rays : `batoid.RayVector`
@@ -39,9 +39,9 @@ def run_simulation(telescope_setup, beam_config=BEAM_CONFIG_0):
     # Beam On
     rays = beam(beam_config)
     # Trace full optics and plot on the camera system
-    forwardRays, reverseRays = telescope_setup.traceSplit(rays, minFlux=1e-4)
+    forward_rays, reverse_rays = telescope_setup.traceSplit(rays, minFlux=1e-4)
     trace_full = telescope_setup.traceFull(rays)
-    return trace_full, forwardRays, reverseRays, rays
+    return trace_full, forward_rays, reverse_rays, rays
 
 
 # Rotate and simulate
