@@ -93,10 +93,10 @@ def get_ghost_stats(ghost):
     mean_y = ghost.y.mean()
     x_width = ghost.x.max() - ghost.x.min()
     y_width = ghost.y.max() - ghost.y.min()
-    radius = math.sqrt(x_width*x_width + y_width*y_width)
+    radius = (x_width + y_width) / 2.  # simple mean
     weights_sum = ghost.flux.sum()
     mean_intensity = weights_sum / len(ghost.x)
-    spot_surface_mm2 = math.pi * (x_width * 1000. / 2.) * (x_width * 1000. / 2.)
+    spot_surface_mm2 = math.pi * (radius * 1000.) * (radius * 1000.)
     density_phot_mm2 = mean_intensity / spot_surface_mm2
 
     return mean_x, mean_y, x_width, y_width, radius, weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2
@@ -138,6 +138,7 @@ def get_ghost_spot_data(i, ghost, p=100, wl=500):
                        'radius' : radius,
                        'surface': spot_surface_mm2, 'pixel_signal': n_e_pixel,
                        'photon_density': density_phot_mm2}
+
     return ghost_spot_data
 
 
@@ -157,6 +158,7 @@ def map_ghost(ghost, ax, n_bins=100, dr=0.01):
     # bin data
     ghost_map = ax.hexbin(ghost.x, ghost.y, C=ghost.flux, reduce_C_function=np.sum,
                    gridsize=n_bins, extent=get_ranges(ghost.x, ghost.y, dr))
+
     return ghost_map
 
 
@@ -194,7 +196,7 @@ def make_data_frame(spots_data):
     """ Create a pandas data frame from the ghost spots data dictionary
 
         .. todo::
-            beam config is hardcoded in make_data_frame
+            `make_data_frame` : beam config is hardcoded, it should be a parameter
 
         Parameters
         ----------
@@ -249,7 +251,7 @@ def compute_ghost_separations(data_frame):
             # distance border to border, assuming round spot - overlap
             r1 = data_frame['radius'][i]
             r2 = data_frame['radius'][i + k]
-            overlap = distance - (r1 / 2. + r2 / 2.)
+            overlap = distance - (r1 + r2)
             # surface and pixel signal ratio
             surface_ratio = data_frame['surface'][i + k] / data_frame['surface'][i]
             signal_ratio = data_frame['pixel_signal'][i + k] / data_frame['pixel_signal'][i]
