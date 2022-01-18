@@ -90,12 +90,12 @@ def beam(beam_config=BEAM_CONFIG_0):
 
     rays_x = np.sqrt(r2) * np.cos(theta) + x_offset
     rays_y = np.sqrt(r2) * np.sin(theta) + y_offset
-    rays_z = np.zeros(n)
+    rays_z = np.zeros(n_photons)
 
     rays_v = batoid.utils.normalized(np.array([0., 0., 1])) / 1.000277
-    rays_vx = np.ones(n) * rays_v[0]
-    rays_vy = np.ones(n) * rays_v[1]
-    rays_vz = np.ones(n) * rays_v[2]
+    rays_vx = np.ones(n_photons) * rays_v[0]
+    rays_vy = np.ones(n_photons) * rays_v[1]
+    rays_vz = np.ones(n_photons) * rays_v[2]
 
     rays_wl = wl  # wavelength
     rays_t = 1  # the ray time, used by Batoid to propagate light

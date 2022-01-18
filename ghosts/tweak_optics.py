@@ -69,7 +69,7 @@ def get_optics_position(telescope, name, axis_i):
     position_i : `float`
         the position along the axis index i
     """
-    position_i = telescope[name].coordSys.origin[i]
+    position_i = telescope[name].coordSys.origin[axis_i]
     return position_i
 
 
