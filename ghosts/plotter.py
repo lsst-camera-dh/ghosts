@@ -281,10 +281,7 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
     """ Plots the value of the maximum displacement among all the ghosts for a series of translated
     or rotated telescope simulations, see :meth:`ghosts.sim_scan_translated_optic`.
 
-    A linear fit is also done and plotted.
-
-    .. todo::
-        `plot_ghosts_displacements` should also plot displacement along y
+    A linear fit is also done and plotted with its residuals.
 
     Parameters
     ----------
@@ -302,40 +299,73 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
     """
     # Get list of signed maximum displacements in mm
     x_max_diff = list()
+    y_max_diff = list()
     for df in merged_data_frame:
-        tmp_diff = df['pos_x_x'] - df['pos_x_y']
-        max_abs = max(abs(tmp_diff))
-        if max_abs == tmp_diff.max():
-            x_max_diff.append(max_abs * 1000)
+        # shift along x
+        x_tmp_diff = df['pos_x_x'] - df['pos_x_y']
+        x_max_abs = max(abs(x_tmp_diff))
+        if x_max_abs == x_tmp_diff.max():
+            x_max_diff.append(x_max_abs * 1000)
         else:
-            x_max_diff.append(-max_abs * 1000)
+            x_max_diff.append(-x_max_abs * 1000)
+        # shift along y
+        y_tmp_diff = df['pos_y_x'] - df['pos_y_y']
+        y_max_abs = max(abs(y_tmp_diff))
+        if y_max_abs == y_tmp_diff.max():
+            y_max_diff.append(y_max_abs * 1000)
+        else:
+            y_max_diff.append(-y_max_abs * 1000)
 
-    # Linear fit
-    lin_fit = stats.linregress(scan_values, x_max_diff)
-    print(f'Filter fit results: intercept = {lin_fit.intercept:.6f}, slope = {lin_fit.slope:.3f}')
+    # Linear fit for x shift
+    x_lin_fit = stats.linregress(scan_values, x_max_diff)
+    print(f'Filter fit results: intercept = {x_lin_fit.intercept:.6f}, slope = {x_lin_fit.slope:.3f}')
+    # Linear fit for y shift
+    y_lin_fit = stats.linregress(scan_values, y_max_diff)
+    print(f'Filter fit results: intercept = {y_lin_fit.intercept:.6f}, slope = {y_lin_fit.slope:.3f}')
 
     # Scatter plot with fit
     plt.rcParams["figure.figsize"] = [18, 6]
-    fig, ax = plt.subplots(1, 2)
-    ax[0].plot(scan_values, x_max_diff, 'o', label='data')
-    interp_ys = [lin_fit.intercept + lin_fit.slope * x for x in scan_values]
-    ax[0].plot(scan_values, interp_ys, 'r', label='linear fit')
-    ax[0].legend()
-    ax[0].set_title(f'Maximum ghost displacement as a function of element {trans_type}')
-    ax[0].set_ylabel('Ghost spot displacement (mm)')
+    fig, ax = plt.subplots(2, 2)
+    # plot for x
+    ax[0][0].plot(scan_values, x_max_diff, 'o', label='data')
+    x_interp_ys = [x_lin_fit.intercept + x_lin_fit.slope * x for x in scan_values]
+    ax[0][0].plot(scan_values, x_interp_ys, 'r', label='linear fit')
+    ax[0][0].legend()
+    ax[0][0].set_title(f'Maximum ghost displacement as a function of element {trans_type}')
+    ax[0][0].set_ylabel('Ghost spot displacement (mm)')
     if trans_type == 'rotation':
-        ax[0].set_xlabel('rotation angle (°)')
+        ax[0][0].set_xlabel('rotation angle (°)')
     elif trans_type == 'shift':
-        ax[0].set_xlabel('shift (m)')
+        ax[0][0].set_xlabel('shift (m)')
+    # Residuals and fit for x
+    x_residuals = np.array(x_interp_ys) - np.array(x_max_diff)
+    (x_mu, x_sigma) = stats.norm.fit(x_residuals)
+    x_n, x_bins, x_patches = ax[1][0].hist(x_residuals, bins=10, density=True)
+    x_bin_centers = 0.5 * (x_bins[1:] + x_bins[:-1])
+    x_y = stats.norm.pdf(x_bin_centers, x_mu, x_sigma)
+    ax[1][0].plot(x_bin_centers, x_y, 'r--', linewidth=2)
+    ax[1][0].set_title('Fit residuals (mm)')
 
-    # Residuals and fit
-    residuals = np.array(interp_ys) - np.array(x_max_diff)
-    (mu, sigma) = stats.norm.fit(residuals)
-    n, bins, patches = ax[1].hist(residuals, bins=10, density=True)
-    bin_centers = 0.5 * (bins[1:] + bins[:-1])
-    y = stats.norm.pdf(bin_centers, mu, sigma)
-    ax[1].plot(bin_centers, y, 'r--', linewidth=2)
-    ax[1].set_title('Fit residuals (mm)')
+    # plot for y
+    ax[0][1].plot(scan_values, y_max_diff, 'o', label='data')
+    y_interp_ys = [y_lin_fit.intercept + y_lin_fit.slope * x for x in scan_values]
+    ax[0][1].plot(scan_values, y_interp_ys, 'r', label='linear fit')
+    ax[0][1].legend()
+    ax[0][1].set_title(f'Maximum ghost displacement as a function of element {trans_type}')
+    ax[0][1].set_ylabel('Ghost spot displacement (mm)')
+    if trans_type == 'rotation':
+        ax[0][1].set_xlabel('rotation angle (°)')
+    elif trans_type == 'shift':
+        ax[0][1].set_xlabel('shift (m)')
+    # Residuals and fit for y
+    y_residuals = np.array(y_interp_ys) - np.array(y_max_diff)
+    (y_mu, y_sigma) = stats.norm.fit(y_residuals)
+    y_n, y_bins, y_patches = ax[1][1].hist(y_residuals, bins=10, density=True)
+    y_bin_centers = 0.5 * (y_bins[1:] + y_bins[:-1])
+    y_y = stats.norm.pdf(y_bin_centers, y_mu, y_sigma)
+    ax[1][1].plot(y_bin_centers, y_y, 'r--', linewidth=2)
+    ax[1][1].set_title('Fit residuals (mm)')
+
     plt.show()
     # return 0 if all is well
     return 0
