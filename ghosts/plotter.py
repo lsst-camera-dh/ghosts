@@ -324,19 +324,28 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
     print(f'Filter fit results: intercept = {y_lin_fit.intercept:.6f}, slope = {y_lin_fit.slope:.3f}')
 
     # Scatter plot with fit
-    plt.rcParams["figure.figsize"] = [18, 6]
+    plt.rcParams["figure.figsize"] = [18, 12]
     fig, ax = plt.subplots(2, 2)
+    # check if rotation or translation to get labels right
+    if trans_type == 'rotation':
+        x_label = 'rotation angle (°)'
+        insert_label = 'deg'
+        slope_factor = 1
+    elif trans_type == 'shift':
+        x_label = 'shift (m)'
+        insert_label = 'mm'
+        slope_factor = 1000
     # plot for x
     ax[0][0].plot(scan_values, x_max_diff, 'o', label='data')
     x_interp_ys = [x_lin_fit.intercept + x_lin_fit.slope * x for x in scan_values]
     ax[0][0].plot(scan_values, x_interp_ys, 'r', label='linear fit')
     ax[0][0].legend()
     ax[0][0].set_title(f'Maximum ghost displacement as a function of element {trans_type}')
+    ax[0][0].set_xlabel(x_label)
     ax[0][0].set_ylabel('Ghost spot displacement (mm)')
-    if trans_type == 'rotation':
-        ax[0][0].set_xlabel('rotation angle (°)')
-    elif trans_type == 'shift':
-        ax[0][0].set_xlabel('shift (m)')
+    ax[0][0].text(0.4, 0.9, f'slope = {x_lin_fit.slope/slope_factor:.1f} mm/{insert_label}', color='black', size=15,
+                  ha='center', va='center', transform=ax[0][0].transAxes)
+
     # Residuals and fit for x
     x_residuals = np.array(x_interp_ys) - np.array(x_max_diff)
     (x_mu, x_sigma) = stats.norm.fit(x_residuals)
@@ -352,11 +361,11 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
     ax[0][1].plot(scan_values, y_interp_ys, 'r', label='linear fit')
     ax[0][1].legend()
     ax[0][1].set_title(f'Maximum ghost displacement as a function of element {trans_type}')
+    ax[0][1].set_xlabel(x_label)
     ax[0][1].set_ylabel('Ghost spot displacement (mm)')
-    if trans_type == 'rotation':
-        ax[0][1].set_xlabel('rotation angle (°)')
-    elif trans_type == 'shift':
-        ax[0][1].set_xlabel('shift (m)')
+    ax[0][1].text(0.4, 0.9, f'slope = {y_lin_fit.slope/slope_factor:.1f} mm/{insert_label}', color='black', size=15,
+                  ha='center', va='center', transform=ax[0][1].transAxes)
+
     # Residuals and fit for y
     y_residuals = np.array(y_interp_ys) - np.array(y_max_diff)
     (y_mu, y_sigma) = stats.norm.fit(y_residuals)
