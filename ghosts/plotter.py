@@ -187,9 +187,6 @@ def plot_ghosts_map(forward_rays):
 def plot_spots_stats(data_frame):
     """ Plots overall ghosts image spots statistics
 
-    .. todo::
-        `plot_spots_stats` should also plots y coordinates
-
     Parameters
     ----------
     data_frame : `pandas.DataFrame`
@@ -203,19 +200,19 @@ def plot_spots_stats(data_frame):
         the list of `matplotlib` axis
     """
     plt.rcParams["figure.figsize"] = [24, 24]
-    fig, ax = plt.subplots(2, 2)
+    fig, ax = plt.subplots(2, 3)
     axs = ax.flatten()
-    for i, col in enumerate(['pos_x', 'radius']):
+    for i, col in enumerate(['pos_x', 'pos_y', 'radius']):
         axs[i].hist(data_frame[col] * 1000)
         axs[i].set_title(col, fontsize=22)
         axs[i].set_xlabel('%s (mm)' % col, fontsize=22)
 
-    axs[2].hist(data_frame['surface'])
-    axs[2].set_title('surface', fontsize=22)
-    axs[2].set_xlabel('spot surface (mm$^2$)', fontsize=22)
-    axs[3].hist(np.log10(data_frame['pixel_signal']))
-    axs[3].set_title('pixel signal', fontsize=22)
-    axs[3].set_xlabel('log10(signal) ($e^-$/pixel)', fontsize=22)
+    axs[i+1].hist(data_frame['surface'])
+    axs[i+1].set_title('surface', fontsize=22)
+    axs[i+1].set_xlabel('spot surface (mm$^2$)', fontsize=22)
+    axs[i+2].hist(np.log10(data_frame['pixel_signal']))
+    axs[i+2].set_title('pixel signal', fontsize=22)
+    axs[i+2].set_xlabel('log10(signal) ($e^-$/pixel)', fontsize=22)
     return fig, axs
 
 
