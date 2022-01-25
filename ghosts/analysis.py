@@ -4,6 +4,7 @@ import math
 import matplotlib.pyplot as plt
 from ghosts.tools import get_ranges
 from ghosts.beam import get_n_phot_for_power_nw_wl_nm
+from ghosts.beam_configs import BEAM_CONFIG_0
 from ghosts.constants import LSST_CAMERA_PIXEL_DENSITY_MM2, LSST_CAMERA_PIXEL_QE
 
 
@@ -192,11 +193,9 @@ def reduce_ghosts(r_forward):
     return spots_data, ghost_maps
 
 
-def make_data_frame(spots_data):
+def make_data_frame(spots_data, beam_config=BEAM_CONFIG_0):
     """ Create a pandas data frame from the ghost spots data dictionary
-
-        .. todo::
-            `make_data_frame` : beam config is hardcoded, it should be a parameter
+    and a beam configuration.
 
         Parameters
         ----------
@@ -210,10 +209,9 @@ def make_data_frame(spots_data):
     # creating a nice pandas data frame
     data_frame = pd.DataFrame(
         {
-            "config": 0,
-            "n_photons": 1000,
-            "beam_x": 0.1, "beam_y": 0.,
-            "beam_theta": 0., "beam_phi": 0.,
+            "config": beam_config['id'], "n_photons": beam_config["n_photons"],
+            "beam_x": beam_config["x_offset"], "beam_y": beam_config["y_offset"], "beam_width": beam_config["radius"],
+            "beam_theta": beam_config['theta'], "beam_phi": beam_config['phi'],
             "index": np.array([data['index'] for data in spots_data], dtype="int"),
             "name": [data['name'] for data in spots_data],
             "pos_x": np.array([data['pos_x'] for data in spots_data], dtype="float"),
