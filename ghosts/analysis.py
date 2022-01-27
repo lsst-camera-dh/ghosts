@@ -136,7 +136,7 @@ def get_ghost_spot_data(i, ghost, p=100, wl=500):
     ghost_spot_data = {'index': i, 'name': ghost_name,
                        'pos_x': mean_x, 'width_x': x_width,
                        'pos_y': mean_y, 'width_y': y_width,
-                       'radius' : radius,
+                       'radius': radius,
                        'surface': spot_surface_mm2, 'pixel_signal': n_e_pixel,
                        'photon_density': density_phot_mm2}
 
@@ -197,14 +197,14 @@ def make_data_frame(spots_data, beam_config=BEAM_CONFIG_0):
     """ Create a pandas data frame from the ghost spots data dictionary
     and a beam configuration.
 
-        Parameters
-        ----------
-        spots_data : `dict`
-            a dictionary with ghost spots data
-        Returns
-        -------
-        data_frame : `pandas.DataFrame`
-            a pandas data frame with ghost spot data information, including beam configuration
+    Parameters
+    ----------
+    spots_data : `dict`
+        a dictionary with ghost spots data
+    Returns
+    -------
+    data_frame : `pandas.DataFrame`
+        a pandas data frame with ghost spot data information, including beam configuration
     """
     # creating a nice pandas data frame
     data_frame = pd.DataFrame(
@@ -229,14 +229,14 @@ def make_data_frame(spots_data, beam_config=BEAM_CONFIG_0):
 def compute_ghost_separations(data_frame):
     """ Compute ghosts images separations and various ratios from a ghosts spot data frame
 
-        Parameters
-        ----------
-        data_frame : `pandas.DataFrame`
-            a ghost spots data frame
-        Returns
-        -------
-        data_frame : `pandas.DataFrame`
-            a pandas data frame with information on ghost spots data separations and ratios
+    Parameters
+    ----------
+    data_frame : `pandas.DataFrame`
+        a ghost spots data frame
+    Returns
+    -------
+    data_frame : `pandas.DataFrame`
+        a pandas data frame with information on ghost spots data separations and ratios
     """
     # computing distances ghost to ghost, and ghosts overlap
     dist_data = list()
@@ -272,3 +272,104 @@ def compute_ghost_separations(data_frame):
         }
     )
     return ghosts_separation
+
+
+def compute_distance_spot_to_spot(df_slice_1, df_slice_2):
+    """ Compute a simple geometric euclidian distance between 2 ghosts spots centers
+
+    Parameters
+    ----------
+    df_slice_1 : `pandas.DataFrame`
+        a ghost spots data frame slice, with one line corresponding to one ghost
+    df_slice_2 : `pandas.DataFrame`
+        a ghost spots data frame slice, with one line corresponding to one ghost
+
+    Returns
+    -------
+    distance : `float`
+        the distance between 2 spots
+    """
+    distance = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y']],
+                         [df_slice_2['pos_x'], df_slice_2['pos_y']])
+    return distance
+
+
+def find_nearest_ghost(ghost_slice, ghosts_df):
+    """ Find the nearest ghost spot to a given ghost spot
+
+    Parameters
+    ----------
+    ghost_slice : `pandas.DataFrame`
+        a ghost spots data frame slice, with one line corresponding to one ghost
+    ghosts_df : `pandas.DataFrame`
+        a pandas data frame with information on ghost spots data separations and ratios
+
+    Returns
+    -------
+    index_of_min : `int`
+        the index in the data frame of the nearest ghost
+    min_distance : `float`
+        distance of the given ghost spot to the nearest ghost spot
+    """
+    dist_data = list()
+    n = len(ghosts_df['pos_x'])
+    for i in range(n):
+        dist_data.append(compute_distance_spot_to_spot(ghost_slice, ghosts_df.xs(i)))
+    dist_array = np.array(dist_data)
+    index_of_min = np.argmin(dist_array)
+    min_distance = dist_array[index_of_min]
+    return index_of_min, min_distance
+
+
+def match_ghosts(ghosts_df_1, ghosts_df_2):
+    """ Match ghosts positions from two ghosts data frames
+
+    Parameters
+    ----------
+    ghosts_df_1 : `pandas.DataFrame`
+        a pandas data frame with information on ghost spots data separations and ratios
+    ghosts_df_2 : `pandas.DataFrame`
+        a pandas data frame with information on ghost spots data separations and ratios
+
+    Returns
+    -------
+    ghosts_match : `pandas.DataFrame`
+        a pandas data frame with the indices of each ghost and nearest ghost, and the distance between the two
+    """
+    match_i1 = list()
+    match_i2 = list()
+    match_min_dist = list()
+
+    n = len(ghosts_df_1['pos_x'])
+    for i in range(n):
+        index_of_min, min_distance = find_nearest_ghost(ghosts_df_1.xs(i), ghosts_df_2)
+        match_i1.append(i)
+        match_i2.append(index_of_min)
+        match_min_dist.append(min_distance)
+
+    ghosts_match = pd.DataFrame(
+        {
+            "ghost_1": np.array(match_i1, dtype="int"),
+            "ghost_2": np.array(match_i2, dtype="int"),
+            "distance": np.array(match_min_dist, dtype="float"),
+        }
+    )
+    return ghosts_match
+
+
+def compute_reduced_distance(ghosts_match):
+    """ Compute a kind of reduced distance between two lists of ghosts
+
+    Parameters
+    ----------
+    ghosts_match : `pandas.DataFrame`
+        a data frame with information about matching ghosts spots, see `match_ghosts`
+
+    Returns
+    -------
+    reduced_distance : `float`
+        a reduced distance computed as the average of the squared input distances
+    """
+    n_matches = len(ghosts_match['distance'])
+    reduced_distance = sum(ghosts_match['distance']*ghosts_match['distance'])/n_matches
+    return reduced_distance
