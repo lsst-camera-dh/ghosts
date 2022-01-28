@@ -378,3 +378,38 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
     plt.show()
     # return 0 if all is well
     return 0
+
+
+def plot_spots(data_frame_list, spot_size_scaling=10, range_x=(-0.35, 0.35), range_y=(-0.35, 0.35)):
+    """ Plot spots positions and size from a list of data frames
+
+    Each data frame has a different marker color.
+
+    Parameters
+    ----------
+    data_frame_list : `list` of `pandas.dataframe`
+        a list of data frame with spots positions and radius, e.g. from `make_data_frame`
+    spot_size_scaling : `int`
+        a scaling factor to see large or small circles
+    range_x : `tuple` of `floats`
+        min and max of the x axis in meters, default is full camera
+    range_y : `tuple` of `floats`
+        min and max of the y axis in meters, default is full camera
+    Returns
+    -------
+    fig: `matplotlib.Figure`
+        the figure object
+    ax: `matplotlib.Axis`
+        the axis object
+    """
+    plt.rcParams["figure.figsize"] = [12, 12]
+    fig, ax = plt.subplots(1, 1)
+    colors = ['black', 'r', 'b', 'g', 'c', 'm', 'y', 'k']
+    for df, color in zip(data_frame_list, colors):
+        spots_x = df['pos_x']
+        spots_y = df['pos_y']
+        spots_size = ((df['radius'] * 1000) ** 2) * spot_size_scaling
+        ax.scatter(spots_x, spots_y, s=spots_size, facecolors='none', edgecolors=color)
+    ax.set_xlim(range_x)
+    ax.set_ylim(range_y)
+    return fig, ax
