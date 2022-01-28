@@ -368,8 +368,8 @@ def compute_reduced_distance(ghosts_match):
     Returns
     -------
     reduced_distance : `float`
-        a reduced distance computed as the average of the squared input distances
+        a reduced distance computed as the average of the square root of the sum of squared input distances
     """
     n_matches = len(ghosts_match['distance'])
-    reduced_distance = sum(ghosts_match['distance']*ghosts_match['distance'])/n_matches
+    reduced_distance = math.sqrt(sum(ghosts_match['distance']*ghosts_match['distance']))/n_matches
     return reduced_distance
