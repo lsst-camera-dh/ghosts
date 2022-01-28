@@ -9,6 +9,9 @@ BEAM_CONFIG_1 = copy(BEAM_CONFIG_0)
 BEAM_CONFIG_1['id'] = 1
 BEAM_CONFIG_1['x_offset'] = 0.1
 
+FAST_BEAM_CONFIG_1 = copy(BEAM_CONFIG_1)
+FAST_BEAM_CONFIG_1['n_photons'] = 10
+
 BEAM_CONFIG_2 = copy(BEAM_CONFIG_0)
 BEAM_CONFIG_2['id'] = 2
 BEAM_CONFIG_2['y_offset'] = 0.1
