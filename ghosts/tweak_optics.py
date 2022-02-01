@@ -280,11 +280,11 @@ def randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=Fals
     optics_names = ['L1', 'L2', 'L3', 'Filter']  # get_list_of_optics(telescope)
     # rotations
     for optic in optics_names:
-        rnd_euler_angles = max_angle * (2 * np.random.random([3]) - 1)
+        rnd_euler_angles = max_angle * 2 * (np.random.random([3]) - 0.5)
         rnd_telescope = rotate_optic_vector(rnd_telescope, name=optic, angles=rnd_euler_angles, verbose=verbose)
     # translations
     for optic in optics_names:
-        rnd_shifts = max_shift * (2 * np.random.random([3]) - 1)
+        rnd_shifts = max_shift * 2 * (np.random.random([3]) - 0.5)
         rnd_telescope = translate_optic_vector(rnd_telescope, name=optic, shifts=rnd_shifts)
     return rnd_telescope
 
