@@ -4,3 +4,7 @@ matplotlib
 scipy
 pandas
 openpyxl
+pyyaml
+jupyter
+sphinx
+sphinx_rtd_theme

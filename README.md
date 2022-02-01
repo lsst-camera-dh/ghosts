@@ -7,10 +7,12 @@ Read documentation on ReadTheDocs: [latest](https://ghosts.readthedocs.io/en/lat
 ## Install
 ### conda, then pip
 ```
-> conda env create -f environment.yml
-> conda activate combined_fit
 > git clone https://github.com/bregeon/ghosts.git
+or
+> git clone git@github.com:bregeon/ghosts.git
 > cd ghosts
+> conda env create -f environment.yml
+> conda activate ghosts
 > pip install -r requirements.txt
 > pip install -e .
 ```
@@ -18,9 +20,11 @@ Read documentation on ReadTheDocs: [latest](https://ghosts.readthedocs.io/en/lat
 ### pip only
 ```
 > conda create -n my_ghosts_env python=3.9
-> pip install -r requirements.txt
 > git clone https://github.com/bregeon/ghosts.git
+or
+> git clone git@github.com:bregeon/ghosts.git
 > cd ghosts
+> pip install -r requirements.txt
 > pip install -e .
 ```
 
