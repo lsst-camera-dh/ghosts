@@ -26,10 +26,10 @@ It shall take care of the `batoid` dependency cleanly.
 
 .. code-block:: bash
 
-    conda env create -f environment.yml
-    conda activate combined_fit
     git clone https://github.com/bregeon/ghosts.git
     cd ghosts
+    conda env create -f environment.yml
+    conda activate ghosts
     pip install -r requirements.txt
     pip install -e .
 
