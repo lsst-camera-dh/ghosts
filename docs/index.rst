@@ -68,5 +68,6 @@ Documentation Contents
 
     install
     ghosts
+    analysis
     todo_list
    
