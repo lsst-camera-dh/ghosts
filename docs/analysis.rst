@@ -103,8 +103,9 @@ A couple of notes:
 - the beam spots id and names will have a real meaning only for the simulations.
 - the number of beam spots will depend upon the image analysis and will not always be 37 or 36.
 
+
 distance / likelihood
-==========
+=====================
 For each beam configuration, we have data taking on one side, that is reduced to a list of characterized beam spot.
 On the other side, we produce simulations with the same beam configuration and different possible alignment constants.
 
@@ -113,13 +114,15 @@ The `distance` between to sets of beam spots can be defined in different ways, h
 - let's consider 2 sets of beam spots: :math:`S_r, S_s`, composed of :math:`n, m` ghosts spots as :math:`[g_{r,1}, g_{r,2}, ..., g_{r,n}]` and :math:`[g_{s,1}, g_{s,2}, ..., g_{s,m}]`
 - ghost spot :math:`g_{r,i}` has parameters :math:`[x_{r, i}, y_{r, i}, d_{r, i}, p_{r, i}]` for position in x and y, radius and intensity.
 - the Euclidean distance between 2 ghosts spots is defined as:
-.. math::
-    d(g_{r,j}, g_{s,i}) = \sqrt{(x_{s, i} - x_{r, j})^2 + (y_{s, j} - y_{r, j})^2}
+    .. math::
+        d(g_{r,j}, g_{s,i}) = \sqrt{(x_{s, i} - x_{r, j})^2 + (y_{s, j} - y_{r, j})^2}
 - with the distances spot to spot between the 2 lists :math:`(g_{r,j 1..m}, g_{s,i 1..n})`, one can them associate each spot in the :math:`S_s` set with the closest spot in the :math:`S_r` set.
-- the reduced distance between 2 sets of ghosts spots may then be defined as:
-.. math::
-    L = \frac{\sqrt{\sum_{i=1,n} d(g_{s,i}, g_{r,k})^2}}{n}
+- we note :math:`g_{r,k_i}` the closest ghost spot in :math:`S_r` to the ghost spot :math:`g_{s,i}` in :math:`S_s`.
+- the reduced distance between 2 sets of ghosts spots may then be defined as follow:
+    .. math::
+        L = \frac{\sqrt{\sum_{i=1}^{n} d(g_{s,i}, g_{r,k_i})^2}}{n}
 - if 2 sets of beam spots are the same :math:`L=0`, and if they are really close then :math:`L` should be small.
+
 
 A couple of additional notes:
 
@@ -127,12 +130,23 @@ A couple of additional notes:
 - the distance probably should probably take into account the spot radius as well, it should improve the spot to spot matching.
 - the distance could potentially also take the intensity of the spot into account, but AB said uncertainties were really large (coating).
 
+
 method
 ======
 In principle, minimizing the distance :math:`L` should lead to finding the alignment constant that best match the data analyzed.
+Each simulation with a given beam configuration and telescope geometry produces a list of beam spots for which we can compute the distance `L` to the reference data.:math:`L`
+
+The point is how to run this minimization process:  usual minizer, MCMC, other?
+
+Without any optimization, each simulation takes a bunch of seconds to run:
+- is that too much time?
+- is there no hope, even with 100 times faster simulations?
+- is the phase space too large, and should be break into pieces, fitting the simples spots first?
+- shall I run many simulations in advance to have a bank to take these from instead of running these on the fly?
+
 
 Full Images
-------
+-----------
 
 image analysis
 ==============
