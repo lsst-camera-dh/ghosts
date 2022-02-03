@@ -8,8 +8,8 @@ Goals and algorithms overview
 
 The goal of the analysis is to find out the full set of alignment constants of the whole system that is composed of the
 following elements: L1, L2, L3, Filter and Detector plane.
-Each of these has a position :math:`($x$, $y$ , $z$)` and rotations as Euler angles
-:math:`($\theta$, $\phi$, $\psi$)`.
+Each of these has a position :math:`(x, y , z)` and rotations as Euler angles
+:math:`(\theta, \phi, \psi)`.
 One should also consider the beam position and rotation angles but I'll leave that out for now.
 
 The number of parameters to constrain is hence :math:`6\times6 = 36`, that is quite large!
@@ -99,7 +99,6 @@ For each beam configuration (simulated or data taking), the image analysis produ
      - :math:`0.2\times10^{-4}`
 
 A couple of notes:
-
 - the beam spots id and names will have a real meaning only for the simulations.
 - the number of beam spots will depend upon the image analysis and will not always be 37 or 36.
 
