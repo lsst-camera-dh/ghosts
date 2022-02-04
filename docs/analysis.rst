@@ -99,6 +99,7 @@ For each beam configuration (simulated or data taking), the image analysis produ
      - :math:`0.2\times10^{-4}`
 
 A couple of notes:
+
 - the beam spots id and names will have a real meaning only for the simulations.
 - the number of beam spots will depend upon the image analysis and will not always be 37 or 36.
 
@@ -138,6 +139,7 @@ Each simulation with a given beam configuration and telescope geometry produces 
 The point is how to run this minimization process:  usual minizer, MCMC, other?
 
 Without any optimization, each simulation takes a bunch of seconds to run:
+
 - is that too much time?
 - is there no hope, even with 100 times faster simulations?
 - is the phase space too large, and should be break into pieces, fitting the simples spots first?
@@ -146,17 +148,45 @@ Without any optimization, each simulation takes a bunch of seconds to run:
 
 Full Images
 -----------
+An alternative method to run this analysis would be to work directly with full images.
+Indeed, assuming that we can produce simulations that are closed enough to real data, the `distance` between simulated and real data could be just the quadratic difference pixel per pixel.
 
 image analysis
 ==============
+The image analysis is somewhat simpler as all is needed is:
+
+- cleaned images from the data taking, i.e. flat and noiseless. It's to be understood if we want just signal or signal to noise ration, or something else.
+- very realistic simulations and simulated images, treated in the same way as real images.
+    + It probably requires to implement some electronic response and a real focal plane with rafts and amps.
+
+In order to subtract images pixel by pixel properly, they also have to be aligned in some way with respect to some reference point on the focal plane.
 
 
 parameters
 ==========
+The number of parameters is basically the number of pixels, the one with no signal counting almost as the one with beam signal.
 
-pixels
+Images might be down sample from the original number of pixel to some more manageable number for fast computations and reduced data size.
 
-likelihood
-==========
+distance / likelihood
+=====================
+The `distance` between 2 images is just defined as the reduced quadratic difference.
 
-:math:`\frac{ \sum_{t=0}^{N}f(t,k) }{N}`
+For an image with :math:`n` pixel, i'ts just:
+    .. math::
+        L = \frac{\sqrt{\sum_{i=1}^{n} (S_i_s - S_i_r)^2}}{n}
+where :math:`S_i_s` is the signal in the :math:`i^{th}` pixel of the simulated image,
+and  :math:`S_i_r` is the signal in the :math:`i^{th}` pixel of the real data image.
+
+And one should divide the signal by some error.
+
+method
+======
+Minimizing :math:`L` should lead to find the correct parameters.
+
+The main issue here is to have simulations that match data really well:
+    - the real data image must be really clean
+    - the simulation model must be much more advanced
+
+Some intermediate procedure could be to find spots in real data and make a real data "model" that would be easier to match with the simulated images.
+
