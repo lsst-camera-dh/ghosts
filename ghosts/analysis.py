@@ -229,6 +229,9 @@ def make_data_frame(spots_data, beam_config=BEAM_CONFIG_0):
 def compute_ghost_separations(data_frame):
     """ Compute ghosts images separations and various ratios from a ghosts spot data frame
 
+    .. todo::
+        `compute_ghost_separations` remove main image from the distance since it's saturated in data.
+
     Parameters
     ----------
     data_frame : `pandas.DataFrame`

@@ -37,13 +37,13 @@ into HDF5 files.
 3. 'HDF5' might be used to store images and pandas data frame
 
 Quick examples
-==============
+--------------
 
 Here are some very quick high-level examples.
 
 
 Optical setup
--------------
+=============
 
 Build and visualize the camera elements
 
@@ -67,6 +67,8 @@ Documentation Contents
     :maxdepth: 3
 
     install
+    quick_start
+    analysis
     ghosts
     todo_list
    
