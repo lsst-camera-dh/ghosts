@@ -133,7 +133,7 @@ A couple of additional notes:
 method
 ======
 In principle, minimizing the distance :math:`L` should lead to finding the alignment constant that best match the data analyzed.
-Each simulation with a given beam configuration and telescope geometry produces a list of beam spots for which we can compute the distance `L` to the reference data.:math:`L`
+Each simulation with a given beam configuration and telescope geometry produces a list of beam spots for which we can compute the distance :math:`L` to the reference data.
 
 The point is how to run this minimization process:  usual minizer, MCMC, other?
 
