@@ -185,8 +185,9 @@ method
 Minimizing :math:`L` should lead to find the correct parameters.
 
 The main issue here is to have simulations that match data really well:
-    - the real data image must be really clean
-    - the simulation model must be much more advanced
+
+- the real data image must be really clean
+- the simulation model must be much more advanced
 
 Some intermediate procedure could be to find spots in real data and make a real data "model" that would be easier to match with the simulated images.
 
