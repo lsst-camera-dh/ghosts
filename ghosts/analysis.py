@@ -79,10 +79,12 @@ def get_ghost_stats(ghost):
 
     Returns
     -------
-    mean_x, mean_y, x_width, y_width : `floats`
-        spot position and width in x and y
-    radius : `float`
-        beam spot radius from x and y widths
+    mean_x, std_x, mean_y, std_y : `floats`
+        spot position with uncertainty as standard deviation in x and y
+    x_width, y_width : `floats`
+        spot width in x and y
+    radius, radius_err : `float`
+        beam spot radius from x and y widths, and an estimator of the uncertainty
     weights_sum : `float`
         total flux as computed by batoid `flux.sum()`
     mean_intensity : `float`
@@ -93,16 +95,20 @@ def get_ghost_stats(ghost):
         density of photons per :math:`mm^2`, for one simulated photon, as the `mean_intensity`/`spot_surface_mm2`
     """
     mean_x = ghost.x.mean()
+    std_x = ghost.x.std()
     mean_y = ghost.y.mean()
+    std_y = ghost.x.std()
     x_width = ghost.x.max() - ghost.x.min()
     y_width = ghost.y.max() - ghost.y.min()
     radius = (x_width + y_width) / 2.  # simple mean
+    radius_err = math.fabs(x_width - y_width)/2.
     weights_sum = ghost.flux.sum()
     mean_intensity = weights_sum / len(ghost.x)
     spot_surface_mm2 = math.pi * (radius * 1000.) * (radius * 1000.)
     density_phot_mm2 = mean_intensity / spot_surface_mm2
 
-    return mean_x, mean_y, x_width, y_width, radius, weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2
+    return mean_x, std_x, mean_y, std_y, x_width, y_width, radius, radius_err, \
+        weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2
 
 
 def get_ghost_spot_data(i, ghost, p=100, wl=500):
@@ -131,16 +137,16 @@ def get_ghost_spot_data(i, ghost, p=100, wl=500):
     # identify ghost
     ghost_name = get_ghost_name(ghost)
     # normalized stats
-    mean_x, mean_y, x_width, y_width, radius, weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2 = \
-        get_ghost_stats(ghost)
+    mean_x, std_x, mean_y, std_y, x_width, y_width, radius, radius_err, \
+        weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2 = get_ghost_stats(ghost)
     # number of photons for 100 nW at 500 nm
     n_phot_total = get_n_phot_for_power_nw_wl_nm(p, wl)
     n_e_pixel = density_phot_mm2 / LSST_CAMERA_PIXEL_DENSITY_MM2 * n_phot_total * LSST_CAMERA_PIXEL_QE
 
     ghost_spot_data = {'index': i, 'name': ghost_name,
-                       'pos_x': mean_x, 'width_x': x_width,
-                       'pos_y': mean_y, 'width_y': y_width,
-                       'radius': radius,
+                       'pos_x': mean_x, 'std_x': std_x, 'width_x': x_width,
+                       'pos_y': mean_y, 'std_y': std_y, 'width_y': y_width,
+                       'radius': radius, 'radius_err': radius_err,
                        'surface': spot_surface_mm2, 'pixel_signal': n_e_pixel,
                        'photon_density': density_phot_mm2}
 
@@ -227,10 +233,13 @@ def make_data_frame(spots_data, beam_config=BEAM_CONFIG_0):
             "index": np.array([data['index'] for data in spots_data], dtype="int"),
             "name": [data['name'] for data in spots_data],
             "pos_x": np.array([data['pos_x'] for data in spots_data], dtype="float"),
+            "std_x": np.array([data['std_x'] for data in spots_data], dtype="float"),
             "pos_y": np.array([data['pos_y'] for data in spots_data], dtype="float"),
+            "std_y": np.array([data['std_y'] for data in spots_data], dtype="float"),
             "width_x": np.array([data['width_x'] for data in spots_data], dtype="float"),
             "width_y": np.array([data['width_y'] for data in spots_data], dtype="float"),
             "radius": np.array([data['radius'] for data in spots_data], dtype="float"),
+            "radius_err": np.array([data['radius_err'] for data in spots_data], dtype="float"),
             "surface": np.array([data['surface'] for data in spots_data], dtype="float"),
             "pixel_signal": np.array([data['pixel_signal'] for data in spots_data], dtype="float"),
         }
@@ -290,7 +299,8 @@ def compute_ghost_separations(data_frame):
 
 
 def compute_distance_spot_to_spot(df_slice_1, df_slice_2):
-    """ Compute a simple geometric Euclidean distance between 2 ghosts spots centers
+    """ Compute a 3D geometric distance between 2 ghosts spots centers, considering the spot radius
+    as the 3rd dimension.
 
     Parameters
     ----------
@@ -303,14 +313,29 @@ def compute_distance_spot_to_spot(df_slice_1, df_slice_2):
     -------
     distance : `float`
         the distance between 2 spots
+    dist_err : `float`
+        the error on that distance from the std error on the position centers and radius
     """
-    distance = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y']],
-                         [df_slice_2['pos_x'], df_slice_2['pos_y']])
-    return distance
+    dist_2d = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y']],
+                        [df_slice_2['pos_x'], df_slice_2['pos_y']])
+    d1_2d_sq = df_slice_1['std_x'] * df_slice_1['std_x'] + df_slice_1['std_y'] * df_slice_1['std_y']
+    d2_2d_sq = df_slice_2['std_x'] * df_slice_2['std_x'] + df_slice_2['std_y'] * df_slice_2['std_y']
+    dist_2d_err = math.sqrt(d1_2d_sq + d2_2d_sq)
+
+    dist_3d = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y'], df_slice_1['radius']],
+                        [df_slice_2['pos_x'], df_slice_2['pos_y'], df_slice_2['radius']])
+    d1_3d_sq = df_slice_1['std_x'] * df_slice_1['std_x'] + df_slice_1['std_y'] * df_slice_1['std_y']\
+        + df_slice_1['radius_err'] * df_slice_1['radius_err']
+    d2_3d_sq = df_slice_2['std_x'] * df_slice_2['std_x'] + df_slice_2['std_y'] * df_slice_2['std_y']\
+        + df_slice_2['radius_err'] * df_slice_2['radius_err']
+    dist_3d_err = math.sqrt(d1_3d_sq + d2_3d_sq)
+    return dist_2d, dist_2d_err, dist_3d, dist_3d_err
 
 
 def find_nearest_ghost(ghost_slice, ghosts_df):
-    """ Find the nearest ghost spot to a given ghost spot
+    """ Find the nearest ghost spot to a given ghost spot and report its distance with its error
+
+    This is done using both the 2D and 3D distances.
 
     Parameters
     ----------
@@ -325,15 +350,33 @@ def find_nearest_ghost(ghost_slice, ghosts_df):
         the index in the data frame of the nearest ghost
     min_distance : `float`
         distance of the given ghost spot to the nearest ghost spot
+    min_distance_err : `float`
+        the uncertainty on the distance with the nearest ghost spot
     """
-    dist_data = list()
+    dist_2d_data = list()
+    dist_2d_err_data = list()
+    dist_3d_data = list()
+    dist_3d_err_data = list()
     n = len(ghosts_df['pos_x'])
     for i in range(n):
-        dist_data.append(compute_distance_spot_to_spot(ghost_slice, ghosts_df.xs(i)))
-    dist_array = np.array(dist_data)
-    index_of_min = np.argmin(dist_array)
-    min_distance = dist_array[index_of_min]
-    return index_of_min, min_distance
+        dist_2d, dist_2d_err, dist_3d, dist_3d_err = compute_distance_spot_to_spot(ghost_slice, ghosts_df.xs(i))
+        dist_2d_data.append(dist_2d)
+        dist_2d_err_data.append(dist_2d_err)
+        dist_3d_data.append(dist_3d)
+        dist_3d_err_data.append(dist_3d_err)
+
+    dist_2d_array = np.array(dist_2d_data)
+    index_of_min_2d = np.argmin(dist_2d_array)
+    min_distance_2d = dist_2d_array[index_of_min_2d]
+    min_distance_2d_err = dist_2d_err_data[index_of_min_2d]
+
+    dist_3d_array = np.array(dist_3d_data)
+    index_of_min_3d = np.argmin(dist_3d_array)
+    min_distance_3d = dist_3d_array[index_of_min_3d]
+    min_distance_3d_err = dist_3d_err_data[index_of_min_3d]
+
+    return index_of_min_2d, min_distance_2d, min_distance_2d_err,\
+        index_of_min_3d, min_distance_3d, min_distance_3d_err
 
 
 def match_ghosts(ghosts_df_1, ghosts_df_2):
@@ -352,21 +395,36 @@ def match_ghosts(ghosts_df_1, ghosts_df_2):
         a `pandas` data frame with the indices of each ghost and nearest ghost, and the distance between the two
     """
     match_i1 = list()
-    match_i2 = list()
-    match_min_dist = list()
+    match_i2_2d = list()
+    match_i2_3d = list()
+    match_min_dist_2d = list()
+    match_min_dist_3d = list()
+    match_min_dist_2d_err = list()
+    match_min_dist_3d_err = list()
 
     n = len(ghosts_df_1['pos_x'])
     for i in range(n):
-        index_of_min, min_distance = find_nearest_ghost(ghosts_df_1.xs(i), ghosts_df_2)
+        index_of_min_2d, min_distance_2d, min_distance_2d_err, \
+            index_of_min_3d, min_distance_3d, min_distance_3d_err = find_nearest_ghost(ghosts_df_1.xs(i), ghosts_df_2)
         match_i1.append(i)
-        match_i2.append(index_of_min)
-        match_min_dist.append(min_distance)
+        # 2D distance
+        match_i2_2d.append(index_of_min_2d)
+        match_min_dist_2d.append(min_distance_2d)
+        match_min_dist_2d_err.append(min_distance_2d_err)
+        # 3D distance
+        match_i2_3d.append(index_of_min_3d)
+        match_min_dist_3d.append(min_distance_3d)
+        match_min_dist_3d_err.append(min_distance_3d_err)
 
     ghosts_match = pd.DataFrame(
         {
             "ghost_1": np.array(match_i1, dtype="int"),
-            "ghost_2": np.array(match_i2, dtype="int"),
-            "distance": np.array(match_min_dist, dtype="float"),
+            "ghost_2_2d": np.array(match_i2_2d, dtype="int"),
+            "distance_2d": np.array(match_min_dist_2d, dtype="float"),
+            "distance_2d_err": np.array(match_min_dist_2d_err, dtype="float"),
+            "ghost_2_3d": np.array(match_i2_3d, dtype="int"),
+            "distance_3d": np.array(match_min_dist_3d, dtype="float"),
+            "distance_3d_err": np.array(match_min_dist_3d_err, dtype="float"),
         }
     )
     return ghosts_match
@@ -374,6 +432,9 @@ def match_ghosts(ghosts_df_1, ghosts_df_2):
 
 def compute_reduced_distance(ghosts_match):
     """ Compute a kind of reduced distance between two lists of ghosts
+
+    .. math::
+        L = \\frac{\\sqrt{\\sum_{i=1}^{n} \\frac{d(g_{s,i}, g_{r,k_i})^2}{\\sigma_d(g_{s,i}, g_{r,k_i})^2}}}{n}
 
     Parameters
     ----------
@@ -383,8 +444,30 @@ def compute_reduced_distance(ghosts_match):
     Returns
     -------
     reduced_distance : `float`
-        a reduced distance computed as the average of the square root of the sum of squared input distances
+        a reduced distance computed as the average of the square root of the sum of squared input distances divided
+        by the square of the errors on the distance.
     """
-    n_matches = len(ghosts_match['distance'])
-    reduced_distance = math.sqrt(sum(ghosts_match['distance']*ghosts_match['distance']))/n_matches
+    n_matches = len(ghosts_match['distance_3d'])
+    reduced_distance = math.sqrt(sum(ghosts_match['distance_3d']*ghosts_match['distance_3d'] /
+                                     ghosts_match['distance_3d_err']*ghosts_match['distance_3d_err']))/n_matches
+    return reduced_distance
+
+
+def compute_2d_reduced_distance(ghosts_match):
+    """ Compute a simple 2D reduced distance between two lists of ghosts
+
+    Parameters
+    ----------
+    ghosts_match : `pandas.DataFrame`
+        a data frame with information about matching ghosts spots, see `match_ghosts`
+
+    Returns
+    -------
+    reduced_distance : `float`
+        a reduced distance computed as the average of the square root of the sum of squared input distances divided
+
+    """
+    n_matches = len(ghosts_match['distance_2d'])
+    reduced_distance = math.sqrt(sum(ghosts_match['distance_2d']*ghosts_match['distance_2d'] /
+                                     ghosts_match['distance_2d_err']*ghosts_match['distance_2d_err']))/n_matches
     return reduced_distance
