@@ -44,6 +44,8 @@ def get_ghost_name(ghost, debug=False):
     ----------
     ghost : `batoid.RayVector`
         a batoid RayVector with a bunch of rays propagated through the system.
+    debug : `bool`
+        debug mode or not
 
     Returns
     -------
@@ -68,7 +70,7 @@ def get_ghost_stats(ghost):
     """ Compute some basic stats for a simulated ghost spot image
 
     .. todo::
-        `get_ghost_stats` is likely not working for real image analysis
+        `get_ghost_stats` is only working on simulated images for now
 
     Parameters
     ----------
@@ -111,6 +113,8 @@ def get_ghost_spot_data(i, ghost, p=100, wl=500):
 
     Parameters
     ----------
+    i : `int`
+        the ghost index, useful really only on simulated data
     ghost : `batoid.RayVector`
         a batoid RayVector with a bunch of rays propagated through the system.
     p : `float`
@@ -150,7 +154,12 @@ def map_ghost(ghost, ax, n_bins=100, dr=0.01):
     ----------
     ghost : `batoid.RayVector`
         a batoid RayVector with a bunch of rays propagated through the system.
-
+    ax : `matplotlib.axis`
+        an axis object to draw the histogram
+    n_bins : `int`
+        the number of bins of the histogram, that is also the number of "pixel" of the "image"
+    dr : `float`
+        the extra space around the ghost spot image, to get nice axis ranges
     Returns
     -------
     ghost_map : `matplotlib.axis.hexbin`
@@ -158,7 +167,7 @@ def map_ghost(ghost, ax, n_bins=100, dr=0.01):
     """
     # bin data
     ghost_map = ax.hexbin(ghost.x, ghost.y, C=ghost.flux, reduce_C_function=np.sum,
-                   gridsize=n_bins, extent=get_ranges(ghost.x, ghost.y, dr))
+                          gridsize=n_bins, extent=get_ranges(ghost.x, ghost.y, dr))
 
     return ghost_map
 
@@ -201,6 +210,9 @@ def make_data_frame(spots_data, beam_config=BEAM_CONFIG_0):
     ----------
     spots_data : `dict`
         a dictionary with ghost spots data
+    beam_config : `dict`
+        a beam configuration dictionary
+
     Returns
     -------
     data_frame : `pandas.DataFrame`
@@ -278,7 +290,7 @@ def compute_ghost_separations(data_frame):
 
 
 def compute_distance_spot_to_spot(df_slice_1, df_slice_2):
-    """ Compute a simple geometric euclidian distance between 2 ghosts spots centers
+    """ Compute a simple geometric Euclidean distance between 2 ghosts spots centers
 
     Parameters
     ----------
@@ -305,7 +317,7 @@ def find_nearest_ghost(ghost_slice, ghosts_df):
     ghost_slice : `pandas.DataFrame`
         a ghost spots data frame slice, with one line corresponding to one ghost
     ghosts_df : `pandas.DataFrame`
-        a pandas data frame with information on ghost spots data separations and ratios
+        a `pandas` data frame with information on ghost spots data separations and ratios
 
     Returns
     -------
@@ -330,14 +342,14 @@ def match_ghosts(ghosts_df_1, ghosts_df_2):
     Parameters
     ----------
     ghosts_df_1 : `pandas.DataFrame`
-        a pandas data frame with information on ghost spots data separations and ratios
+        a `pandas` data frame with information on ghost spots data separations and ratios
     ghosts_df_2 : `pandas.DataFrame`
-        a pandas data frame with information on ghost spots data separations and ratios
+        a `pandas` data frame with information on ghost spots data separations and ratios
 
     Returns
     -------
     ghosts_match : `pandas.DataFrame`
-        a pandas data frame with the indices of each ghost and nearest ghost, and the distance between the two
+        a `pandas` data frame with the indices of each ghost and nearest ghost, and the distance between the two
     """
     match_i1 = list()
     match_i2 = list()
