@@ -172,11 +172,12 @@ distance / likelihood
 =====================
 The `distance` between 2 images is just defined as the reduced quadratic difference.
 
-For an image with :math:`n` pixel, i'ts just:
+For an image with :math:`n` pixel, the distance :math:`L` is:
     .. math::
-        L = \frac{\sqrt{\sum_{i=1}^{n} (S_i_s - S_i_r)^2}}{n}
-where :math:`S_i_s` is the signal in the :math:`i^{th}` pixel of the simulated image,
-and  :math:`S_i_r` is the signal in the :math:`i^{th}` pixel of the real data image.
+        L = \frac{\sqrt{\sum_{i=1}^{n} (S_{i,s} - S_{i,r})^2}}{n}
+
+where :math:`S_{i,s}` is the signal in the :math:`i^{th}` pixel of the simulated image,
+and :math:`S_{i,r}` is the signal in the :math:`i^{th}` pixel of the real data image.
 
 And one should divide the signal by some error.
 
