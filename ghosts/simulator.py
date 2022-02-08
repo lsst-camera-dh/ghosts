@@ -265,7 +265,7 @@ def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_
         the maximum value of the translation distance, a value will be taken out of a uniform distribution in
         [-max_shift ; +max_shift]
     beam_config : `dict`
-        a beam configuration disctionary
+        a beam configuration dictionary
 
     Returns
     -------
