@@ -2,7 +2,7 @@ import math
 import numpy as np
 import pandas as pd
 from ghosts.tweak_optics import rotate_optic, make_optics_reflective, translate_optic, randomized_telescope
-from ghosts.beam_configs import BEAM_CONFIG_0
+from ghosts.beam_configs import BEAM_CONFIG_0, BEAM_CONFIG_1
 from ghosts.beam import beam
 from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separations
 
@@ -45,15 +45,12 @@ def run_simulation(telescope_setup, beam_config=BEAM_CONFIG_0):
 
 
 # Rotate and simulate
-def full_rotation(telescope, optic_name='L2', angle=0.1, debug=False):
+def full_rotation(telescope, optic_name='L2', axis='y', angle=0.1, beam_config=BEAM_CONFIG_1, debug=False):
     """ Runs a ray tracing simulation of a light beam into the CCOB with one of the optical element rotated.
 
     Takes a telescope optical object, the name of an optical element and a rotation angle, and
     simulates the light beam through the optics and returns the full ray tracing,
     including ghosts and the beam as a vector of light ays
-
-    .. todo::
-        `full_rotation` should take the rotation axis and the beam config as an input paramters
 
     Parameters
     ----------
@@ -61,8 +58,12 @@ def full_rotation(telescope, optic_name='L2', angle=0.1, debug=False):
         the optical setup as defined in `batoid`
     optic_name : `string`
         the name of the optical element to rotate
+    axis : `string`
+        x, y, z as the rotation axis you wish
     angle : `float`
         the rotation angle in degrees
+    beam_config : `dict`
+        a dictionary with the light beam configuration, see :ref:`beam_configs`.
     debug : `bool`
         debug mode or not
 
@@ -75,15 +76,16 @@ def full_rotation(telescope, optic_name='L2', angle=0.1, debug=False):
         a pandas data frame with information on ghost spots data separations and ratios,
         see :meth:`ghosts.analysis.compute_ghost_separations`
     """
-    rotated_optic = rotate_optic(telescope, optic_name, axis='y', angle=angle)
+    rotated_optic = rotate_optic(telescope, optic_name, axis=axis, angle=angle)
     if debug:
         print(
-            f'{optic_name} rotation of {angle:.3f}° means a displacement of {300 * math.tan(angle * math.pi / 180.):.3f}\
+            f'{optic_name} rotation of {angle:.3f}° means a displacement of'
+            f' {300 * math.tan(angle * math.pi / 180.):.3f}\
              mm of the lens border.')
     make_optics_reflective(rotated_optic)
-    trace_full, r_forward, r_reverse, rays = run_simulation(rotated_optic, beam_config=BEAM_CONFIG_0)
+    trace_full, r_forward, r_reverse, rays = run_simulation(rotated_optic, beam_config)
     spots_data, _spots = reduce_ghosts(r_forward)
-    spots_data_frame = make_data_frame(spots_data)
+    spots_data_frame = make_data_frame(spots_data, beam_config)
     ghost_separations = compute_ghost_separations(spots_data_frame)
     return spots_data_frame, ghost_separations
 
@@ -173,8 +175,6 @@ def full_translation(telescope, optic_name='L2', distance=0.01):
         the name of the optical element to rotate
     distance : `float`
         the distance in meters
-    debug : `bool`
-        debug mode or not
 
     Returns
     -------
@@ -221,8 +221,8 @@ def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_di
         the stop distance in meters
     step_dist : `float`
         the step size as a distance in meters
-    debug : `bool`
-        debug mode or not
+    ref_data_frame : `pandas.dataFrame`
+        a data frame with your ghosts spots reference data
 
     Returns
     -------
