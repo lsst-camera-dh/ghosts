@@ -298,7 +298,7 @@ def compute_ghost_separations(data_frame):
     return ghosts_separation
 
 
-def compute_distance_spot_to_spot(df_slice_1, df_slice_2):
+def compute_distance_spot_to_spot(df_slice_1, df_slice_2, radius_scale_factor=100):
     """ Compute a 3D geometric distance between 2 ghosts spots centers, considering the spot radius
     as the 3rd dimension.
 
@@ -308,13 +308,20 @@ def compute_distance_spot_to_spot(df_slice_1, df_slice_2):
         a ghost spots data frame slice, with one line corresponding to one ghost
     df_slice_2 : `pandas.DataFrame`
         a ghost spots data frame slice, with one line corresponding to one ghost
+    radius_scale_factor : `float`
+        as the radius is considered a 3rd dimension, we scale it to the same range as the x and y axis, e.g. the spot
+        radius is 2.5 mm to scale to the 60 cm of the focal plane ~ 100
 
     Returns
     -------
-    distance : `float`
-        the distance between 2 spots
-    dist_err : `float`
-        the error on that distance from the std error on the position centers and radius
+    dist_2d : `float`
+        the distance between 2 spots for the 2D distance
+    dist_2d_err : `float`
+        the error on that distance from the std error on the position centers and radius  for the 2D distance
+    dist_3d : `float`
+        the distance between 2 spots for the 3D distance
+    dist_3d_err : `float`
+        the error on that distance from the std error on the position centers and radius  for the 3D distance
     """
     dist_2d = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y']],
                         [df_slice_2['pos_x'], df_slice_2['pos_y']])
@@ -322,12 +329,12 @@ def compute_distance_spot_to_spot(df_slice_1, df_slice_2):
     d2_2d_sq = df_slice_2['std_x'] * df_slice_2['std_x'] + df_slice_2['std_y'] * df_slice_2['std_y']
     dist_2d_err = math.sqrt(d1_2d_sq + d2_2d_sq)
 
-    dist_3d = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y'], df_slice_1['radius']],
-                        [df_slice_2['pos_x'], df_slice_2['pos_y'], df_slice_2['radius']])
+    dist_3d = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y'], df_slice_1['radius']*radius_scale_factor],
+                        [df_slice_2['pos_x'], df_slice_2['pos_y'], df_slice_2['radius']*radius_scale_factor])
     d1_3d_sq = df_slice_1['std_x'] * df_slice_1['std_x'] + df_slice_1['std_y'] * df_slice_1['std_y']\
-        + df_slice_1['radius_err'] * df_slice_1['radius_err']
+        + df_slice_1['radius_err'] * df_slice_1['radius_err'] * radius_scale_factor * radius_scale_factor
     d2_3d_sq = df_slice_2['std_x'] * df_slice_2['std_x'] + df_slice_2['std_y'] * df_slice_2['std_y']\
-        + df_slice_2['radius_err'] * df_slice_2['radius_err']
+        + df_slice_2['radius_err'] * df_slice_2['radius_err'] * radius_scale_factor * radius_scale_factor
     dist_3d_err = math.sqrt(d1_3d_sq + d2_3d_sq)
     return dist_2d, dist_2d_err, dist_3d, dist_3d_err
 
@@ -346,12 +353,18 @@ def find_nearest_ghost(ghost_slice, ghosts_df):
 
     Returns
     -------
-    index_of_min : `int`
-        the index in the data frame of the nearest ghost
-    min_distance : `float`
-        distance of the given ghost spot to the nearest ghost spot
-    min_distance_err : `float`
-        the uncertainty on the distance with the nearest ghost spot
+    index_of_min_2d : `int`
+        the index in the data frame of the nearest ghost for the 2D distance
+    min_distance_2d : `float`
+        distance of the given ghost spot to the nearest ghost spot for the 2D distance
+    min_distance_2d_err : `float`
+        the uncertainty on the distance with the nearest ghost spot for the 2D distance
+    index_of_min_3d : `int`
+        the index in the data frame of the nearest ghost for the 3D distance
+    min_distance_3d : `float`
+        distance of the given ghost spot to the nearest ghost spot for the 3D distance
+    min_distance_3d_err : `float`
+        the uncertainty on the distance with the nearest ghost spot for the 3D distance
     """
     dist_2d_data = list()
     dist_2d_err_data = list()
