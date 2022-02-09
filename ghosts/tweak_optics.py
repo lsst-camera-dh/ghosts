@@ -130,7 +130,7 @@ def get_optics_position_z(telescope, name):
     return pos_z
 
 
-def rotate_optic(telescope, name, axis='y', angle=1, verbose=False):
+def rotate_optic(telescope, name, axis='y', angle=1, debug=False):
     """ Rotate one optical element of a telescope around a given axis and for a given rotation angle
 
     Parameters
@@ -143,6 +143,8 @@ def rotate_optic(telescope, name, axis='y', angle=1, verbose=False):
         the name of the rotation axis, usually y
     angle : `float`
         the value of the rotation angle in degrees
+    debug : `bool`
+        print debug information if True
 
     Returns
     -------
@@ -151,12 +153,12 @@ def rotate_optic(telescope, name, axis='y', angle=1, verbose=False):
     """
     # Rotating
     rot = transform_rotation.from_euler(axis, angle, degrees=True)
-    if verbose:
+    if debug:
         print('Rotation around Y as Euler:\n', rot.as_euler('zyx', degrees=True))
         print('Rotation around Y as  matrix:\n', rot.as_matrix())
     # Rotating one item of the telescope
     rotated_telescope = telescope.withLocallyRotatedOptic(name=name, rot=rot.as_matrix())
-    if verbose:
+    if debug:
         print(f'{name} before rotation:\n', telescope[name].coordSys.rot)
         print(f'{name} after rotation:\n', rotated_telescope[name].coordSys.rot)
     return rotated_telescope
@@ -194,7 +196,7 @@ def translate_optic(telescope, name, axis='x', distance=0.01):
 
 
 # function to rotate one element of a telescope
-def rotate_optic_vector(telescope, name, angles=[0.1, 0.1, 0.1], verbose=False):
+def rotate_optic_vector(telescope, name, angles, verbose=False):
     """ Rotate one optical element of a telescope given a list of Euler angles
 
     Parameters
@@ -204,7 +206,7 @@ def rotate_optic_vector(telescope, name, angles=[0.1, 0.1, 0.1], verbose=False):
     name : `string`
         the name of an optical element
     angles : `list` of `floats`
-        the values of Eulers angles in degrees as a list
+        the values of Eulers angles in degrees as a list,e.g. `[0.1, 0.1, 0.1]`
     verbose : `bool`
         the verbose mode, true or false
 
@@ -229,7 +231,7 @@ def rotate_optic_vector(telescope, name, angles=[0.1, 0.1, 0.1], verbose=False):
 
 
 # function to translate one element of a telescope
-def translate_optic_vector(telescope, name, shifts=[0.001, 0.001, 0.001]):
+def translate_optic_vector(telescope, name, shifts):
     """ Translate an optical element of a telescope given a list of shifts along x, y and z axis
 
     Parameters
@@ -239,7 +241,7 @@ def translate_optic_vector(telescope, name, shifts=[0.001, 0.001, 0.001]):
     name : `string`
         the name of an optical element
     shifts : `list` of `floats`
-        the values of shifts in meters as a list for x, y and z axis.
+        the values of shifts in meters as a list for x, y and z axis, e.g. `[0.001, 0.001, 0.001]`
 
     Returns
     -------
@@ -277,7 +279,7 @@ def randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=Fals
     """
     # randomly rotate all optical elements
     rnd_telescope = telescope
-    optics_names = ['L1', 'L2', 'L3', 'Filter']  # get_list_of_optics(telescope)
+    optics_names = get_list_of_optics(rnd_telescope)
     # rotations
     for optic in optics_names:
         rnd_euler_angles = max_angle * 2 * (np.random.random([3]) - 0.5)
@@ -289,7 +291,38 @@ def randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=Fals
     return rnd_telescope
 
 
+def tweak_telescope(telescope, tweaks={}):
+    """ Tweak a telescope using rotations and shifts from a dictionary
+
+    Parameters
+    ----------
+    telescope : `batoid.telescope`
+        the optical setup as defined in `batoid`
+    tweaks : `dict`
+        a dictionary with shifts and rotations for each optical element
+
+    Returns
+    -------
+    tweaked_telescope : `batoid.telescope`
+        a new telescope with tweaked optical elements
+            tweaks = {'L1': {'shift': [0.001, 0.001, 0.001], 'rotation': [0.1, 0.1, 0.1]},
+                      'L2': {'shift': [0.001, 0.001, 0.001], 'rotation': [0.1, 0.1, 0.1]},
+                      'L3': {'shift': [0.001, 0.001, 0.001], 'rotation': [0.1, 0.1, 0.1]}}
+    """
+    tweaked_telescope = telescope
+    for opt, tw in tweaks.items():
+        if 'shifts' in tw.keys():
+            tmp_tel = translate_optic_vector(tweaked_telescope, opt, tw['shifts'])
+        else:
+            tmp_tel = tweaked_telescope
+        if 'rotations' in tw.keys():
+            tweaked_telescope = rotate_optic_vector(tmp_tel, opt, tw['rotations'])
+        else:
+            tweaked_telescope = tmp_tel
+    return tweaked_telescope
+
+
 if __name__ == '__main__':
     # test list of optics
-    ccob_telescope = batoid.Optic.fromYaml("LSST_CCOB_r.yaml")
+    ccob_telescope = batoid.Optic.fromYaml("../data/LSST_CCOB_r.yaml")
     assert get_list_of_optics(ccob_telescope) == ['L1', 'L2', 'Filter', 'L3', 'Detector'], 'Not a CCOB optical setup'
