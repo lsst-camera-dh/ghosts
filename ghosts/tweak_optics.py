@@ -291,7 +291,7 @@ def randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=Fals
     return rnd_telescope
 
 
-def tweak_telescope(telescope, tweaks={}):
+def tweak_telescope(telescope, tweaks):
     """ Tweak a telescope using rotations and shifts from a dictionary
 
     Parameters
