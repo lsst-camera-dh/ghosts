@@ -291,6 +291,8 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
         :meth:`ghosts.sim_scan_translated_optic`
     scan_values : `list` of `floats`
         the list of angles or shifts of the simulation scan
+    trans_type : `string`
+        the transformation type is either 'rotation' or 'translation'
 
     Returns
     -------
@@ -412,4 +414,38 @@ def plot_spots(data_frame_list, spot_size_scaling=10, range_x=(-0.35, 0.35), ran
         ax.scatter(spots_x, spots_y, s=spots_size, facecolors='none', edgecolors=color)
     ax.set_xlim(range_x)
     ax.set_ylim(range_y)
+    return fig, ax
+
+
+def plot_distances_rotation_scan(angles, distances_2d, distances_3d):
+    ''' Plot likelihood value and profile
+
+    Parameters
+    ----------
+    angles : `list` of `floats`
+        a list of angles in degrees
+    distances_2d : `list` of `floats`
+        a list of reduced distances computed in 2D
+    distances_3d : `list` of `floats`
+        a list of reduced distances computed in 3D
+
+    Returns
+    -------
+    fig: `matplotlib.Figure`
+        the figure object
+    ax: `matplotlib.Axis`
+        the axis object
+    '''
+    plt.rcParams["figure.figsize"] = [18, 9]
+    fig, ax = plt.subplots(1, 2)
+    # distributions
+    ax[0].hist(distances_2d)
+    ax[0].hist(distances_3d)
+    # profiles
+    ax[1].plot(angles, distances_2d, label='2D')
+    ax[1].plot(angles, distances_3d, label='3D')
+    ax[1].set_xlabel('rotation angle degrees')
+    ax[1].set_ylabel('distance')
+    ax[1].legend()
+    ax[1].set_title('Rotation scan from -0.5 to +0.5 degrees')
     return fig, ax
