@@ -25,5 +25,7 @@ setup(
                       "scipy",
                       "pandas",
                       "openpyxl",
+                      "pyyaml",
+                      "seaborn",
                       "setuptools_scm"]
 )

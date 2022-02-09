@@ -8,3 +8,4 @@ pyyaml
 jupyter
 sphinx
 sphinx_rtd_theme
+seaborn
