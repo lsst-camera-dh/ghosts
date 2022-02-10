@@ -305,9 +305,6 @@ def tweak_telescope(telescope, tweaks):
     -------
     tweaked_telescope : `batoid.telescope`
         a new telescope with tweaked optical elements
-            tweaks = {'L1': {'shift': [0.001, 0.001, 0.001], 'rotation': [0.1, 0.1, 0.1]},
-                      'L2': {'shift': [0.001, 0.001, 0.001], 'rotation': [0.1, 0.1, 0.1]},
-                      'L3': {'shift': [0.001, 0.001, 0.001], 'rotation': [0.1, 0.1, 0.1]}}
     """
     tweaked_telescope = telescope
     for opt, tw in tweaks.items():
