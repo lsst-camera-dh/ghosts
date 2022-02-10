@@ -339,7 +339,7 @@ def compute_distance_spot_to_spot(df_slice_1, df_slice_2, radius_scale_factor=10
     return dist_2d, dist_2d_err, dist_3d, dist_3d_err
 
 
-def find_nearest_ghost(ghost_slice, ghosts_df):
+def find_nearest_ghost(ghost_slice, ghosts_df, radius_scale_factor=100):
     """ Find the nearest ghost spot to a given ghost spot and report its distance with its error
 
     This is done using both the 2D and 3D distances.
@@ -372,7 +372,8 @@ def find_nearest_ghost(ghost_slice, ghosts_df):
     dist_3d_err_data = list()
     n = len(ghosts_df['pos_x'])
     for i in range(n):
-        dist_2d, dist_2d_err, dist_3d, dist_3d_err = compute_distance_spot_to_spot(ghost_slice, ghosts_df.xs(i))
+        dist_2d, dist_2d_err, dist_3d, dist_3d_err =\
+            compute_distance_spot_to_spot(ghost_slice, ghosts_df.xs(i), radius_scale_factor)
         dist_2d_data.append(dist_2d)
         dist_2d_err_data.append(dist_2d_err)
         dist_3d_data.append(dist_3d)
@@ -392,7 +393,7 @@ def find_nearest_ghost(ghost_slice, ghosts_df):
         index_of_min_3d, min_distance_3d, min_distance_3d_err
 
 
-def match_ghosts(ghosts_df_1, ghosts_df_2):
+def match_ghosts(ghosts_df_1, ghosts_df_2, radius_scale_factor=100):
     """ Match ghosts positions from two ghosts data frames
 
     Parameters
@@ -418,7 +419,8 @@ def match_ghosts(ghosts_df_1, ghosts_df_2):
     n = len(ghosts_df_1['pos_x'])
     for i in range(n):
         index_of_min_2d, min_distance_2d, min_distance_2d_err, \
-            index_of_min_3d, min_distance_3d, min_distance_3d_err = find_nearest_ghost(ghosts_df_1.xs(i), ghosts_df_2)
+            index_of_min_3d, min_distance_3d, min_distance_3d_err =\
+                find_nearest_ghost(ghosts_df_1.xs(i), ghosts_df_2, radius_scale_factor)
         match_i1.append(i)
         # 2D distance
         match_i2_2d.append(index_of_min_2d)
