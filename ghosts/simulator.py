@@ -157,15 +157,12 @@ def sim_scan_rotated_optic(telescope, optic_name, min_angle, max_angle, step_ang
 
 
 # Translate and simulate
-def full_translation(telescope, optic_name='L2', distance=0.01):
+def full_translation(telescope, optic_name, axis, distance, beam_config=BEAM_CONFIG_1):
     """ Runs a ray tracing simulation of a light beam into the CCOB, with one optical element translated.
 
     Takes a telescope optical object, the name of an optical element, and a translation distance,
     simulates the light beam through the optics and returns the full ray tracing,
     including ghosts and the beam as a vector of light ays
-
-    .. todo::
-        `full_translation` should take the rotation axis and the beam config as an input paramters
 
     Parameters
     ----------
@@ -173,8 +170,12 @@ def full_translation(telescope, optic_name='L2', distance=0.01):
         the optical setup as defined in `batoid`
     optic_name : `string`
         the name of the optical element to rotate
+    axis : `string`
+        x, y, z as the translation axis you wish
     distance : `float`
         the distance in meters
+    beam_config : `dict`
+        a dictionary with the light beam configuration, see :ref:`beam_configs`.
 
     Returns
     -------
@@ -185,9 +186,9 @@ def full_translation(telescope, optic_name='L2', distance=0.01):
         a pandas data frame with information on ghost spots data separations and ratios,
         see :meth:`ghosts.analysis.compute_ghost_separations`
     """
-    translated_optic = translate_optic(telescope, optic_name, axis='x', distance=distance)
+    translated_optic = translate_optic(telescope, optic_name, axis=axis, distance=distance)
     make_optics_reflective(translated_optic)
-    trace_full, forward_rays, reverse_rays, rays = run_simulation(translated_optic, beam_config=BEAM_CONFIG_0)
+    trace_full, forward_rays, reverse_rays, rays = run_simulation(translated_optic, beam_config=beam_config)
     spots_data, _spots = reduce_ghosts(forward_rays)
     spots_data_frame = make_data_frame(spots_data)
     ghost_separations = compute_ghost_separations(spots_data_frame)
