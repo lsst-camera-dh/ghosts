@@ -4,7 +4,8 @@ import pandas as pd
 from ghosts.tweak_optics import rotate_optic, make_optics_reflective, translate_optic, randomized_telescope
 from ghosts.beam_configs import BEAM_CONFIG_0, BEAM_CONFIG_1
 from ghosts.beam import beam
-from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separations
+from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separations, match_ghosts,\
+                            compute_reduced_distance, compute_2d_reduced_distance
 
 
 # run a ray tracing simulation
@@ -70,10 +71,10 @@ def full_rotation(telescope, optic_name='L2', axis='y', angle=0.1, beam_config=B
     Returns
     -------
     spots_data_frame : `pandas.DataFrame`
-        a pandas data frame with ghost spot data information, including beam configuration,
+        a `pandas` data frame with ghost spot data information, including beam configuration,
         see :meth:`ghosts.analysis.make_data_frame`
     ghost_separations : `pandas.DataFrame`
-        a pandas data frame with information on ghost spots data separations and ratios,
+        a `pandas` data frame with information on ghost spots data separations and ratios,
         see :meth:`ghosts.analysis.compute_ghost_separations`
     """
     rotated_optic = rotate_optic(telescope, optic_name, axis=axis, angle=angle)
@@ -104,10 +105,10 @@ def full_rotation_L2(telescope, angle=0.1):
     Returns
     -------
     spots_data_frame : `pandas.DataFrame`
-        a pandas data frame with ghost spot data information, including beam configuration,
+        a `pandas` data frame with ghost spot data information, including beam configuration,
         see :meth:`ghosts.analysis.make_data_frame`
     ghost_separations : `pandas.DataFrame`
-        a pandas data frame with information on ghost spots data separations and ratios,
+        a `pandas` data frame with information on ghost spots data separations and ratios,
         see :meth:`ghosts.analysis.compute_ghost_separations`
     """
     return full_rotation(telescope, optic_name='L2', angle=angle)
@@ -136,7 +137,7 @@ def sim_scan_rotated_optic(telescope, optic_name, min_angle, max_angle, step_ang
     Returns
     -------
     merged_data_frame : `pandas.DataFrame`
-        a pandas data frame with all the ghosts spot data information, for each telescope optics configuration,
+        a`pandas` data frame with all the ghosts spot data information, for each telescope optics configuration,
         including beam configuration, see :meth:`ghosts.analysis.make_data_frame`
     scan_angles : `list` of `floats`
         the list of the rotation angles used for the scan
@@ -180,10 +181,10 @@ def full_translation(telescope, optic_name, axis, distance, beam_config=BEAM_CON
     Returns
     -------
     spots_data_frame : `pandas.DataFrame`
-        a pandas data frame with ghost spot data information, including beam configuration,
+        a`pandas` data frame with ghost spot data information, including beam configuration,
         see :meth:`ghosts.analysis.make_data_frame`
     ghost_separations : `pandas.DataFrame`
-        a pandas data frame with information on ghost spots data separations and ratios,
+        a`pandas` data frame with information on ghost spots data separations and ratios,
         see :meth:`ghosts.analysis.compute_ghost_separations`
     """
     translated_optic = translate_optic(telescope, optic_name, axis=axis, distance=distance)
@@ -228,7 +229,7 @@ def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_di
     Returns
     -------
     merged_data_frame : `pandas.DataFrame`
-        a pandas data frame with all the ghosts spot data information, for each telescope optics configuration,
+        a`pandas` data frame with all the ghosts spot data information, for each telescope optics configuration,
         including beam configuration, see :meth:`ghosts.analysis.make_data_frame`
     scan_values : `list` of `floats`
         the list of distance of translation used for the scan
@@ -271,10 +272,10 @@ def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_
     Returns
     -------
     spots_data_frame : `pandas.DataFrame`
-        a pandas data frame with ghost spot data information, including beam configuration,
+        a`pandas` data frame with ghost spot data information, including beam configuration,
         see :meth:`ghosts.analysis.make_data_frame`
     ghost_separations : `pandas.DataFrame`
-        a pandas data frame with information on ghost spots data separations and ratios,
+        a`pandas` data frame with information on ghost spots data separations and ratios,
         see :meth:`ghosts.analysis.compute_ghost_separations`
     """
     rnd_tel = randomized_telescope(telescope, max_angle, max_shift)
@@ -284,3 +285,95 @@ def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_
     data_frame_r = make_data_frame(spots_data_r)
     ghost_separations_r = compute_ghost_separations(data_frame_r)
     return data_frame_r, ghost_separations_r
+
+
+def scan_dist_rotation(telescope, ref_data_frame, optic_name, axis, angles_list, rscale=10):
+    """ Run simulation to scan a given list of angles on one optic around an axis,
+    and computes the reduced distance in 2D and 3D.
+
+    Parameters
+    ----------
+    telescope : `batoid.telescope`
+        the optical setup as defined in `batoid`
+    ref_data_frame : `pandas.DataFrame`
+        the reference set of beam spots to compute distances to
+    optic_name : `string`
+        the name of the optical element to rotate
+    axis : `string`
+        x, y, z as the translation axis you wish
+    angles_list : `list` of `float`
+        a list of angles to scan
+    rscale : `float`
+        the 3D distance scale factor to take into account the spots sizes
+
+    Returns
+    -------
+    angles_list : `list` of `float`
+        the list of angles scanned
+    distances_2d : `list` of `float`
+        the list of 2D reduced distance computed for each angle
+    distances_3d : `list` of `float`
+        the list of 3D reduced distance computed for each angle
+    """
+    distances_2d = list()
+    distances_3d = list()
+    for angle in angles_list:
+        df_i, gs_i = full_rotation(telescope, optic_name=optic_name, axis=axis, angle=angle,
+                                   beam_config=BEAM_CONFIG_1)
+        match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=rscale)
+        dist_i = compute_reduced_distance(match_i)
+        distances_3d.append(dist_i)
+
+        match_i2 = match_ghosts(ref_data_frame, df_i, radius_scale_factor=rscale)
+        dist_i2 = compute_2d_reduced_distance(match_i2)
+        distances_2d.append(dist_i2)
+
+        print(f'{angle} ', end='', flush=True)
+
+    return angles_list, distances_2d, distances_3d
+
+
+def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_list, rscale=10):
+    """ Run simulation to scan a given list of shifts on one optic along an axis,
+    and computes the reduced distance in 2D and 3D.
+
+    Parameters
+    ----------
+    telescope : `batoid.telescope`
+        the optical setup as defined in `batoid`
+    ref_data_frame : `pandas.DataFrame`
+        the reference set of beam spots to compute distances to
+    optic_name : `string`
+        the name of the optical element to rotate
+    axis : `string`
+        x, y, z as the translation axis you wish
+    shifts_list : `list` of `float`
+        a list of shifts to scan
+    rscale : `float`
+        the 3D distance scale factor to take into account the spots sizes
+
+    Returns
+    -------
+    shifts_list : `list` of `float`
+        a list of shifts to scan
+    distances_2d : `list` of `float`
+        the list of 2D reduced distance computed for each angle
+    distances_3d : `list` of `float`
+        the list of 3D reduced distance computed for each angle
+    """
+    distances_2d = list()
+    distances_3d = list()
+    for delta in shifts_list:
+        df_i, gs_i = full_translation(telescope, optic_name=optic_name, axis=axis, distance=delta,
+                                      beam_config=BEAM_CONFIG_1)
+        match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=rscale)
+        dist_i = compute_reduced_distance(match_i)
+        distances_3d.append(dist_i)
+
+        match_i2 = match_ghosts(ref_data_frame, df_i, radius_scale_factor=rscale)
+        dist_i2 = compute_2d_reduced_distance(match_i2)
+        distances_2d.append(dist_i2)
+
+        print(f'{delta} ', end='', flush=True)
+
+    return shifts_list, distances_2d, distances_3d
