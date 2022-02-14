@@ -1,3 +1,8 @@
+"""tweak_optics module
+
+This module is used to build new telescope with a modified geometry from the default telescope read in the yaml file.
+
+"""
 import batoid
 from scipy.spatial.transform import Rotation as transform_rotation
 import numpy as np
