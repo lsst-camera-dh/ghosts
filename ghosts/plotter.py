@@ -417,17 +417,19 @@ def plot_spots(data_frame_list, spot_size_scaling=10, range_x=(-0.35, 0.35), ran
     return fig, ax
 
 
-def plot_distances_rotation_scan(angles, distances_2d, distances_3d):
+def plot_distances_for_scan(scan_values, distances_2d, distances_3d, scan_type='rotation'):
     ''' Plot likelihood value and profile
 
     Parameters
     ----------
-    angles : `list` of `floats`
-        a list of angles in degrees
+    scan_values : `list` of `floats`
+        a list of angles or shifts in degrees
     distances_2d : `list` of `floats`
         a list of reduced distances computed in 2D
     distances_3d : `list` of `floats`
         a list of reduced distances computed in 3D
+    scan_type : `string`
+        either rotation or translation
 
     Returns
     -------
@@ -442,10 +444,14 @@ def plot_distances_rotation_scan(angles, distances_2d, distances_3d):
     ax[0].hist(distances_2d)
     ax[0].hist(distances_3d)
     # profiles
-    ax[1].plot(angles, distances_2d, label='2D')
-    ax[1].plot(angles, distances_3d, label='3D')
-    ax[1].set_xlabel('rotation angle degrees')
-    ax[1].set_ylabel('distance')
+    ax[1].plot(scan_values, distances_2d, label='2D')
+    ax[1].plot(scan_values, distances_3d, label='3D')
     ax[1].legend()
-    ax[1].set_title('Rotation scan from -0.5 to +0.5 degrees')
+    ax[1].set_ylabel('distance')
+    if scan_type == 'rotation':
+        ax[1].set_xlabel('rotation angle degrees')
+        ax[1].set_title(f'Rotation scan from {min(scan_values):.3f} to {max(scan_values):.3f} degrees')
+    elif scan_type == 'translation':
+        ax[1].set_xlabel('shift in meters')
+        ax[1].set_title(f'Translation scan from {min(scan_values):.5f} to {max(scan_values):.5f} m')
     return fig, ax
