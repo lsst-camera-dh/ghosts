@@ -1,3 +1,13 @@
+"""Tools moduls
+
+This module provides a number of generic tools.
+
+Todo:
+    * More tools are needed for the geometry configuration
+
+"""
+
+
 import numpy as np
 
 
