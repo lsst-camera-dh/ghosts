@@ -1,3 +1,13 @@
+"""constants module
+
+This module provides a number of all round constants.
+
+Todo:
+    * Can we get these constants from some official source?
+
+"""
+
+
 # Rough focal plane characteristics
 LSST_CAMERA_PIXEL_SIZE = 10*1e-6  # 10 microns
 LSST_CAMERA_FILL_FACTOR = 0.9  # >90% fill factor
@@ -21,4 +31,3 @@ LSST_CAMERA_DARK_CURRENT = 2  # electrons per second
 # LSST_CAMERA_READOUT_NOISE = 5 to 15, poisson ~ 7.5
 LSST_CAMERA_PIXEL_FULL_WELL = 75000  # 75k to 130k ~ 120k mostly >100k
 # PTC_CALIB = 1.16 e-/ADU
-
