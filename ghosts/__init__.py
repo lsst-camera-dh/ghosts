@@ -4,4 +4,3 @@ try:
     from ._version import version
 except:  #pragma: no cover
     version = "unknown"
-
