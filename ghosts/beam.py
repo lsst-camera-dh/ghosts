@@ -1,6 +1,6 @@
 # Beam intensity, photon energy and number of photons
 import numpy as np
-from scipy.constants import Planck, lambda2nu, nu2lambda
+from scipy.constants import Planck, lambda2nu
 from math import floor
 from copy import copy
 
