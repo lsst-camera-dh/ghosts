@@ -240,9 +240,8 @@ def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_di
     for shift in np.arange(min_dist, max_dist, step_dist):
         scan_values.append(shift)
         print(f'{shift:.6f}', end=' ')
-        df, _ = full_translation(telescope, optic_name=optic_name, distance=shift)
+        df, _ = full_translation(telescope, optic_name=optic_name, axis='x', distance=shift)
         sims.append(df)
-
     # Merge data frames
     merged_data_frame = [pd.merge(ref_data_frame, df, how='left', on='name') for df in sims]
     print('Done.')
