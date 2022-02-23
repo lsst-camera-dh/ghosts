@@ -31,6 +31,17 @@ beam interface
     :members:
     :undoc-members:
 
+geom interface
+===================
+.. _geom:
+
+`ghosts.geom`
+---------------------
+
+.. automodule:: ghosts.geom
+    :members:
+    :undoc-members:
+
 tweak optics interface
 ======================
 
