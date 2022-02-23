@@ -343,7 +343,7 @@ def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_li
     ref_data_frame : `pandas.DataFrame`
         the reference set of beam spots to compute distances to
     optic_name : `string`
-        the name of the optical element to rotate
+        the name of the optical element to translate
     axis : `string`
         x, y, z as the translation axis you wish
     shifts_list : `list` of `float`
