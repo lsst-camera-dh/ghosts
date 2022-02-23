@@ -62,6 +62,7 @@ def concat_frames(geom_frame_list):
      """
     tmp_concat = pd.concat(geom_frame_list)
     geom_concat = tmp_concat.fillna(0)
+    geom_concat.sort_values('geom_id')
     return geom_concat
 
 
