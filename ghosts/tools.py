@@ -3,7 +3,7 @@
 This module provides a number of generic tools.
 
 Todo:
-    * More tools are needed for the geometry configuration
+    * is that module really needed?
 
 """
 
