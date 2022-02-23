@@ -296,14 +296,14 @@ def randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=Fals
     return rnd_telescope
 
 
-def tweak_telescope(telescope, tweaks):
+def tweak_telescope(telescope, geom_config):
     """ Tweak a telescope using rotations and shifts from a dictionary
 
     Parameters
     ----------
     telescope : `batoid.telescope`
         the optical setup as defined in `batoid`
-    tweaks : `dict`
+    geom_config : `dict`
         a dictionary with shifts and rotations for each optical element
 
     Returns
@@ -312,7 +312,7 @@ def tweak_telescope(telescope, tweaks):
         a new telescope with tweaked optical elements
     """
     tweaked_telescope = telescope
-    for opt, tw in tweaks.items():
+    for opt, tw in geom_config.items():
         if 'shifts' in tw.keys():
             tmp_tel = translate_optic_vector(tweaked_telescope, opt, tw['shifts'])
         else:
