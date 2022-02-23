@@ -6,6 +6,7 @@ This module is used to build new telescope with a modified geometry from the def
 import batoid
 from scipy.spatial.transform import Rotation as transform_rotation
 import numpy as np
+import copy
 
 
 def get_list_of_optics(telescope):
@@ -312,7 +313,9 @@ def tweak_telescope(telescope, geom_config):
         a new telescope with tweaked optical elements
     """
     tweaked_telescope = telescope
-    for opt, tw in geom_config.items():
+    config_copy = copy.copy(geom_config)
+    geom_id = config_copy.pop('geom_id')
+    for opt, tw in config_copy.items():
         if 'shifts' in tw.keys():
             tmp_tel = translate_optic_vector(tweaked_telescope, opt, tw['shifts'])
         else:
@@ -355,16 +358,16 @@ def build_telescope_from_geom(geom_config):
 
     Returns
     -------
-    telescope : `batoid.telescope`
+    tw_telescope : `batoid.telescope`
         a telescope with the given geometry tweaks
     """
     # Build the default telescope
     telescope = build_telescope()
     # tweak its optics
-    tweak_telescope(telescope, geom_config)
+    tw_telescope = tweak_telescope(telescope, geom_config)
     # Make refractive interfaces partially reflective
-    make_optics_reflective(telescope)
-    return telescope
+    make_optics_reflective(tw_telescope)
+    return tw_telescope
 
 
 if __name__ == '__main__':
