@@ -324,6 +324,49 @@ def tweak_telescope(telescope, geom_config):
     return tweaked_telescope
 
 
+def build_telescope(yaml_geometry="../data/LSST_CCOB_r.yaml"):
+    """ Build a telescope from a geometry description
+
+    Parameters
+    ----------
+    yaml_geometry : `string`
+        a yaml telescope geometry
+
+    Returns
+    -------
+    telescope : `batoid.telescope`
+        a telescope with the given geometry
+    """
+    # CCOB like geometry, i.e. lenses + filters
+    telescope = batoid.Optic.fromYaml(yaml_geometry)
+    # Make refractive interfaces partially reflective
+    make_optics_reflective(telescope)
+    return telescope
+
+
+def build_telescope_from_geom(geom_config):
+    """ Build the default telescope and tweak its optics given shifts and rotations
+    from a geometry configuration
+
+    Parameters
+    ----------
+    geom_config : `dict`
+        a dictionary with shifts and rotations for each optical element
+
+    Returns
+    -------
+    telescope : `batoid.telescope`
+        a telescope with the given geometry tweaks
+    """
+    # Build the default telescope
+    telescope = build_telescope()
+    # tweak its optics
+    tweak_telescope(telescope, geom_config)
+    # Make refractive interfaces partially reflective
+    make_optics_reflective(telescope)
+    return telescope
+
+
 if __name__ == '__main__':
     # test list of optics
     ccob_telescope = batoid.Optic.fromYaml("../data/LSST_CCOB_r.yaml")
