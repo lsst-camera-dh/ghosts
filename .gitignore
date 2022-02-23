@@ -88,6 +88,9 @@ celerybeat-schedule
 # macos .DS
 .DS_Store
 
+# pycharm
+.idea
+
 # virtualenv
 venv/
 ENV/
