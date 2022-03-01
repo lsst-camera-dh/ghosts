@@ -313,7 +313,7 @@ def tweak_telescope(telescope, geom_config):
         a new telescope with tweaked optical elements
     """
     tweaked_telescope = telescope
-    config_copy = copy.copy(geom_config)
+    config_copy = copy.deepcopy(geom_config)
     geom_id = config_copy.pop('geom_id')
     for opt, tw in config_copy.items():
         if 'shifts' in tw.keys():
