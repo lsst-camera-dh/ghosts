@@ -80,7 +80,7 @@ def get_optics_position(telescope, name, axis_i):
 
 
 def get_optics_position_x(telescope, name):
-    """ Proxy to get the position of an optical element along the x axis
+    """ Proxy to get the position of an optical element along the x-axis
 
     Parameters
     ----------
@@ -99,7 +99,7 @@ def get_optics_position_x(telescope, name):
 
 
 def get_optics_position_y(telescope, name):
-    """ Proxy to get the position of an optical element along the y axis
+    """ Proxy to get the position of an optical element along the y-axis
 
     Parameters
     ----------
@@ -212,7 +212,7 @@ def rotate_optic_vector(telescope, name, angles, verbose=False):
     name : `string`
         the name of an optical element
     angles : `list` of `floats`
-        the values of Eulers angles in degrees as a list,e.g. `[0.1, 0.1, 0.1]`
+        the values of Euler angles in degrees as a list,e.g. `[0.1, 0.1, 0.1]`
     verbose : `bool`
         the verbose mode, true or false
 
@@ -263,9 +263,9 @@ def randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=Fals
     according to uniform distributions drown from the given a maximum rotation angle
     and shift.
 
-    Rotation angles are drown from a uniform distribution in [-max_angle; +max_angle]
+    Rotation angles are drawn from a uniform distribution in [-max_angle; +max_angle]
 
-    Translation values are drown from a uniform distribution in [-max_shift; +max_shift]
+    Translation values are drawn from a uniform distribution in [-max_shift; +max_shift]
 
     Parameters
     ----------
