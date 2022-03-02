@@ -1,6 +1,7 @@
 cmake
 batoid
 matplotlib
+numpy
 scipy
 pandas
 openpyxl

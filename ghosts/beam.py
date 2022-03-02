@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.constants import Planck, lambda2nu
 from math import floor
-from copy import copy
+from copy import deepcopy
 
 # batoid dependencies to create ray vectors
 import batoid
@@ -127,7 +127,7 @@ def simple_beam(x_offset=0.1, y_offset=0, wl=500e-9, n_photons=1000):
     rays : `batoid.RayVectors`
         a light beam as many photons of the requested wave length
     """
-    beam_config = copy(BEAM_CONFIG_0)
+    beam_config = deepcopy(BEAM_CONFIG_0)
     beam_config['x_offset'] = x_offset
     beam_config['y_offset'] = y_offset
     beam_config['wl'] = wl

@@ -101,7 +101,7 @@ def get_ghost_stats(ghost):
     x_width = ghost.x.max() - ghost.x.min()
     y_width = ghost.y.max() - ghost.y.min()
     radius = (x_width + y_width) / 2.  # simple mean
-    radius_err = math.fabs(x_width - y_width)/2.
+    radius_err = math.fabs(x_width - y_width) / 2.
     weights_sum = ghost.flux.sum()
     mean_intensity = weights_sum / len(ghost.x)
     spot_surface_mm2 = math.pi * (radius * 1000.) * (radius * 1000.)
@@ -329,12 +329,12 @@ def compute_distance_spot_to_spot(df_slice_1, df_slice_2, radius_scale_factor=10
     d2_2d_sq = df_slice_2['std_x'] * df_slice_2['std_x'] + df_slice_2['std_y'] * df_slice_2['std_y']
     dist_2d_err = math.sqrt(d1_2d_sq + d2_2d_sq)
 
-    dist_3d = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y'], df_slice_1['radius']*radius_scale_factor],
-                        [df_slice_2['pos_x'], df_slice_2['pos_y'], df_slice_2['radius']*radius_scale_factor])
-    d1_3d_sq = df_slice_1['std_x'] * df_slice_1['std_x'] + df_slice_1['std_y'] * df_slice_1['std_y']\
-        + df_slice_1['radius_err'] * df_slice_1['radius_err'] * radius_scale_factor * radius_scale_factor
-    d2_3d_sq = df_slice_2['std_x'] * df_slice_2['std_x'] + df_slice_2['std_y'] * df_slice_2['std_y']\
-        + df_slice_2['radius_err'] * df_slice_2['radius_err'] * radius_scale_factor * radius_scale_factor
+    dist_3d = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y'], df_slice_1['radius'] * radius_scale_factor],
+                        [df_slice_2['pos_x'], df_slice_2['pos_y'], df_slice_2['radius'] * radius_scale_factor])
+    d1_3d_sq = df_slice_1['std_x'] * df_slice_1['std_x'] + df_slice_1['std_y'] * df_slice_1['std_y'] \
+               + df_slice_1['radius_err'] * df_slice_1['radius_err'] * radius_scale_factor * radius_scale_factor
+    d2_3d_sq = df_slice_2['std_x'] * df_slice_2['std_x'] + df_slice_2['std_y'] * df_slice_2['std_y'] \
+               + df_slice_2['radius_err'] * df_slice_2['radius_err'] * radius_scale_factor * radius_scale_factor
     dist_3d_err = math.sqrt(d1_3d_sq + d2_3d_sq)
     return dist_2d, dist_2d_err, dist_3d, dist_3d_err
 
@@ -350,6 +350,8 @@ def find_nearest_ghost(ghost_slice, ghosts_df, radius_scale_factor=100):
         a ghost spots data frame slice, with one line corresponding to one ghost
     ghosts_df : `pandas.DataFrame`
         a `pandas` data frame with information on ghost spots data separations and ratios
+    radius_scale_factor : `int`
+        a kind of weight for the spot radius to be used in the distance computation
 
     Returns
     -------
@@ -372,7 +374,7 @@ def find_nearest_ghost(ghost_slice, ghosts_df, radius_scale_factor=100):
     dist_3d_err_data = list()
     n = len(ghosts_df['pos_x'])
     for i in range(n):
-        dist_2d, dist_2d_err, dist_3d, dist_3d_err =\
+        dist_2d, dist_2d_err, dist_3d, dist_3d_err = \
             compute_distance_spot_to_spot(ghost_slice, ghosts_df.xs(i), radius_scale_factor)
         dist_2d_data.append(dist_2d)
         dist_2d_err_data.append(dist_2d_err)
@@ -389,8 +391,8 @@ def find_nearest_ghost(ghost_slice, ghosts_df, radius_scale_factor=100):
     min_distance_3d = dist_3d_array[index_of_min_3d]
     min_distance_3d_err = dist_3d_err_data[index_of_min_3d]
 
-    return index_of_min_2d, min_distance_2d, min_distance_2d_err,\
-        index_of_min_3d, min_distance_3d, min_distance_3d_err
+    return index_of_min_2d, min_distance_2d, min_distance_2d_err, \
+           index_of_min_3d, min_distance_3d, min_distance_3d_err
 
 
 def match_ghosts(ghosts_df_1, ghosts_df_2, radius_scale_factor=100):
@@ -402,6 +404,8 @@ def match_ghosts(ghosts_df_1, ghosts_df_2, radius_scale_factor=100):
         a `pandas` data frame with information on ghost spots data separations and ratios
     ghosts_df_2 : `pandas.DataFrame`
         a `pandas` data frame with information on ghost spots data separations and ratios
+    radius_scale_factor : `int`
+        a kind of weight for the spot radius to be used in the distance computation
 
     Returns
     -------
@@ -419,8 +423,8 @@ def match_ghosts(ghosts_df_1, ghosts_df_2, radius_scale_factor=100):
     n = len(ghosts_df_1['pos_x'])
     for i in range(n):
         index_of_min_2d, min_distance_2d, min_distance_2d_err, \
-            index_of_min_3d, min_distance_3d, min_distance_3d_err =\
-                find_nearest_ghost(ghosts_df_1.xs(i), ghosts_df_2, radius_scale_factor)
+            index_of_min_3d, min_distance_3d, min_distance_3d_err = \
+            find_nearest_ghost(ghosts_df_1.xs(i), ghosts_df_2, radius_scale_factor)
         match_i1.append(i)
         # 2D distance
         match_i2_2d.append(index_of_min_2d)
@@ -463,8 +467,8 @@ def compute_reduced_distance(ghosts_match):
         by the square of the errors on the distance.
     """
     n_matches = len(ghosts_match['distance_3d'])
-    reduced_distance = math.sqrt(sum(ghosts_match['distance_3d']*ghosts_match['distance_3d'] /
-                                     ghosts_match['distance_3d_err']*ghosts_match['distance_3d_err']))/n_matches
+    reduced_distance = math.sqrt(sum(ghosts_match['distance_3d'] * ghosts_match['distance_3d'] /
+                                     ghosts_match['distance_3d_err'] * ghosts_match['distance_3d_err'])) / n_matches
     return reduced_distance
 
 
@@ -483,6 +487,6 @@ def compute_2d_reduced_distance(ghosts_match):
 
     """
     n_matches = len(ghosts_match['distance_2d'])
-    reduced_distance = math.sqrt(sum(ghosts_match['distance_2d']*ghosts_match['distance_2d'] /
-                                     ghosts_match['distance_2d_err']*ghosts_match['distance_2d_err']))/n_matches
+    reduced_distance = math.sqrt(sum(ghosts_match['distance_2d'] * ghosts_match['distance_2d'] /
+                                     ghosts_match['distance_2d_err'] * ghosts_match['distance_2d_err'])) / n_matches
     return reduced_distance

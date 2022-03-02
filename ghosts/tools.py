@@ -2,16 +2,39 @@
 
 This module provides a number of generic tools.
 
-Todo:
-    * More tools are needed for the geometry configuration
-
 """
 
 
 import numpy as np
 
 
-# define function to get nice rangs
+def get_vector(axis, value):
+    """ Returns a vector containing the given value at the right spot for the given axis
+
+    Parameters
+    ----------
+    axis : `string`
+        the name of the rotation axis, x, y or z
+    value : `float`
+        the value of the rotation angle in degrees or of the shift in meters
+
+    Returns
+    -------
+    vector : `list` of `floats`
+        a list containing value at the corresponding spot of the given axis
+    """
+    if axis == 'x':
+        vector = [value, 0, 0]
+    elif axis == 'y':
+        vector = [0, value, 0]
+    elif axis == 'z':
+        vector = [0, 0, value]
+    else:
+        raise Exception(f'Unknown axis {axis}: axis should be x, y or z')
+    return vector
+
+
+# define function to get nice ranges
 def get_ranges(x, y, dr=0.010):
     """ Get x and y ranges around their mean values with a delta of dr
 
@@ -20,16 +43,16 @@ def get_ranges(x, y, dr=0.010):
     Parameters
     ----------
     x : `numpy.array`
-        The input array along the x axis
+        The input array along the x-axis
     y : `numpy.array`
-        The input array along the xy axis
+        The input array along the y-axis
     dr : `float`
         The delta around the mean value, or the box size if you wish
 
     Returns
     -------
     x_min, x_max, y_min, y_max : a tuple of 4 `floats`
-        The min and max values for x and y axis, i.e. the box boundaries.
+        The min and max values for x- and y-axis, i.e. the box boundaries.
     """
     x_min = x.mean() - dr
     x_max = x.mean() + dr
@@ -44,7 +67,7 @@ def get_main_impact_point(r_forward):
     Direct path will be r_forward with fewest number of things in "path"
 
     .. todo::
-        `get_main_impact_point` should compute a real baricenter?
+        `get_main_impact_point` should compute a real barycentre?
 
     Parameters
     ----------

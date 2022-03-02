@@ -6,6 +6,8 @@ This module is used to build new telescope with a modified geometry from the def
 import batoid
 from scipy.spatial.transform import Rotation as transform_rotation
 import numpy as np
+import copy
+from ghosts.tools import get_vector
 
 
 def get_list_of_optics(telescope):
@@ -79,7 +81,7 @@ def get_optics_position(telescope, name, axis_i):
 
 
 def get_optics_position_x(telescope, name):
-    """ Proxy to get the position of an optical element along the x axis
+    """ Proxy to get the position of an optical element along the x-axis
 
     Parameters
     ----------
@@ -98,7 +100,7 @@ def get_optics_position_x(telescope, name):
 
 
 def get_optics_position_y(telescope, name):
-    """ Proxy to get the position of an optical element along the y axis
+    """ Proxy to get the position of an optical element along the y-axis
 
     Parameters
     ----------
@@ -188,14 +190,7 @@ def translate_optic(telescope, name, axis='x', distance=0.01):
     rotated_telescope : `batoid.telescope`
         a new telescope with a rotated optical element
     """
-    vector = [0, 0, 0]
-    # translating
-    if axis == 'x':
-        vector = [distance, 0, 0]
-    elif axis == 'y':
-        vector = [0, distance, 0]
-    elif axis == 'z':
-        vector = [0, 0, distance]
+    vector = get_vector(axis, distance)
     translated_telescope = telescope.withLocallyShiftedOptic(name=name, shift=vector)
     return translated_telescope
 
@@ -211,7 +206,7 @@ def rotate_optic_vector(telescope, name, angles, verbose=False):
     name : `string`
         the name of an optical element
     angles : `list` of `floats`
-        the values of Eulers angles in degrees as a list,e.g. `[0.1, 0.1, 0.1]`
+        the values of Euler angles in degrees as a list,e.g. `[0.1, 0.1, 0.1]`
     verbose : `bool`
         the verbose mode, true or false
 
@@ -262,9 +257,9 @@ def randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=Fals
     according to uniform distributions drown from the given a maximum rotation angle
     and shift.
 
-    Rotation angles are drown from a uniform distribution in [-max_angle; +max_angle]
+    Rotation angles are drawn from a uniform distribution in [-max_angle; +max_angle]
 
-    Translation values are drown from a uniform distribution in [-max_shift; +max_shift]
+    Translation values are drawn from a uniform distribution in [-max_shift; +max_shift]
 
     Parameters
     ----------
@@ -296,14 +291,14 @@ def randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=Fals
     return rnd_telescope
 
 
-def tweak_telescope(telescope, tweaks):
+def tweak_telescope(telescope, geom_config):
     """ Tweak a telescope using rotations and shifts from a dictionary
 
     Parameters
     ----------
     telescope : `batoid.telescope`
         the optical setup as defined in `batoid`
-    tweaks : `dict`
+    geom_config : `dict`
         a dictionary with shifts and rotations for each optical element
 
     Returns
@@ -312,7 +307,9 @@ def tweak_telescope(telescope, tweaks):
         a new telescope with tweaked optical elements
     """
     tweaked_telescope = telescope
-    for opt, tw in tweaks.items():
+    config_copy = copy.deepcopy(geom_config)
+    geom_id = config_copy.pop('geom_id')
+    for opt, tw in config_copy.items():
         if 'shifts' in tw.keys():
             tmp_tel = translate_optic_vector(tweaked_telescope, opt, tw['shifts'])
         else:
@@ -322,6 +319,49 @@ def tweak_telescope(telescope, tweaks):
         else:
             tweaked_telescope = tmp_tel
     return tweaked_telescope
+
+
+def build_telescope(yaml_geometry="../data/LSST_CCOB_r.yaml"):
+    """ Build a telescope from a geometry description
+
+    Parameters
+    ----------
+    yaml_geometry : `string`
+        a yaml telescope geometry
+
+    Returns
+    -------
+    telescope : `batoid.telescope`
+        a telescope with the given geometry
+    """
+    # CCOB like geometry, i.e. lenses + filters
+    telescope = batoid.Optic.fromYaml(yaml_geometry)
+    # Make refractive interfaces partially reflective
+    make_optics_reflective(telescope)
+    return telescope
+
+
+def build_telescope_from_geom(geom_config):
+    """ Build the default telescope and tweak its optics given shifts and rotations
+    from a geometry configuration
+
+    Parameters
+    ----------
+    geom_config : `dict`
+        a dictionary with shifts and rotations for each optical element
+
+    Returns
+    -------
+    tw_telescope : `batoid.telescope`
+        a telescope with the given geometry tweaks
+    """
+    # Build the default telescope
+    telescope = build_telescope()
+    # tweak its optics
+    tw_telescope = tweak_telescope(telescope, geom_config)
+    # Make refractive interfaces partially reflective
+    make_optics_reflective(tw_telescope)
+    return tw_telescope
 
 
 if __name__ == '__main__':
