@@ -7,6 +7,7 @@ import batoid
 from scipy.spatial.transform import Rotation as transform_rotation
 import numpy as np
 import copy
+from ghosts.tools import get_vector
 
 
 def get_list_of_optics(telescope):
@@ -189,14 +190,7 @@ def translate_optic(telescope, name, axis='x', distance=0.01):
     rotated_telescope : `batoid.telescope`
         a new telescope with a rotated optical element
     """
-    vector = [0, 0, 0]
-    # translating
-    if axis == 'x':
-        vector = [distance, 0, 0]
-    elif axis == 'y':
-        vector = [0, distance, 0]
-    elif axis == 'z':
-        vector = [0, 0, distance]
+    vector = get_vector(axis, distance)
     translated_telescope = telescope.withLocallyShiftedOptic(name=name, shift=vector)
     return translated_telescope
 
