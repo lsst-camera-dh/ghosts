@@ -22,6 +22,7 @@ setup(
         ],
     install_requires=["batoid",
                       "matplotlib",
+                      "numpy",
                       "scipy",
                       "pandas",
                       "openpyxl",
