@@ -208,7 +208,7 @@ def reduce_ghosts(r_forward):
     return spots_data, ghost_maps
 
 
-def make_data_frame(spots_data, beam_config=BEAM_CONFIG_0):
+def make_data_frame(spots_data, beam_id=0, geom_id=0):
     """ Create a pandas data frame from the ghost spots data dictionary
     and a beam configuration.
 
@@ -216,20 +216,21 @@ def make_data_frame(spots_data, beam_config=BEAM_CONFIG_0):
     ----------
     spots_data : `dict`
         a dictionary with ghost spots data
-    beam_config : `dict`
-        a beam configuration dictionary
+    beam_id : `int`
+        a beam configuration id
+    geom_id : `int`
+        a geometry configuration id
 
     Returns
     -------
     data_frame : `pandas.DataFrame`
-        a pandas data frame with ghost spot data information, including beam configuration
+        a pandas data frame with ghost spot data information, including beam and geometry configuration ids
     """
     # creating a nice pandas data frame
     data_frame = pd.DataFrame(
         {
-            "config": beam_config['beam_id'], "n_photons": beam_config["n_photons"],
-            "beam_x": beam_config["x_offset"], "beam_y": beam_config["y_offset"], "beam_width": beam_config["radius"],
-            "beam_theta": beam_config['theta'], "beam_phi": beam_config['phi'],
+            "beam_id": beam_id,
+            "geom_id": geom_id,
             "index": np.array([data['index'] for data in spots_data], dtype="int"),
             "name": [data['name'] for data in spots_data],
             "pos_x": np.array([data['pos_x'] for data in spots_data], dtype="float"),
