@@ -86,7 +86,7 @@ def full_rotation(telescope, optic_name='L2', axis='y', angle=0.1, beam_config=B
     make_optics_reflective(rotated_optic)
     trace_full, r_forward, r_reverse, rays = run_simulation(rotated_optic, beam_config)
     spots_data, _spots = reduce_ghosts(r_forward)
-    spots_data_frame = make_data_frame(spots_data, beam_config)
+    spots_data_frame = make_data_frame(spots_data)
     ghost_separations = compute_ghost_separations(spots_data_frame)
     return spots_data_frame, ghost_separations
 
@@ -286,7 +286,7 @@ def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_
     return data_frame_r, ghost_separations_r
 
 
-def scan_dist_rotation(telescope, ref_data_frame, optic_name, axis, angles_list, rscale=10):
+def scan_dist_rotation(telescope, ref_data_frame, optic_name, axis, angles_list, r_scale=10):
     """ Run simulation to scan a given list of angles on one optic around an axis,
     and computes the reduced distance in 2D and 3D.
 
@@ -302,7 +302,7 @@ def scan_dist_rotation(telescope, ref_data_frame, optic_name, axis, angles_list,
         x, y, z as the translation axis you wish
     angles_list : `list` of `float`
         a list of angles to scan
-    rscale : `float`
+    r_scale : `float`
         the 3D distance scale factor to take into account the spots sizes
 
     Returns
@@ -319,11 +319,11 @@ def scan_dist_rotation(telescope, ref_data_frame, optic_name, axis, angles_list,
     for angle in angles_list:
         df_i, gs_i = full_rotation(telescope, optic_name=optic_name, axis=axis, angle=angle,
                                    beam_config=BEAM_CONFIG_1)
-        match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=rscale)
+        match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=r_scale)
         dist_i = compute_reduced_distance(match_i)
         distances_3d.append(dist_i)
 
-        match_i2 = match_ghosts(ref_data_frame, df_i, radius_scale_factor=rscale)
+        match_i2 = match_ghosts(ref_data_frame, df_i, radius_scale_factor=r_scale)
         dist_i2 = compute_2d_reduced_distance(match_i2)
         distances_2d.append(dist_i2)
 
