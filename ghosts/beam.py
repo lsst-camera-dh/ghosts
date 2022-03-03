@@ -212,3 +212,60 @@ def simple_beam(x_offset=0.1, y_offset=0, wl=500e-9, n_photons=1000):
     beam_config['wl'] = wl
     beam_config['n_photons'] = n_photons
     return beam_on(beam_config)
+
+
+def build_translation_set(base_beam_config, axis, shifts_list, base_id=0):
+    """ Build a set of beams for the given list of translations
+
+    Parameters
+    ----------
+    base_beam_config : `dict`
+        the base beam configuration dictionary to start from
+    axis : `string`
+        the name of the translation axis, usually x or y
+    shifts_list : `list` of `float`
+        the list of distances to scan in meters
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    beams = list()
+    for i, shift in enumerate(shifts_list):
+        beam_config = deepcopy(base_beam_config)
+        beam_config['beam_id'] = base_id + i
+        beam_config[f'{axis}_offset'] = shift
+        beams.append(beam_config)
+    return beams
+
+
+def build_rotation_set(base_beam_config, angle_name, angles_list, base_id=0):
+    """ Build a set of beam configurations for the given list of rotations
+    starting from the given beam configuration
+
+    Parameters
+    ----------
+    base_beam_config : `dict`
+        the base beam configuration dictionary to start from
+    angle_name : `string`
+        either "theta" or "phi"
+    angles_list : `list` of `float`
+        the list of angles to scan in degrees
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of geometry configuration dictionaries
+    """
+    beams = list()
+    for i, angle in enumerate(angles_list):
+        beam_config = deepcopy(base_beam_config)
+        beam_config['beam_id'] = base_id + i
+        beam_config[angle_name] = angle
+        beams.append(beam_config)
+    return beams
