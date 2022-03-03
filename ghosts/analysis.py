@@ -227,7 +227,7 @@ def make_data_frame(spots_data, beam_config=BEAM_CONFIG_0):
     # creating a nice pandas data frame
     data_frame = pd.DataFrame(
         {
-            "config": beam_config['id'], "n_photons": beam_config["n_photons"],
+            "config": beam_config['beam_id'], "n_photons": beam_config["n_photons"],
             "beam_x": beam_config["x_offset"], "beam_y": beam_config["y_offset"], "beam_width": beam_config["radius"],
             "beam_theta": beam_config['theta'], "beam_phi": beam_config['phi'],
             "index": np.array([data['index'] for data in spots_data], dtype="int"),
