@@ -308,7 +308,7 @@ def tweak_telescope(telescope, geom_config):
     """
     tweaked_telescope = telescope
     config_copy = copy.deepcopy(geom_config)
-    geom_id = config_copy.pop('geom_id')
+    geom_id = config_copy.pop('geom_id', 0)
     for opt, tw in config_copy.items():
         if 'shifts' in tw.keys():
             tmp_tel = translate_optic_vector(tweaked_telescope, opt, tw['shifts'])
