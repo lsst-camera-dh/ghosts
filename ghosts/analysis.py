@@ -405,7 +405,7 @@ def match_ghosts(ghosts_df_1, ghosts_df_2, radius_scale_factor=100):
         a `pandas` data frame with information on ghost spots data separations and ratios
     ghosts_df_2 : `pandas.DataFrame`
         a `pandas` data frame with information on ghost spots data separations and ratios
-    radius_scale_factor : `int`
+    radius_scale_factor : `float`
         a kind of weight for the spot radius to be used in the distance computation
 
     Returns
@@ -438,6 +438,10 @@ def match_ghosts(ghosts_df_1, ghosts_df_2, radius_scale_factor=100):
 
     ghosts_match = pd.DataFrame(
         {
+            "beam_id_1": ghosts_df_1['beam_id'],
+            "geom_id_1": ghosts_df_1['geom_id'],
+            "beam_id_2": ghosts_df_2['beam_id'],
+            "geom_id_2": ghosts_df_2['geom_id'],
             "ghost_1": np.array(match_i1, dtype="int"),
             "ghost_2_2d": np.array(match_i2_2d, dtype="int"),
             "distance_2d": np.array(match_min_dist_2d, dtype="float"),
