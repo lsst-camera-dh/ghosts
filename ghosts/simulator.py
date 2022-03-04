@@ -332,7 +332,7 @@ def scan_dist_rotation(telescope, ref_data_frame, optic_name, axis, angles_list,
     return angles_list, distances_2d, distances_3d
 
 
-def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_list, rscale=10):
+def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_list, r_scale=10):
     """ Run simulation to scan a given list of shifts on one optic along an axis,
     and computes the reduced distance in 2D and 3D.
 
@@ -348,7 +348,7 @@ def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_li
         x, y, z as the translation axis you wish
     shifts_list : `list` of `float`
         a list of shifts to scan
-    rscale : `float`
+    r_scale : `float`
         the 3D distance scale factor to take into account the spots sizes
 
     Returns
@@ -365,11 +365,11 @@ def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_li
     for delta in shifts_list:
         df_i, gs_i = full_translation(telescope, optic_name=optic_name, axis=axis, distance=delta,
                                       beam_config=BEAM_CONFIG_1)
-        match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=rscale)
+        match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=r_scale)
         dist_i = compute_reduced_distance(match_i)
         distances_3d.append(dist_i)
 
-        match_i2 = match_ghosts(ref_data_frame, df_i, radius_scale_factor=rscale)
+        match_i2 = match_ghosts(ref_data_frame, df_i, radius_scale_factor=r_scale)
         dist_i2 = compute_2d_reduced_distance(match_i2)
         distances_2d.append(dist_i2)
 
