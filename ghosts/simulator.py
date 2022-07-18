@@ -373,6 +373,6 @@ def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_li
         dist_i2 = compute_2d_reduced_distance(match_i2)
         distances_2d.append(dist_i2)
 
-        print(f'{delta} ', end='', flush=True)
+        print(f'{delta:.6f} ', end='', flush=True)
 
     return shifts_list, distances_2d, distances_3d
