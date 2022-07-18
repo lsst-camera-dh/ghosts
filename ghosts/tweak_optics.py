@@ -13,6 +13,9 @@ from ghosts.tools import get_vector
 def get_list_of_optics(telescope):
     """ Get a simple list of optical elements from a `batoid` telescope
 
+    .. todo::
+        `get_list_of_optics` needs to better handle optics which are not of interest, e.g. fake baffle
+
     Parameters
     ----------
     telescope : `batoid.telescope`
@@ -25,7 +28,10 @@ def get_list_of_optics(telescope):
     """
     optics = list()
     for one in telescope.items:
-        [optics.append(two.name) for two in telescope[one.name].items]
+        if isinstance(one, batoid.optic.Baffle):
+            print('tweak_optics::get_list_of_optics - Ignoring fake baffle')
+        else:
+            [optics.append(two.name) for two in telescope[one.name].items]
     return optics
 
 
