@@ -1,6 +1,7 @@
 # Beam intensity, photon energy and number of photons
 import numpy as np
 from scipy.constants import Planck, lambda2nu
+from scipy.spatial.transform import Rotation as transform_rotation
 from math import floor
 from copy import deepcopy
 import pandas as pd
@@ -148,9 +149,6 @@ def get_n_phot_for_power_nw_wl_nm(beam_power, wl):
 def beam_on(beam_config=BEAM_CONFIG_0):
     """ Generates a beam of ligth rays to be used for a simulation
 
-    .. todo::
-        `beam_on` should implement usage of theta and phi incident angles!
-
     Parameters
     ----------
     beam_config : `dict`
@@ -164,17 +162,29 @@ def beam_on(beam_config=BEAM_CONFIG_0):
     radius = beam_config['radius']
     x_offset = beam_config['x_offset']
     y_offset = beam_config['y_offset']
+    z_offset = beam_config['z_offset']
+    rz = beam_config['z_euler']
+    ry = beam_config['y_euler']
+    rx = beam_config['x_euler']
     wl = beam_config['wl']
     n_photons = beam_config['n_photons']
 
+    # draw uniform distribution from a disc
     r2 = np.random.uniform(low=0, high=radius * radius, size=n_photons)  # radius
-    theta = np.random.uniform(low=0, high=2 * np.pi, size=n_photons)  # angle
+    disc_theta = np.random.uniform(low=0, high=2 * np.pi, size=n_photons)  # angle
 
-    rays_x = np.sqrt(r2) * np.cos(theta) + x_offset
-    rays_y = np.sqrt(r2) * np.sin(theta) + y_offset
-    rays_z = np.zeros(n_photons)
+    # apply offsets
+    rays_x = np.sqrt(r2) * np.cos(disc_theta) + x_offset
+    rays_y = np.sqrt(r2) * np.sin(disc_theta) + y_offset
+    rays_z = np.ones(n_photons)*z_offset
 
-    rays_v = batoid.utils.normalized(np.array([0., 0., 1])) / 1.000277
+    # set direction, start from straight light, then rotate from Euler angles
+    straight_ray = np.array([0., 0., 1])
+    # watch out here, switching rx and ry on purpose (this makes rotation and offsets consistent in visualization)
+    rot_zyx = transform_rotation.from_euler('zxy', [rz, ry, rx], degrees=True)
+    rotated_ray = rot_zyx.apply(straight_ray)
+    # put direction in the form batoid likes (at speed of light)
+    rays_v = batoid.utils.normalized(rotated_ray) / 1.000277
     rays_vx = np.ones(n_photons) * rays_v[0]
     rays_vy = np.ones(n_photons) * rays_v[1]
     rays_vz = np.ones(n_photons) * rays_v[2]
@@ -245,7 +255,7 @@ def build_translation_set(base_beam_config, axis, shifts_list, base_id=0):
     return beams
 
 
-def build_rotation_set(base_beam_config, angle_name, angles_list, base_id=0):
+def build_rotation_set(base_beam_config, axis, angles_list, base_id=0):
     """ Build a set of beam configurations for the given list of rotations
     starting from the given beam configuration
 
@@ -253,8 +263,8 @@ def build_rotation_set(base_beam_config, angle_name, angles_list, base_id=0):
     ----------
     base_beam_config : `dict`
         the base beam configuration dictionary to start from
-    angle_name : `string`
-        either "theta" or "phi"
+    axis : `string`
+        axis around which to rotate as Euler rotations: "x_euler" or "y_euler"
     angles_list : `list` of `float`
         the list of angles to scan in degrees
     base_id : `int`
@@ -269,6 +279,6 @@ def build_rotation_set(base_beam_config, angle_name, angles_list, base_id=0):
     for i, angle in enumerate(angles_list):
         beam_config = deepcopy(base_beam_config)
         beam_config['beam_id'] = base_id + i
-        beam_config[angle_name] = angle
+        beam_config[f'{axis}_euler'] = angle
         beams.append(beam_config)
     return beams
