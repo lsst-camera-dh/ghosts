@@ -14,19 +14,8 @@ opticalSystem:
     surface:
       type: Plane
     coordSys:
-      z: 0.4393899
+      z: 3. #0.4393899
   items:
-    -
-      type: Baffle  # this thing is to be able to draw light rays from where they really start
-      name: M1CaBaffle2
-      surface:
-        type: Plane
-      obscuration:
-        type: ObscAnnulus
-        inner: 1.5
-        outer: 1.4
-      coordSys:
-        z: 2.2
     -
       type: CompoundOptic
       name: LSSTCamera
