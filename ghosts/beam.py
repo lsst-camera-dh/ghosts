@@ -148,6 +148,9 @@ def get_n_phot_for_power_nw_wl_nm(beam_power, wl):
 def beam_on(beam_config=BEAM_CONFIG_0):
     """ Generates a beam of ligth rays to be used for a simulation
 
+    .. todo::
+        `beam_on` should implement usage of theta and phi incident angles!
+
     Parameters
     ----------
     beam_config : `dict`
