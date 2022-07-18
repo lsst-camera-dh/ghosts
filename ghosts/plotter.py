@@ -41,6 +41,9 @@ def plot_setup(telescope, simulation):
     telescope.draw2d(f1_ax1, c='k')
     # now draw ray tracing on top of telescope
     batoid.drawTrace2d(f1_ax1, trace_full, c='orange')
+    # set axis titles and draw small referential
+    f1_ax1.set_xlabel('x (m)', fontsize=20)
+    f1_ax1.set_ylabel('z (m)', fontsize=20)
 
     # Plot input beam spot full scale
     beam_spot = rays.positionAtTime(3.397)
@@ -48,6 +51,8 @@ def plot_setup(telescope, simulation):
                         extent=[-0.35, 0.35, -0.35, 0.35], gridsize=(150, 150))
     f1_ax2.set_aspect("equal")
     f1_ax2.set_title(f"Beam spot")
+    f1_ax2.set_xlabel('x (m)', fontsize=16)
+    f1_ax2.set_ylabel('y (m)', fontsize=16)
     fig1.colorbar(hb1, ax=f1_ax2)
 
     # Plot input beam spot zoom in
@@ -56,6 +61,8 @@ def plot_setup(telescope, simulation):
                         gridsize=(50, 50))
     f1_ax3.set_aspect("equal")
     f1_ax3.set_title(f"Beam spot zoom")
+    f1_ax3.set_xlabel('x (m)', fontsize=16)
+    f1_ax3.set_ylabel('y (m)', fontsize=16)
     fig1.colorbar(hb2, ax=f1_ax3)
 
     # Plot light on detector on the right
@@ -73,6 +80,8 @@ def plot_setup(telescope, simulation):
              verticalalignment='center', color='m')
     f1_ax4.set_aspect("equal")
     f1_ax4.set_title(f"Image with ghosts")
+    f1_ax4.set_xlabel('x (m)', fontsize=16)
+    f1_ax4.set_ylabel('y (m)', fontsize=16)
     fig1.colorbar(hb3, ax=f1_ax4)
 
     # add info on direct path
