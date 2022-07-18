@@ -125,7 +125,7 @@ def plot_zoom_on_ghosts(forward_rays):
     # "Projection" on the x-axis shows that ghosts spots are nicely separated
     axs[1].hist(all_x, bins=1000, weights=all_f, log=True)
     axs[1].set_title("Projection of ghosts image on the x-axis")
-    axs[1].set_xlabel('position x (mm)')
+    axs[1].set_xlabel('position x (m)')
     axs[1].set_ylabel('~n photons')
     plt.show()
     # return 0 if all is wel
