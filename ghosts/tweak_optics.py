@@ -39,6 +39,8 @@ def make_optics_reflective(telescope, r_frac=0.02):
     """ Applies a simple coating as a unique refraction index for each optical element surface
 
     .. todo::
+        `make_optics_reflective` should be very different for detector
+    .. todo::
         `make_optics_reflective` should implement wavelength dependent coating for each optical surface
 
     Parameters
