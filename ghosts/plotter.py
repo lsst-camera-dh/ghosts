@@ -5,6 +5,7 @@ from scipy import stats
 import numpy as np
 from ghosts.tools import get_ranges, get_main_impact_point
 from ghosts.analysis import get_full_light_on_camera, map_ghost, get_ghost_spot_data
+from ghosts.constants import LSST_CAMERA_EXTENT
 
 
 def plot_setup(telescope, simulation):
@@ -48,7 +49,7 @@ def plot_setup(telescope, simulation):
     # Plot input beam spot full scale
     beam_spot = rays.positionAtTime(3.397)
     hb1 = f1_ax2.hexbin(beam_spot[:, 0], beam_spot[:, 1], reduce_C_function=np.sum,
-                        extent=[-0.35, 0.35, -0.35, 0.35], gridsize=(150, 150))
+                        extent=LSST_CAMERA_EXTENT, gridsize=(150, 150))
     f1_ax2.set_aspect("equal")
     f1_ax2.set_title(f"Beam spot")
     f1_ax2.set_xlabel('x (m)', fontsize=16)
@@ -68,7 +69,7 @@ def plot_setup(telescope, simulation):
     # Plot light on detector on the right
     all_x, all_y, all_f = get_full_light_on_camera(forward_rays)
     hb3 = f1_ax4.hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
-                        extent=[-0.35, 0.35, -0.35, 0.35], gridsize=(150, 150))
+                        extent=LSST_CAMERA_EXTENT, gridsize=(150, 150))
 
     # Plot approximate focal plane radius
     th = np.linspace(0, 2 * np.pi, 1000)
@@ -141,6 +142,61 @@ def plot_zoom_on_ghosts(forward_rays):
     return 0
 
 
+def plot_full_camera(forward_rays, log_scale=False):
+    """ Plots the 2D image of the full focal plane
+
+    Parameters
+    ----------
+    forward_rays : `list` of `batoid.RayVector`
+        a list of forward rays, as each item in list comes from one distinct path through the optic exiting in
+        the forward direction.  see `batoid.optic.traceSplit`
+    log_scale : `bool`
+        set to True to have a log color scale on the z-axis
+
+    Returns
+    -------
+    0 : 0
+        0 if all is well
+    """
+    plt.rcParams["figure.figsize"] = [18, 6]
+    fig, ax = plt.subplots(1, 1)
+
+    # ghosts images
+    # Plot light on detector on the right
+    all_x, all_y, all_f = get_full_light_on_camera(forward_rays)
+    hb = ax.hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
+                   extent=LSST_CAMERA_EXTENT, gridsize=(150, 150),
+                   bins='log' if log_scale else None)
+
+    # Plot approximate focal plane radius
+    th = np.linspace(0, 2 * np.pi, 1000)
+    plt.plot(0.32 * np.cos(th), 0.32 * np.sin(th), c='r')
+
+    # Plot direct path location on focal plane
+    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(forward_rays)
+    plt.text(direct_x, direct_y, '+', horizontalalignment='center',
+             verticalalignment='center', color='m')
+    ax.set_aspect("equal")
+    ax.set_title(f"Image with ghosts")
+    ax.set_xlabel('x (m)', fontsize=16)
+    ax.set_ylabel('y (m)', fontsize=16)
+    fig.colorbar(hb, ax=ax)
+
+    # add info on direct path
+    print(f'Direct path is number {i_straight}')
+    print(f'  central impact point is ({direct_x:.6f}, {direct_y:.6f})')
+    print(f'  transmission is {direct_f:.4f}\n')
+
+    # check bins content
+    # hex_centers = hb3.get_offsets()
+    hex_val = hb.get_array()
+    print(f'Maximum expected flux is {max(all_f):.4f}')
+    print(f'Maximum bin content is {max(hex_val):.4f}')
+
+    # return 0 if all is wel
+    return fig, ax
+
+
 def plot_ghosts_map(forward_rays):
     """ Plots a canvas with thumbnails of each one of the 37 possible images of the input beam
     on the focal plane, a.k.a. ghosts map.
@@ -211,6 +267,7 @@ def plot_spots_stats(data_frame):
     plt.rcParams["figure.figsize"] = [24, 24]
     fig, ax = plt.subplots(2, 3)
     axs = ax.flatten()
+    i = 0
     for i, col in enumerate(['pos_x', 'pos_y', 'radius']):
         axs[i].hist(data_frame[col] * 1000)
         axs[i].set_title(col, fontsize=22)
@@ -338,6 +395,9 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
     plt.rcParams["figure.figsize"] = [18, 12]
     fig, ax = plt.subplots(2, 2)
     # check if rotation or translation to get labels right
+    x_label = ''
+    insert_label = ''
+    slope_factor = 1
     if trans_type == 'rotation':
         x_label = 'rotation angle (°)'
         insert_label = 'deg'
@@ -426,8 +486,67 @@ def plot_spots(data_frame_list, spot_size_scaling=10, range_x=(-0.35, 0.35), ran
     return fig, ax
 
 
+def plot_full_camera_and_spots(forward_rays, data_frame, log_scale=False, spot_size_scaling=10):
+    """ Plots the 2D image of the full focal plane
+
+    Parameters
+    ----------
+    forward_rays : `list` of `batoid.RayVector`
+        a list of forward rays, as each item in list comes from one distinct path through the optic exiting in
+        the forward direction.  see `batoid.optic.traceSplit`
+    data_frame : `pandas.dataframe`
+        a data frame with spots positions and radius, e.g. from `make_data_frame`
+    log_scale : `bool`
+        set to True to have a log color scale on the z-axis
+    spot_size_scaling : `int`
+        a scaling factor to see large or small circles
+
+    Returns
+    -------
+    0 : 0
+        0 if all is well
+    """
+    plt.rcParams["figure.figsize"] = [18, 9]
+    fig, ax = plt.subplots(1, 2)
+
+    # first the camera ghosts image
+    all_x, all_y, all_f = get_full_light_on_camera(forward_rays)
+    hb = ax[0].hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
+                      extent=LSST_CAMERA_EXTENT, gridsize=(150, 150),
+                      bins='log' if log_scale else None)
+
+    # Plot approximate focal plane radius
+    th = np.linspace(0, 2 * np.pi, 1000)
+    plt.plot(0.32 * np.cos(th), 0.32 * np.sin(th), c='r')
+
+    # Plot direct path location on focal plane
+    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(forward_rays)
+    plt.text(direct_x, direct_y, '+', horizontalalignment='center',
+             verticalalignment='center', color='m')
+    ax[0].set_aspect("equal")
+    ax[0].set_title(f"Image with ghosts")
+    ax[0].set_xlabel('x (m)', fontsize=16)
+    ax[0].set_ylabel('y (m)', fontsize=16)
+    fig.colorbar(hb, ax=ax[0])
+
+    # Now visualize ghosts on the right
+    spots_x = data_frame['pos_x']
+    spots_y = data_frame['pos_y']
+    spots_size = ((data_frame['radius'] * 1000) ** 2) * spot_size_scaling
+    ax[1].scatter(spots_x, spots_y, s=spots_size, facecolors='none', edgecolors='black')
+    ax[1].set_xlim((LSST_CAMERA_EXTENT[0], LSST_CAMERA_EXTENT[1]))
+    ax[1].set_ylim((LSST_CAMERA_EXTENT[2], LSST_CAMERA_EXTENT[3]))
+    ax[1].set_title(f"Ghosts representation")
+    ax[1].set_xlabel('x (m)', fontsize=16)
+    ax[1].set_ylabel('y (m)', fontsize=16)
+    ax[1].set_aspect("equal")
+
+    # Done
+    return fig, ax
+
+
 def plot_distances_for_scan(scan_values, distances_2d, distances_3d, scan_type='rotation'):
-    ''' Plot likelihood value and profile
+    """ Plot likelihood value and profile
 
     Parameters
     ----------
@@ -446,7 +565,7 @@ def plot_distances_for_scan(scan_values, distances_2d, distances_3d, scan_type='
         the figure object
     ax: `matplotlib.Axis`
         the axis object
-    '''
+    """
     plt.rcParams["figure.figsize"] = [18, 9]
     fig, ax = plt.subplots(1, 2)
     # distributions
