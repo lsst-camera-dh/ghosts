@@ -13,8 +13,8 @@ def get_full_light_on_camera(r_forward):
 
     Parameters
     ----------
-    r_forward : `batoid.RayVector`
-        a batoid RayVector with a bunch of forward rays propagated  through the system.
+    r_forward : `list` of `batoid.RayVector`
+        a list of batoid RayVector with a bunch of rays propagated through the system.
 
     Returns
     -------
@@ -405,7 +405,7 @@ def match_ghosts(ghosts_df_1, ghosts_df_2, radius_scale_factor=100):
         a `pandas` data frame with information on ghost spots data separations and ratios
     ghosts_df_2 : `pandas.DataFrame`
         a `pandas` data frame with information on ghost spots data separations and ratios
-    radius_scale_factor : `float`
+    radius_scale_factor : `int`
         a kind of weight for the spot radius to be used in the distance computation
 
     Returns

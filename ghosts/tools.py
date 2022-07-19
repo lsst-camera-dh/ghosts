@@ -71,8 +71,8 @@ def get_main_impact_point(r_forward):
 
     Parameters
     ----------
-    r_forward : `batoid.RayVector`
-        a batoid RayVector with a bunch of rays propagated through the system.
+    r_forward : `list` of `batoid.RayVector`
+        a list of batoid RayVector with a bunch of rays propagated through the system.
 
     Returns
     -------
