@@ -147,6 +147,7 @@ def get_ghost_spot_data(i, ghost, p=100, wl=500):
                        'pos_x': mean_x, 'std_x': std_x, 'width_x': x_width,
                        'pos_y': mean_y, 'std_y': std_y, 'width_y': y_width,
                        'radius': radius, 'radius_err': radius_err,
+                       'flux': weights_sum,
                        'surface': spot_surface_mm2, 'pixel_signal': n_e_pixel,
                        'photon_density': density_phot_mm2}
 
@@ -224,7 +225,7 @@ def make_data_frame(spots_data, beam_id=0, geom_id=0):
     Returns
     -------
     data_frame : `pandas.DataFrame`
-        a pandas data frame with ghost spot data information, including beam and geometry configuration ids
+        a panda data frame with ghost spot data information, including beam and geometry configuration ids
     """
     # creating a nice pandas data frame
     data_frame = pd.DataFrame(
@@ -241,6 +242,7 @@ def make_data_frame(spots_data, beam_id=0, geom_id=0):
             "width_y": np.array([data['width_y'] for data in spots_data], dtype="float"),
             "radius": np.array([data['radius'] for data in spots_data], dtype="float"),
             "radius_err": np.array([data['radius_err'] for data in spots_data], dtype="float"),
+            "flux": np.array([data['flux'] for data in spots_data], dtype="float"),
             "surface": np.array([data['surface'] for data in spots_data], dtype="float"),
             "pixel_signal": np.array([data['pixel_signal'] for data in spots_data], dtype="float"),
         }
@@ -276,6 +278,7 @@ def compute_ghost_separations(data_frame):
             r2 = data_frame['radius'][i + k]
             overlap = distance - (r1 + r2)
             # surface and pixel signal ratio
+            flux_ratio = data_frame['flux'][i + k] / data_frame['flux'][i]
             surface_ratio = data_frame['surface'][i + k] / data_frame['surface'][i]
             signal_ratio = data_frame['pixel_signal'][i + k] / data_frame['pixel_signal'][i]
             # ghost names
@@ -292,6 +295,7 @@ def compute_ghost_separations(data_frame):
             "name_2": [data[3] for data in dist_data],
             "distance": np.array([data[4] for data in dist_data], dtype="float"),
             "overlap": np.array([data[5] for data in dist_data], dtype="float"),
+            "flux_ratio": np.array([data[6] for data in dist_data], dtype="float"),
             "surface_ratio": np.array([data[6] for data in dist_data], dtype="float"),
             "signal_ratio": np.array([data[7] for data in dist_data], dtype="float"),
         }
