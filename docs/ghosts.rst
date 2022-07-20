@@ -52,6 +52,16 @@ tweak optics interface
     :members:
     :undoc-members:
 
+reflectivity interface
+======================
+
+`ghosts.reflectivity`
+---------------------
+
+.. automodule:: ghosts.reflectivity
+    :members:
+    :undoc-members:
+
 simulator interface
 ===================
 
