@@ -8,6 +8,7 @@ from scipy.spatial.transform import Rotation as transform_rotation
 import numpy as np
 import copy
 from ghosts.tools import get_vector
+from ghosts import reflectivity
 
 
 def get_list_of_optics(telescope):
@@ -35,11 +36,9 @@ def get_list_of_optics(telescope):
     return optics
 
 
-def make_optics_reflective(telescope, r_frac=0.02):
+def make_optics_reflective(telescope, coating='simple', r_frac=[0.02, 0.02, 0.15]):
     """ Applies a simple coating as a unique refraction index for each optical element surface
 
-    .. todo::
-        `make_optics_reflective` should be very different for detector
     .. todo::
         `make_optics_reflective` should implement wavelength dependent coating for each optical surface
 
@@ -47,21 +46,22 @@ def make_optics_reflective(telescope, r_frac=0.02):
     ----------
     telescope : `batoid.telescope`
         the optical setup as defined in `batoid`
-    r_frac : `float`
-        a refraction index, usually of the order of 0.02
+    coating : `string`
+        use "simple" for simple coating, just one reflection fraction for all surfaces,
+        or "smart" to set one coefficient per element type
+    r_frac : `list` of `float`
+        the fraction of light that you wish surfaces to reflect, usually of the order of 0.02
+        use a list of 3 elements, for simple coating only the first one is used
+        for smart coating all 3 are used for lens, filter and detector
 
     Returns
     -------
-    r_frac : `float`
-        the refraction index applied
     """
-    for surface in telescope.itemDict.values():
-        if isinstance(surface, batoid.RefractiveInterface):
-            surface.forwardCoating = batoid.SimpleCoating(r_frac, 1 - r_frac)
-            surface.reverseCoating = batoid.SimpleCoating(r_frac, 1 - r_frac)
-        if isinstance(surface, batoid.Detector):
-            surface.forwardCoating = batoid.SimpleCoating(r_frac, 1 - r_frac)
-    return r_frac
+    if coating == 'simple':
+        reflectivity.make_simple_coating(telescope, r_frac)
+    elif coating == 'smart':
+        reflectivity.make_smart_coating(telescope, r_frac)
+    return 0
 
 
 def get_optics_position(telescope, name, axis_i):
