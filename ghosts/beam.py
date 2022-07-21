@@ -373,7 +373,7 @@ def build_first_quadrant_hex_set(delta=0.02, d_max=0.36, base_id=0):
         a list of beam configuration dictionaries
     """
     distances = list(np.arange(0, d_max, delta))
-    thetas = np.arange(0, 105, 15)
+    thetas = list(np.arange(0, 105, 15))
     return build_polar_set(distances, thetas, base_id=base_id)
 
 
