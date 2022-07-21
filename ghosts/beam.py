@@ -372,28 +372,9 @@ def build_first_quadrant_hex_set(delta=0.02, d_max=0.36, base_id=0):
      beams : `list` of `geom_config`
         a list of beam configuration dictionaries
     """
-    # that fixes the number of points in x
-    delta_scan = list(np.arange(0, d_max, delta))
-    # shall we make these an option?
+    distances = list(np.arange(0, d_max, delta))
     thetas = np.arange(0, 105, 15)
-    # starting with central beam
-    hex_beams = list()
-    start_config = deepcopy(BEAM_CONFIG_0)
-    start_config['n_photons'] = 100
-    start_config['base_id'] = base_id
-    hex_beams.extend([start_config])
-    # then build other configs
-    i = base_id + 1
-    for dist in delta_scan[1:]:
-        for theta in thetas:
-            beam_config = deepcopy(start_config)
-            beam_config['beam_id'] = i
-            beam_config['x_offset'] = dist*cos(radians(theta))
-            beam_config['y_offset'] = dist*sin(radians(theta))
-            hex_beams.append(beam_config)
-            i = i+1
-
-    return hex_beams
+    return build_polar_set(distances, thetas, base_id=base_id)
 
 
 def build_full_frame_hex_set(base_id=0, set_size='large'):
