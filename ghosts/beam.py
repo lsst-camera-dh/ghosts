@@ -2,14 +2,13 @@
 import numpy as np
 from scipy.constants import Planck, lambda2nu
 from scipy.spatial.transform import Rotation as transform_rotation
-from math import floor
+from math import floor, cos, sin, radians
 from copy import deepcopy
 import pandas as pd
 
 # batoid dependencies to create ray vectors
 import batoid
 from ghosts.beam_configs import BEAM_CONFIG_0
-
 
 
 def to_panda(beam_config):
@@ -282,3 +281,79 @@ def build_rotation_set(base_beam_config, axis, angles_list, base_id=0):
         beam_config[f'{axis}_euler'] = angle
         beams.append(beam_config)
     return beams
+
+
+def build_first_quadrant_square_set(delta=0.02, d_max=0.26, base_id=0):
+    """ Build a set of beams for the given list of translations
+
+    Parameters
+    ----------
+    delta : `float`
+        distance between 2 points in x or y, usually 2 cm = 0.02 m
+    d_max : `float`
+        maximum distance to go from center, up to ~0.26 m is fine, then beam does not converge on camera
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    # that fixes the number of points
+    delta_scan = list(np.arange(0, d_max, delta))
+
+    beams = list()
+    start_config = deepcopy(BEAM_CONFIG_0)
+    start_config['n_photons'] = 100
+
+    beam_scan_0 = build_translation_set(start_config, 'x', delta_scan, base_id=base_id)
+    beams.extend(beam_scan_0)
+    bid = len(beams) - 1
+    for b in beam_scan_0:
+        ts = build_translation_set(b, 'y', delta_scan, base_id=bid)
+        beams.extend(ts[1:])
+        bid = bid + len(ts) - 1
+
+    return beams
+
+
+def build_first_quadrant_hex_set(delta=0.02, d_max=0.36, base_id=0):
+    """ Build a set of beams for the given list of translations
+    
+    Parameters
+    ----------
+    delta : `float`
+        distance between 2 points in x or y, usually 2 cm = 0.02 m
+    d_max : `float`
+        maximum distance to go from center, up to ~0.26 m is fine, then beam does not converge on camera
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+    
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    # that fixes the number of points in x
+    delta_scan = list(np.arange(0, d_max, delta))
+    # shall we make these an option?
+    thetas = np.arange(0, 105, 15)
+    # starting with central beam
+    hex_beams = list()
+    start_config = deepcopy(BEAM_CONFIG_0)
+    start_config['n_photons'] = 100
+    start_config['base_id'] = base_id
+    hex_beams.extend([start_config])
+    # then build other configs
+    i = base_id + 1
+    for dist in delta_scan[1:]:
+        for theta in thetas:
+            beam_config = deepcopy(start_config)
+            beam_config['beam_id'] = i
+            beam_config['x_offset'] = dist*cos(radians(theta))
+            beam_config['y_offset'] = dist*sin(radians(theta))
+            hex_beams.append(beam_config)
+            i = i+1
+
+    return hex_beams
