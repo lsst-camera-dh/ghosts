@@ -318,6 +318,43 @@ def build_first_quadrant_square_set(delta=0.02, d_max=0.26, base_id=0):
     return beams
 
 
+def build_polar_set(distances, angles, base_id=0):
+    """ Build a set of beams for the given list of distances to center and a list of angles
+
+    Parameters
+    ----------
+    distances : `list` of `float`
+        list of distances to center to sample lenses
+    angles : `list` of `float`
+        list of polar angles to sample lenses
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    # starting with central beam
+    hex_beams = list()
+    start_config = deepcopy(BEAM_CONFIG_0)
+    start_config['n_photons'] = 100
+    start_config['base_id'] = base_id
+    hex_beams.extend([start_config])
+    # then build other configs
+    i = base_id + 1
+    for dist in distances[1:]:
+        for theta in angles:
+            beam_config = deepcopy(start_config)
+            beam_config['beam_id'] = i
+            beam_config['x_offset'] = dist * cos(radians(theta))
+            beam_config['y_offset'] = dist * sin(radians(theta))
+            hex_beams.append(beam_config)
+            i = i + 1
+
+    return hex_beams
+
+
 def build_first_quadrant_hex_set(delta=0.02, d_max=0.36, base_id=0):
     """ Build a set of beams for the given list of translations
     
@@ -357,3 +394,29 @@ def build_first_quadrant_hex_set(delta=0.02, d_max=0.36, base_id=0):
             i = i+1
 
     return hex_beams
+
+
+def build_full_frame_hex_set(base_id=0, set_size='large'):
+    """ Build a set of beams for the given list of translations
+
+    Parameters
+    ----------
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+    set_size : 'string'
+        small, medium, large are the 3 default configurations
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    if set_size == 'small':
+        distances = list(np.arange(0, 0.36, 0.06))
+        thetas = list(np.arange(0, 375, 60))
+    elif set_size == 'medium':
+        distances = list(np.arange(0, 0.36, 0.04))
+        thetas = list(np.arange(0, 375, 30))
+    else:
+        distances = list(np.arange(0, 0.36, 0.02))
+        thetas = list(np.arange(0, 375, 15))
+    return build_polar_set(distances, thetas, base_id=base_id)
