@@ -126,7 +126,7 @@ def plot_zoom_on_ghosts(forward_rays):
     plt.rcParams["figure.figsize"] = [18, 6]
     fig, ax = plt.subplots(2, 1)
     axs = ax.ravel()
-    # ghosts images
+    # ghost images
     _hb1 = axs[0].hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
                          extent=[-0.02, 0.27, -0.005, 0.005], gridsize=(100, 100))
     axs[0].set_aspect("equal")
@@ -582,4 +582,88 @@ def plot_distances_for_scan(scan_values, distances_2d, distances_3d, scan_type='
     elif scan_type == 'translation':
         ax[1].set_xlabel('shift in meters')
         ax[1].set_title(f'Translation scan from {min(scan_values):.5f} to {max(scan_values):.5f} m')
+    return fig, ax
+
+
+def plot_impact_point_vs_beam_offset(data_frame):
+    """ Plot likelihood value and profile
+
+    Parameters
+    ----------
+    data_frame : `pandas.DataFrame`
+        a panda data frame with information on beam positions and main impact points
+        typically created with `simulator.simulate_impact_points_for_beam_set`
+
+    Returns
+    -------
+    fig: `matplotlib.Figure`
+        the figure object
+    ax: `matplotlib.Axis`
+        the axis object
+    """
+    plt.rcParams["figure.figsize"] = [18, 24]
+    fig, ax = plt.subplots(4, 2)
+    # 1 the incident beam
+    ax[0][0].scatter(data_frame['x_offset'], data_frame['y_offset'])
+    ax[0][0].set_aspect('equal')
+    ax[0][0].set_xlabel('x_offset (m)')
+    ax[0][0].set_ylabel('y_offset (m)')
+    ax[0][0].set_title('beam')
+    # 2 the impact point
+    ax[0][1].scatter(data_frame['x_spot'], data_frame['y_spot'])
+    ax[0][1].set_aspect('equal')
+    ax[0][1].set_xlabel('x_spot (m)')
+    ax[0][1].set_ylabel('y_spot (m)')
+    ax[0][1].set_title('impact point')
+    # 3 offset vs spot on x
+    ax[1][0].scatter(data_frame['x_offset'], data_frame['x_spot'])
+    ax[1][0].set_aspect('equal')
+    ax[1][0].set_xlabel('x_offset (m)')
+    ax[1][0].set_ylabel('x_spot (m)')
+    ax[1][0].set_title('beam vs impact point in x')
+    # 4 offset vs spot on y
+    ax[1][1].scatter(data_frame['y_offset'], data_frame['y_spot'])
+    ax[1][1].set_aspect('equal')
+    ax[1][1].set_xlabel('y_offset (m)')
+    ax[1][1].set_ylabel('y_spot (m)')
+    ax[1][1].set_title('beam vs impact point in y')
+    # 5 offset vs spot on distance
+    ax[2][0].scatter(data_frame['beam_dist_to_center'], data_frame['spot_dist_to_center'])
+    ax[2][0].set_aspect('equal')
+    ax[2][0].set_xlabel('beam distance to center (m)')
+    ax[2][0].set_ylabel('spot distance to center (m)')
+    ax[2][0].set_title('distance to center')
+    # 6 offset vs spot on convergence
+    ax[2][1].scatter(data_frame['convergence'], data_frame['beam_dist_to_center'])
+    ax[2][1].set_xlabel('convergence')
+    ax[2][1].set_ylabel('beam distance to center (m)')
+    # 7 displacement from offset to impact point
+    ax[3][0].scatter(data_frame['beam_dist_to_center'], data_frame['displacement'])
+    ax[3][0].set_xlabel('beam distance to center (m)')
+    ax[3][0].set_ylabel('displacement (m)')
+    # 8 convergence histogram
+    c_x_n, c_x_bins, c_x_patches = ax[3][1].hist(data_frame['convergence'], bins=50, density=True)
+    ax[3][1].set_xlabel('convergence (m)')
+    ax[3][1].set_ylabel('density')
+
+    # Linear fit for distance to center
+    x_lin_fit = stats.linregress(data_frame['beam_dist_to_center'], data_frame['displacement'])
+    print(f'Filter fit results: intercept = {x_lin_fit.intercept:.6f}, slope = {x_lin_fit.slope:.3f}')
+    x_interp_ys = [x_lin_fit.intercept + x_lin_fit.slope * x for x in data_frame['beam_dist_to_center']]
+    ax[3][0].plot(data_frame['beam_dist_to_center'], x_interp_ys, 'r', label='linear fit')
+    # ax[3][0].legend()
+    # write text
+    y_min = data_frame['displacement'].min()
+    ax[3][0].text(0.02, y_min * 0.8, f'Slope = {x_lin_fit.slope * 1000:.1f} mm / m', fontsize=20)
+
+    # gaussian fit to convergence
+    conv = data_frame['convergence'].dropna()
+    red_conv = conv[(conv > 0.98) & (conv < 1.02)]
+    (c_x_mu, c_x_sigma) = stats.norm.fit(red_conv)
+    ax[3][1].text(ax[3][1].get_xlim()[0], ax[3][1].get_ylim()[1] * 0.95, f'Mean = {c_x_mu:.4f}', fontsize=16)
+    ax[3][1].text(ax[3][1].get_xlim()[0], ax[3][1].get_ylim()[1] * 0.9, f'Sigma = {c_x_sigma:.4f}', fontsize=16)
+    # plot gaussian fit
+    c_x_bin_centers = 0.5 * (c_x_bins[1:] + c_x_bins[:-1])
+    c_x_y = stats.norm.pdf(c_x_bin_centers, c_x_mu, c_x_sigma)
+    ax[3][1].plot(c_x_bin_centers, c_x_y, 'r--', linewidth=2)
     return fig, ax
