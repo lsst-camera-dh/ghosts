@@ -355,8 +355,8 @@ def build_polar_set(distances, angles, base_id=0):
     return hex_beams
 
 
-def build_first_quadrant_hex_set(delta=0.02, d_max=0.36, base_id=0):
-    """ Build a set of beams for the given list of translations
+def build_first_quadrant_polar_set(delta=0.02, d_max=0.36, base_id=0):
+    """ Build a set of beams for the given list of distances, and rotate on the first quadrant
     
     Parameters
     ----------
@@ -377,7 +377,7 @@ def build_first_quadrant_hex_set(delta=0.02, d_max=0.36, base_id=0):
     return build_polar_set(distances, thetas, base_id=base_id)
 
 
-def build_full_frame_hex_set(base_id=0, set_size='large'):
+def build_full_frame_polar_set(base_id=0, set_size='large'):
     """ Build a set of beams for the given list of translations
 
     Parameters
