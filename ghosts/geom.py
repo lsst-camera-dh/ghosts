@@ -93,8 +93,8 @@ def concat_dicts(geom_dict_list):
 def translate_optic(optic_name, axis, distance, geom_id=1000000):
     """ Create a dictionary to translate a piece of optic along an axis
 
-     Parameters
-     ----------
+    Parameters
+    ----------
     optic_name : `string`
         the name of an optical element
     axis : `string`
@@ -104,9 +104,9 @@ def translate_optic(optic_name, axis, distance, geom_id=1000000):
     geom_id : `int`
         the id of the new geometry configuration
 
-     Returns
-     -------
-     geom : `dict`
+    Returns
+    -------
+    geom : `dict`
         a `geom_config` dictionary for the application of the translation
      """
     geom = copy.deepcopy(GEOM_CONFIG_0)
