@@ -667,3 +667,71 @@ def plot_impact_point_vs_beam_offset(data_frame):
     c_x_y = stats.norm.pdf(c_x_bin_centers, c_x_mu, c_x_sigma)
     ax[3][1].plot(c_x_bin_centers, c_x_y, 'r--', linewidth=2)
     return fig, ax
+
+
+def plot_beam_pointing_precision(data_frame, target_x, target_y):
+    """ Plot beam pointing precision as histograms of the differences in position
+    of the beam and the target
+
+    Parameters
+    ----------
+    data_frame : `pandas.DataFrame`
+        a panda data frame with information on beam positions and main impact points
+        typically created with `simulator.simulate_impact_points_for_beam_set`
+    target_x : `float`
+        the beam target position along x on the camera focal plane
+    target_y : `float`
+        the beam target position along y on the camera focal plane
+
+    Returns
+    -------
+    fig: `matplotlib.Figure`
+        the figure object
+    ax: `matplotlib.Axis`
+        the axis object
+    """
+    # have a look at the precision of the beam pointing to center
+    from matplotlib.ticker import MaxNLocator
+    plt.rcParams["figure.figsize"] = [18, 9]
+    # make figure
+    fig, ax = plt.subplots(1, 2)
+    ax[0].hist((data_frame['x_spot'] - target_x) * 1000)
+    ax[0].set_xlabel('delta x (mm)')
+    ax[0].set_ylabel('n spots')
+    ax[0].set_title('Difference between target and real impact point (x)')
+    ax[0].yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    ax[1].hist((data_frame['y_spot'] - target_y) * 1000)
+    ax[1].set_xlabel('delta y (mm)')
+    ax[1].set_ylabel('n spots')
+    ax[1].set_title('Difference between target and real impact point (y)')
+    ax[1].yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    print('The pointing precision at order 0 is of the order of ~1 mm')
+    return fig, ax
+
+
+def plot_impact_points_full_frame(data_frame):
+    """ Plot impact point of a beam set on the full camera focal plane
+
+    Parameters
+    ----------
+    data_frame : `pandas.DataFrame`
+        a panda data frame with information on beam positions and main impact points
+        typically created with `simulator.simulate_impact_points_for_beam_set`
+
+    Returns
+    -------
+    0
+    """
+    plt.rcParams["figure.figsize"] = [9, 9]
+    plt.scatter(data_frame['x_spot'], data_frame['y_spot'])
+    plt.xlim((LSST_CAMERA_EXTENT[0], LSST_CAMERA_EXTENT[1]))
+    plt.ylim((LSST_CAMERA_EXTENT[2], LSST_CAMERA_EXTENT[3]))
+    plt.gca().set_aspect('equal')
+    plt.xlabel('Camera X')
+    plt.ylabel('Camera Y')
+    plt.title('Beam set impact points')
+    th = np.linspace(0, 2 * np.pi, 1000)
+    plt.plot(0.32 * np.cos(th), 0.32 * np.sin(th), c='r')
+    return 0
