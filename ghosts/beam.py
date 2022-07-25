@@ -2,14 +2,14 @@
 import numpy as np
 from scipy.constants import Planck, lambda2nu
 from scipy.spatial.transform import Rotation as transform_rotation
-from math import floor
+from math import floor, cos, sin, radians, atan, degrees
 from copy import deepcopy
 import pandas as pd
 
 # batoid dependencies to create ray vectors
 import batoid
 from ghosts.beam_configs import BEAM_CONFIG_0
-
+from ghosts.constants import CCOB_DISTANCE_TO_FOCAL_PLANE
 
 
 def to_panda(beam_config):
@@ -146,6 +146,78 @@ def get_n_phot_for_power_nw_wl_nm(beam_power, wl):
     return n_photons
 
 
+def _get_angles_to_center(x_offset, y_offset):
+    """ Compute the Euler angles to point the beam at the camera center
+    given a beam position
+
+    Parameters
+    ----------
+    x_offset : `float`
+        beam position on the X-axis
+    y_offset : `float`
+        beam position on the Y-axis
+
+    Returns
+    -------
+    x_euler, y_euler : `tuple` of `floats`
+        Euler angles around X and Y axis as a tuple
+    """
+    y_euler = -atan(x_offset/CCOB_DISTANCE_TO_FOCAL_PLANE)
+    x_euler = atan(y_offset/CCOB_DISTANCE_TO_FOCAL_PLANE)
+    return degrees(x_euler), degrees(y_euler)
+
+
+def _get_angles_to_xy(x_pos, y_pos, x_offset, y_offset):
+    """ Compute the Euler angles to point the beam at a given point
+     on the camera given a beam position
+
+    Parameters
+    ----------
+    x_pos : `float`
+        position on the X-axis of the camera plane
+    y_pos : `float`
+        position on the Y-axis of the camera plane
+    x_offset : `float`
+        beam position on the X-axis
+    y_offset : `float`
+        beam position on the Y-axis
+
+    Returns
+    -------
+    x_euler, y_euler : `tuple` of `floats`
+        Euler angles around X and Y axis as a tuple
+    """
+    dx = x_offset - x_pos
+    dy = y_offset - y_pos
+    return _get_angles_to_center(dx, dy)
+
+
+def point_beam_to_target(beam_config, target_x=0., target_y=0.):
+    """ Compute the Euler angles to point the beam at the camera center
+    given a beam position
+
+    Parameters
+    ----------
+    beam_config : `dict`
+        a dictionary with the light beam configuration, see :ref:`beam_configs`.
+    target_x : `float`
+        target position on the X-axis of the camera plane
+    target_y : `float`
+        target position on the Y-axis of the camera plane
+
+    Returns
+    -------
+    new_beam : `dict`
+        a dictionary with the light beam configuration (see :ref:`beam_configs`)
+        that points toward the requested position on the camera plane
+    """
+    # make the new config
+    new_beam = deepcopy(beam_config)
+    new_beam['x_euler'], new_beam['y_euler'] = \
+        _get_angles_to_xy(target_x, target_y, new_beam['x_offset'], new_beam['y_offset'])
+    return new_beam
+
+
 def beam_on(beam_config=BEAM_CONFIG_0):
     """ Generates a beam of ligth rays to be used for a simulation
 
@@ -181,7 +253,7 @@ def beam_on(beam_config=BEAM_CONFIG_0):
     # set direction, start from straight light, then rotate from Euler angles
     straight_ray = np.array([0., 0., 1])
     # watch out here, switching rx and ry on purpose (this makes rotation and offsets consistent in visualization)
-    rot_zyx = transform_rotation.from_euler('zxy', [rz, ry, rx], degrees=True)
+    rot_zyx = transform_rotation.from_euler('zxy', [rz, rx, ry], degrees=True)
     rotated_ray = rot_zyx.apply(straight_ray)
     # put direction in the form batoid likes (at speed of light)
     rays_v = batoid.utils.normalized(rotated_ray) / 1.000277
@@ -282,3 +354,127 @@ def build_rotation_set(base_beam_config, axis, angles_list, base_id=0):
         beam_config[f'{axis}_euler'] = angle
         beams.append(beam_config)
     return beams
+
+
+def build_first_quadrant_square_set(delta=0.02, d_max=0.26, base_id=0):
+    """ Build a set of beams for the given list of translations
+
+    .. todo::
+        `build_first_quadrant_square_set` refactor to make more flexible as `build_polar_set`
+        if needed, i.e. if we go for a set of squared distribution of positions
+
+    Parameters
+    ----------
+    delta : `float`
+        distance between 2 points in x or y, usually 2 cm = 0.02 m
+    d_max : `float`
+        maximum distance to go from center, up to ~0.26 m is fine, then beam does not converge on camera
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    # that fixes the number of points
+    delta_scan = list(np.arange(0, d_max, delta))
+
+    beams = list()
+    start_config = deepcopy(BEAM_CONFIG_0)
+    start_config['n_photons'] = 100
+
+    beam_scan_0 = build_translation_set(start_config, 'x', delta_scan, base_id=base_id)
+    beams.extend(beam_scan_0)
+    bid = len(beams) - 1
+    for b in beam_scan_0:
+        ts = build_translation_set(b, 'y', delta_scan, base_id=bid)
+        beams.extend(ts[1:])
+        bid = bid + len(ts) - 1
+
+    return beams
+
+
+def build_polar_set(distances, angles, base_id=0):
+    """ Build a set of beams for the given list of distances to center and a list of angles
+
+    Parameters
+    ----------
+    distances : `list` of `float`
+        list of distances to center to sample lenses
+    angles : `list` of `float`
+        list of polar angles to sample lenses
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    # starting with central beam
+    hex_beams = list()
+    start_config = deepcopy(BEAM_CONFIG_0)
+    start_config['n_photons'] = 100
+    start_config['base_id'] = base_id
+    hex_beams.extend([start_config])
+    # then build other configs
+    i = base_id + 1
+    for dist in distances[1:]:
+        for theta in angles:
+            beam_config = deepcopy(start_config)
+            beam_config['beam_id'] = i
+            beam_config['x_offset'] = dist * cos(radians(theta))
+            beam_config['y_offset'] = dist * sin(radians(theta))
+            hex_beams.append(beam_config)
+            i = i + 1
+
+    return hex_beams
+
+
+def build_first_quadrant_polar_set(delta=0.02, d_max=0.36, base_id=0):
+    """ Build a set of beams for the given list of distances, and rotate on the first quadrant
+    
+    Parameters
+    ----------
+    delta : `float`
+        distance between 2 points in x or y, usually 2 cm = 0.02 m
+    d_max : `float`
+        maximum distance to go from center, up to ~0.26 m is fine, then beam does not converge on camera
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+    
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    distances = list(np.arange(0, d_max, delta))
+    thetas = list(np.arange(0, 105, 15))
+    return build_polar_set(distances, thetas, base_id=base_id)
+
+
+def build_full_frame_polar_set(base_id=0, set_size='large'):
+    """ Build a set of beams for the given list of translations
+
+    Parameters
+    ----------
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+    set_size : 'string'
+        small, medium, large are the 3 default configurations
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    if set_size == 'small':
+        distances = list(np.arange(0, 0.36, 0.06))
+        thetas = list(np.arange(0, 375, 60))
+    elif set_size == 'medium':
+        distances = list(np.arange(0, 0.36, 0.04))
+        thetas = list(np.arange(0, 375, 30))
+    else:
+        distances = list(np.arange(0, 0.36, 0.02))
+        thetas = list(np.arange(0, 375, 15))
+    return build_polar_set(distances, thetas, base_id=base_id)

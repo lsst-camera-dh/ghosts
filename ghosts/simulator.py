@@ -3,9 +3,10 @@ import numpy as np
 import pandas as pd
 from ghosts.tweak_optics import rotate_optic, make_optics_reflective, translate_optic, randomized_telescope
 from ghosts.beam_configs import BEAM_CONFIG_0, BEAM_CONFIG_1
-from ghosts.beam import beam_on
+from ghosts.beam import beam_on, concat_dicts
 from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separations, match_ghosts,\
                             compute_reduced_distance, compute_2d_reduced_distance
+from ghosts.tools import get_main_impact_point
 
 
 # run a ray tracing simulation
@@ -376,3 +377,56 @@ def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_li
         print(f'{delta:.6f} ', end='', flush=True)
 
     return shifts_list, distances_2d, distances_3d
+
+
+def simulate_impact_points_for_beam_set(telescope, beam_set):
+    """ Runs a ray tracing simulation of a light beam into the CCOB for a list
+    of beam configurations
+
+    Parameters
+    ----------
+    telescope : `batoid.telescope`
+        the optical setup
+    beam_set : `list` of `dict`
+        a list of dictionaries with the light beam configuration, see :ref:`beam_configs`.
+
+    Returns
+    -------
+    data_frame : `pandas.DataFrame`
+        a panda data frame with information on beam positions and main impact points
+    -------
+    """
+    # initialize lists
+    impact_x = list()
+    impact_y = list()
+    impact_id = list()
+
+    # run simulation and get impact point
+    for one_beam in beam_set:
+        print('Simulating beam id ', one_beam['beam_id'], end='\r')
+        _trace_full, forward_rays, _reverse_rays, _rays = run_simulation(telescope, one_beam)
+        _n, x, y, _f = get_main_impact_point(forward_rays)
+        impact_x.append(x)
+        impact_y.append(y)
+        impact_id.append(one_beam['beam_id'])
+
+    # now make a data frame
+    impact_df = pd.DataFrame({'beam_id': impact_id, 'x_spot': impact_x, 'y_spot': impact_y})
+
+    # make a data frame of the beam set
+    beam_set_df = concat_dicts(beam_set)
+
+    # join tables
+    data_frame = beam_set_df.join(impact_df.set_index('beam_id'), on='beam_id')
+
+    # compute additional stuff
+    data_frame['beam_dist_to_center'] = np.sqrt(
+        data_frame['x_offset'] * data_frame['x_offset'] + data_frame['y_offset'] * data_frame['y_offset'])
+    data_frame['spot_dist_to_center'] = np.sqrt(
+        data_frame['x_spot'] * data_frame['x_spot'] + data_frame['y_spot'] * data_frame['y_spot'])
+    data_frame['convergence'] = data_frame['spot_dist_to_center'] / data_frame['beam_dist_to_center']
+    data_frame['displacement'] = data_frame['spot_dist_to_center'] - data_frame['beam_dist_to_center']
+    data_frame.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+    # done
+    return data_frame
