@@ -219,7 +219,7 @@ def point_beam_to_target(beam_config, target_x=0., target_y=0.):
 
 
 def beam_on(beam_config=BEAM_CONFIG_0):
-    """ Generates a beam of ligth rays to be used for a simulation
+    """ Generates a beam of light rays to be used for a simulation
 
     Parameters
     ----------
@@ -356,12 +356,40 @@ def build_rotation_set(base_beam_config, axis, angles_list, base_id=0):
     return beams
 
 
-def build_first_quadrant_square_set(delta=0.02, d_max=0.26, base_id=0):
-    """ Build a set of beams for the given list of translations
+def build_square_set(distances, base_id=0):
+    """ Build a square set of beams for a given list of distances
 
-    .. todo::
-        `build_first_quadrant_square_set` refactor to make more flexible as `build_polar_set`
-        if needed, i.e. if we go for a set of squared distribution of positions
+    Parameters
+    ----------
+    distances : `list` of `float`
+        list of distances from -x/-y to +x/+Y
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    beams = list()
+    start_config = deepcopy(BEAM_CONFIG_0)
+    start_config['n_photons'] = 100
+
+    bid = base_id
+    for x in distances:
+        for y in distances:
+            new_config = deepcopy(start_config)
+            new_config['beam_id'] = bid
+            new_config['x_offset'] = x
+            new_config['y_offset'] = y
+            beams.append(new_config)
+            bid = bid + 1
+
+    return beams
+
+
+def build_first_quadrant_square_set(delta=0.02, d_max=0.26, base_id=0):
+    """ Build a set of beams to cover the first quadrant with a square grid
 
     Parameters
     ----------
@@ -378,21 +406,71 @@ def build_first_quadrant_square_set(delta=0.02, d_max=0.26, base_id=0):
         a list of beam configuration dictionaries
     """
     # that fixes the number of points
-    delta_scan = list(np.arange(0, d_max, delta))
+    shifts_list = list(np.arange(0, d_max, delta))
+    return build_square_set(shifts_list, base_id)
 
-    beams = list()
-    start_config = deepcopy(BEAM_CONFIG_0)
-    start_config['n_photons'] = 100
 
-    beam_scan_0 = build_translation_set(start_config, 'x', delta_scan, base_id=base_id)
-    beams.extend(beam_scan_0)
-    bid = len(beams) - 1
-    for b in beam_scan_0:
-        ts = build_translation_set(b, 'y', delta_scan, base_id=bid)
-        beams.extend(ts[1:])
-        bid = bid + len(ts) - 1
+def build_full_frame_square_set(delta=0.02, d_max=0.26, base_id=0):
+    """ Build a full square set of beams on the full camera frame
 
-    return beams
+    Parameters
+    ----------
+    delta : `float`
+        distance between 2 points in x or y, usually 2 cm = 0.02 m
+    d_max : `float`
+        maximum distance to go from center, up to ~0.26 m is fine, then beam does not converge on camera
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    # that fixes the number of points
+    shifts_list = list(np.arange(-d_max, d_max+delta/2., delta))
+    return build_square_set(shifts_list, base_id)
+
+
+def build_square_set_on_target(base_beam_config, distances,
+                               target_x=0, target_y=0, base_id=0):
+    """ Build a set of beams for the given list of distances from target
+
+    Parameters
+    ----------
+    base_beam_config : `dict`
+        the base beam configuration dictionary to start from
+    distances : `list` of `float`
+        list of distances from -x/-y to +x/+Y
+    target_x : `float`
+        target position on the X-axis of the camera plane
+    target_y : `float`
+        target position on the Y-axis of the camera plane
+    base_id : `int`
+        the id of the first beam configuration created, following ids will be `id+1`
+
+    Returns
+    -------
+     beams : `list` of `geom_config`
+        a list of beam configuration dictionaries
+    """
+    # starting with central beam
+    new_beams = list()
+    start_config = deepcopy(base_beam_config)
+    start_config['beam_id'] = base_id
+    # then build other configs
+    i = base_id
+    for dx in distances:
+        for dy in distances:
+            beam_config = deepcopy(start_config)
+            beam_config['beam_id'] = i
+            pos_x = target_x + dx
+            pos_y = target_y + dy
+            new_config = point_beam_to_target(beam_config, pos_x, pos_y)
+            new_beams.append(new_config)
+            i = i + 1
+
+    return new_beams
 
 
 def build_polar_set(distances, angles, base_id=0):
