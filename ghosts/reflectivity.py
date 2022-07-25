@@ -41,7 +41,7 @@ def make_simple_coating(telescope, r_frac=[0.02, 0.02, 0.15]):
     ----------
     telescope : `batoid.telescope`
         the optical setup as defined in `batoid`
-    r_frac : `float`
+    r_frac : `list` of `float`
         a refraction index, usually of the order of 0.02
 
     Returns
