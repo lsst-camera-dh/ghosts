@@ -359,6 +359,10 @@ def build_rotation_set(base_beam_config, axis, angles_list, base_id=0):
 def build_first_quadrant_square_set(delta=0.02, d_max=0.26, base_id=0):
     """ Build a set of beams for the given list of translations
 
+    .. todo::
+        `build_first_quadrant_square_set` refactor to make more flexible as `build_polar_set`
+        if needed, i.e. if we go for a set of squared distribution of positions
+
     Parameters
     ----------
     delta : `float`
