@@ -147,18 +147,70 @@ def get_n_phot_for_power_nw_wl_nm(beam_power, wl):
 
 
 def _get_angles_to_center(x_offset, y_offset):
+    """ Compute the Euler angles to point the beam at the camera center
+    given a beam position
+
+    Parameters
+    ----------
+    x_offset : `float`
+        beam position on the X-axis
+    y_offset : `float`
+        beam position on the Y-axis
+
+    Returns
+    -------
+    x_euler, y_euler : `tuple` of `floats`
+        Euler angles around X and Y axis as a tuple
+    """
     y_euler = -atan(x_offset/CCOB_DISTANCE_TO_FOCAL_PLANE)
     x_euler = atan(y_offset/CCOB_DISTANCE_TO_FOCAL_PLANE)
     return degrees(x_euler), degrees(y_euler)
 
 
 def _get_angles_to_xy(x_pos, y_pos, x_offset, y_offset):
+    """ Compute the Euler angles to point the beam at a given point
+     on the camera given a beam position
+
+    Parameters
+    ----------
+    x_pos : `float`
+        position on the X-axis of the camera plane
+    y_pos : `float`
+        position on the Y-axis of the camera plane
+    x_offset : `float`
+        beam position on the X-axis
+    y_offset : `float`
+        beam position on the Y-axis
+
+    Returns
+    -------
+    x_euler, y_euler : `tuple` of `floats`
+        Euler angles around X and Y axis as a tuple
+    """
     dx = x_offset - x_pos
     dy = y_offset - y_pos
     return _get_angles_to_center(dx, dy)
 
 
 def point_beam_to_target(beam_config, target_x=0., target_y=0.):
+    """ Compute the Euler angles to point the beam at the camera center
+    given a beam position
+
+    Parameters
+    ----------
+    beam_config : `dict`
+        a dictionary with the light beam configuration, see :ref:`beam_configs`.
+    target_x : `float`
+        target position on the X-axis of the camera plane
+    target_y : `float`
+        target position on the Y-axis of the camera plane
+
+    Returns
+    -------
+    new_beam : `dict`
+        a dictionary with the light beam configuration (see :ref:`beam_configs`)
+        that points toward the requested position on the camera plane
+    """
     # make the new config
     new_beam = deepcopy(beam_config)
     new_beam['x_euler'], new_beam['y_euler'] = \
