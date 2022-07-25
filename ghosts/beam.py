@@ -2,13 +2,14 @@
 import numpy as np
 from scipy.constants import Planck, lambda2nu
 from scipy.spatial.transform import Rotation as transform_rotation
-from math import floor, cos, sin, radians
+from math import floor, cos, sin, radians, atan, degrees
 from copy import deepcopy
 import pandas as pd
 
 # batoid dependencies to create ray vectors
 import batoid
 from ghosts.beam_configs import BEAM_CONFIG_0
+from ghosts.constants import CCOB_DISTANCE_TO_FOCAL_PLANE
 
 
 def to_panda(beam_config):
@@ -145,6 +146,26 @@ def get_n_phot_for_power_nw_wl_nm(beam_power, wl):
     return n_photons
 
 
+def _get_angles_to_center(x_offset, y_offset):
+    y_euler = -atan(x_offset/CCOB_DISTANCE_TO_FOCAL_PLANE)
+    x_euler = atan(y_offset/CCOB_DISTANCE_TO_FOCAL_PLANE)
+    return degrees(x_euler), degrees(y_euler)
+
+
+def _get_angles_to_xy(x_pos, y_pos, x_offset, y_offset):
+    dx = x_offset - x_pos
+    dy = y_offset - y_pos
+    return _get_angles_to_center(dx, dy)
+
+
+def point_beam_to_target(beam_config, target_x=0., target_y=0.):
+    # make the new config
+    new_beam = deepcopy(beam_config)
+    new_beam['x_euler'], new_beam['y_euler'] = \
+        _get_angles_to_xy(target_x, target_y, new_beam['x_offset'], new_beam['y_offset'])
+    return new_beam
+
+
 def beam_on(beam_config=BEAM_CONFIG_0):
     """ Generates a beam of ligth rays to be used for a simulation
 
@@ -180,7 +201,7 @@ def beam_on(beam_config=BEAM_CONFIG_0):
     # set direction, start from straight light, then rotate from Euler angles
     straight_ray = np.array([0., 0., 1])
     # watch out here, switching rx and ry on purpose (this makes rotation and offsets consistent in visualization)
-    rot_zyx = transform_rotation.from_euler('zxy', [rz, ry, rx], degrees=True)
+    rot_zyx = transform_rotation.from_euler('zxy', [rz, rx, ry], degrees=True)
     rotated_ray = rot_zyx.apply(straight_ray)
     # put direction in the form batoid likes (at speed of light)
     rays_v = batoid.utils.normalized(rotated_ray) / 1.000277
