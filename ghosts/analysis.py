@@ -4,7 +4,6 @@ import math
 import matplotlib.pyplot as plt
 from ghosts.tools import get_ranges
 from ghosts.beam import get_n_phot_for_power_nw_wl_nm
-from ghosts.beam_configs import BEAM_CONFIG_0
 from ghosts.constants import LSST_CAMERA_PIXEL_DENSITY_MM2, LSST_CAMERA_PIXEL_QE
 
 
@@ -285,7 +284,7 @@ def compute_ghost_separations(data_frame):
             name_1 = data_frame['name'][i]
             name_2 = data_frame['name'][i + k]
             # add data container
-            dist_data.append([i, i + k, name_1, name_2, distance, overlap, surface_ratio, signal_ratio])
+            dist_data.append([i, i + k, name_1, name_2, distance, overlap, flux_ratio, surface_ratio, signal_ratio])
 
     ghosts_separation = pd.DataFrame(
         {
@@ -296,8 +295,8 @@ def compute_ghost_separations(data_frame):
             "distance": np.array([data[4] for data in dist_data], dtype="float"),
             "overlap": np.array([data[5] for data in dist_data], dtype="float"),
             "flux_ratio": np.array([data[6] for data in dist_data], dtype="float"),
-            "surface_ratio": np.array([data[6] for data in dist_data], dtype="float"),
-            "signal_ratio": np.array([data[7] for data in dist_data], dtype="float"),
+            "surface_ratio": np.array([data[7] for data in dist_data], dtype="float"),
+            "signal_ratio": np.array([data[8] for data in dist_data], dtype="float"),
         }
     )
     return ghosts_separation
@@ -337,9 +336,9 @@ def compute_distance_spot_to_spot(df_slice_1, df_slice_2, radius_scale_factor=10
     dist_3d = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y'], df_slice_1['radius'] * radius_scale_factor],
                         [df_slice_2['pos_x'], df_slice_2['pos_y'], df_slice_2['radius'] * radius_scale_factor])
     d1_3d_sq = df_slice_1['std_x'] * df_slice_1['std_x'] + df_slice_1['std_y'] * df_slice_1['std_y'] \
-               + df_slice_1['radius_err'] * df_slice_1['radius_err'] * radius_scale_factor * radius_scale_factor
+        + df_slice_1['radius_err'] * df_slice_1['radius_err'] * radius_scale_factor * radius_scale_factor
     d2_3d_sq = df_slice_2['std_x'] * df_slice_2['std_x'] + df_slice_2['std_y'] * df_slice_2['std_y'] \
-               + df_slice_2['radius_err'] * df_slice_2['radius_err'] * radius_scale_factor * radius_scale_factor
+        + df_slice_2['radius_err'] * df_slice_2['radius_err'] * radius_scale_factor * radius_scale_factor
     dist_3d_err = math.sqrt(d1_3d_sq + d2_3d_sq)
     return dist_2d, dist_2d_err, dist_3d, dist_3d_err
 
@@ -355,7 +354,7 @@ def find_nearest_ghost(ghost_slice, ghosts_df, radius_scale_factor=100):
         a ghost spots data frame slice, with one line corresponding to one ghost
     ghosts_df : `pandas.DataFrame`
         a `pandas` data frame with information on ghost spots data separations and ratios
-    radius_scale_factor : `int`
+    radius_scale_factor : `float`
         a kind of weight for the spot radius to be used in the distance computation
 
     Returns
@@ -397,7 +396,7 @@ def find_nearest_ghost(ghost_slice, ghosts_df, radius_scale_factor=100):
     min_distance_3d_err = dist_3d_err_data[index_of_min_3d]
 
     return index_of_min_2d, min_distance_2d, min_distance_2d_err, \
-           index_of_min_3d, min_distance_3d, min_distance_3d_err
+        index_of_min_3d, min_distance_3d, min_distance_3d_err
 
 
 def match_ghosts(ghosts_df_1, ghosts_df_2, radius_scale_factor=100):
@@ -409,7 +408,7 @@ def match_ghosts(ghosts_df_1, ghosts_df_2, radius_scale_factor=100):
         a `pandas` data frame with information on ghost spots data separations and ratios
     ghosts_df_2 : `pandas.DataFrame`
         a `pandas` data frame with information on ghost spots data separations and ratios
-    radius_scale_factor : `int`
+    radius_scale_factor : `float`
         a kind of weight for the spot radius to be used in the distance computation
 
     Returns
