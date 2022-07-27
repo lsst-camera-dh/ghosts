@@ -110,7 +110,7 @@ def run_full_simulation_from_configs(geom_config, beam_config):
     return spots_data_frame
 
 
-def run_full_simulation_for_configs_set(geom_set, beam_set):
+def run_and_analyze_simulation_for_configs_sets(geom_set, beam_set):
     """ Runs and analyze a ray tracing simulation of a light beam into the CCOB
     for a set of beam configurations and geometry configurations
 
