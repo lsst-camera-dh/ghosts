@@ -8,6 +8,7 @@ from scipy.spatial.transform import Rotation as transform_rotation
 import numpy as np
 import copy
 from ghosts.tools import get_vector
+from ghosts.geom import get_optics_rotation, get_optics_translation
 from ghosts import reflectivity
 
 
@@ -315,17 +316,15 @@ def tweak_telescope(telescope, geom_config):
         a new telescope with tweaked optical elements
     """
     tweaked_telescope = telescope
-    config_copy = copy.deepcopy(geom_config)
-    geom_id = config_copy.pop('geom_id', 0)
-    for opt, tw in config_copy.items():
-        if 'shifts' in tw.keys():
-            tmp_tel = translate_optic_vector(tweaked_telescope, opt, tw['shifts'])
-        else:
-            tmp_tel = tweaked_telescope
-        if 'rotations' in tw.keys():
-            tweaked_telescope = rotate_optic_vector(tmp_tel, opt, tw['rotations'])
-        else:
-            tweaked_telescope = tmp_tel
+    for optics in get_list_of_optics(telescope):
+        v_translation = get_optics_translation(optics, geom_config)
+        if v_translation != [0., 0., 0.]:
+            tweaked_telescope = translate_optic_vector(tweaked_telescope, optics, v_translation)
+
+        v_rotation = get_optics_rotation(optics, geom_config)
+        if v_rotation != [0., 0., 0.]:
+            tweaked_telescope = translate_optic_vector(tweaked_telescope, optics, v_rotation)
+
     return tweaked_telescope
 
 
