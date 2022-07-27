@@ -1,19 +1,55 @@
-"""Geom module
+"""geom module
 
 This module provides tools to manipulate telescope geometries, i.e. shifts and rotations
-
-Todo:
-    *
-
 """
+
 import copy
 import pandas as pd
-from ghosts.tools import get_vector
 from ghosts.geom_config import GEOM_CONFIG_0
+
+
+def get_optics_translation(optics, geom_config):
+    """ Return a vector with the translations of the given optics
+
+    Parameters
+    ----------
+    optics : `string`
+        the name of an optical element in L1, L2, L3, Filter, Detector
+    geom_config : `dict`
+        a dictionary with shifts and rotations for each optical element
+
+    Returns
+    -------
+    translation_vector : `list` of `float`
+        a vector of translations for the optical element
+    """
+    translation_vector = [geom_config[f'{optics}_d{axis}'] for axis in ['x', 'y', 'z']]
+    return translation_vector
+
+
+def get_optics_rotation(optics, geom_config):
+    """ Return a vector with the rotations of the given optics
+
+    Parameters
+    ----------
+    optics : `string`
+        the name of an optical element in L1, L2, L3, Filter, Detector
+    geom_config : `dict`
+        a dictionary with shifts and rotations for each optical element
+
+    Returns
+    -------
+    rotation_vector : `list` of `float`
+        a vector of rotations for the optical element
+    """
+
+    return [geom_config[f'{optics}_r{axis}'] for axis in ['x', 'y', 'z']]
 
 
 def to_panda(geom_config):
     """ Convert a geometry configuration dictionary to a panda data frame
+
+    Indexing is done using the beam configuration `geom_id`.
 
     Parameters
     ----------
@@ -25,12 +61,14 @@ def to_panda(geom_config):
     data_frame : `pandas.DataFrame`
         a `pandas` data frame with shifts and rotations information
     """
-    data_frame = pd.DataFrame(data=geom_config)
+    data_frame = pd.DataFrame(data=geom_config, index=[geom_config['geom_id']])
     return data_frame
 
 
 def to_dict(geom_frame):
     """ Convert a geometry panda data frame to a dictionary of use with `tweak_optics`
+
+    The geom data frame is expected to have only one geometry configuration.
 
     Parameters
     ----------
@@ -42,11 +80,8 @@ def to_dict(geom_frame):
     geom_config : `dict`
         a dictionary with shifts and rotations for each optical element
     """
-    geom_config = geom_frame.to_dict()
-    if 'shifts' in geom_config['geom_id'].keys():
-        geom_config['geom_id'] = geom_config['geom_id']['shifts']
-    else:
-        geom_config['geom_id'] = geom_config['geom_id']['rotations']
+    geom_id = geom_frame['geom_id'].to_list()[0]
+    geom_config = geom_frame.to_dict('index')[geom_id]
     return geom_config
 
 
@@ -98,7 +133,7 @@ def translate_optic(optic_name, axis, distance, geom_id=1000000):
     optic_name : `string`
         the name of an optical element
     axis : `string`
-        the name of the translation axis, usually y
+        the name of the translation axis, in [x, y , z]
     distance : `float`
         the value of the shift in meters
     geom_id : `int`
@@ -109,9 +144,13 @@ def translate_optic(optic_name, axis, distance, geom_id=1000000):
     geom : `dict`
         a `geom_config` dictionary for the application of the translation
      """
+    if axis not in ['x', 'y', 'z']:
+        print(f'Unknown axis {axis}, doing nothing.')
+        return None
     geom = copy.deepcopy(GEOM_CONFIG_0)
     geom['geom_id'] = geom_id
-    geom[optic_name]['shifts'] = get_vector(axis, distance)
+    opt_key = f'{optic_name}_d{axis}'
+    geom[opt_key] = distance
     return geom
 
 
@@ -136,7 +175,8 @@ def rotate_optic(optic_name, axis, angle, geom_id=1000000):
     """
     geom = copy.deepcopy(GEOM_CONFIG_0)
     geom['geom_id'] = geom_id
-    geom[optic_name]['rotations'] = get_vector(axis, angle)
+    opt_key = f'{optic_name}_r{axis}'
+    geom[opt_key] = angle
     return geom
 
 
