@@ -328,7 +328,7 @@ def tweak_telescope(telescope, geom_config):
 
         v_rotation = get_optics_rotation(optics, geom_config)
         if v_rotation != [0., 0., 0.]:
-            tweaked_telescope = translate_optic_vector(tweaked_telescope, optics, v_rotation)
+            tweaked_telescope = rotate_optic_vector(tweaked_telescope, optics, v_rotation)
 
     return tweaked_telescope
 
