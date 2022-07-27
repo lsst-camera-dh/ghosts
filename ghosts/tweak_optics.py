@@ -8,10 +8,11 @@ from scipy.spatial.transform import Rotation as transform_rotation
 import numpy as np
 import copy
 from ghosts.tools import get_vector
+from ghosts.geom import get_optics_rotation, get_optics_translation
 from ghosts import reflectivity
 
 
-def get_list_of_optics(telescope):
+def get_list_of_optics(telescope, debug=False):
     """ Get a simple list of optical elements from a `batoid` telescope
 
     .. todo::
@@ -21,6 +22,8 @@ def get_list_of_optics(telescope):
     ----------
     telescope : `batoid.telescope`
         the optical setup as defined in `batoid`
+    debug : `bool`
+        print debug information or not
 
     Returns
     -------
@@ -30,7 +33,10 @@ def get_list_of_optics(telescope):
     optics = list()
     for one in telescope.items:
         if isinstance(one, batoid.optic.Baffle):
-            print('tweak_optics::get_list_of_optics - Ignoring fake baffle')
+            if debug:
+                print('tweak_optics::get_list_of_optics - Ignoring fake baffle')
+            else:
+                pass
         else:
             [optics.append(two.name) for two in telescope[one.name].items]
     return optics
@@ -315,17 +321,15 @@ def tweak_telescope(telescope, geom_config):
         a new telescope with tweaked optical elements
     """
     tweaked_telescope = telescope
-    config_copy = copy.deepcopy(geom_config)
-    geom_id = config_copy.pop('geom_id', 0)
-    for opt, tw in config_copy.items():
-        if 'shifts' in tw.keys():
-            tmp_tel = translate_optic_vector(tweaked_telescope, opt, tw['shifts'])
-        else:
-            tmp_tel = tweaked_telescope
-        if 'rotations' in tw.keys():
-            tweaked_telescope = rotate_optic_vector(tmp_tel, opt, tw['rotations'])
-        else:
-            tweaked_telescope = tmp_tel
+    for optics in get_list_of_optics(telescope):
+        v_translation = get_optics_translation(optics, geom_config)
+        if v_translation != [0., 0., 0.]:
+            tweaked_telescope = translate_optic_vector(tweaked_telescope, optics, v_translation)
+
+        v_rotation = get_optics_rotation(optics, geom_config)
+        if v_rotation != [0., 0., 0.]:
+            tweaked_telescope = rotate_optic_vector(tweaked_telescope, optics, v_rotation)
+
     return tweaked_telescope
 
 

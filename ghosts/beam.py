@@ -1,3 +1,9 @@
+"""beam module
+
+This module provides tools to manipulate beam geometries,
+and generate light rays as `batoid.RayVector`
+"""
+
 # Beam intensity, photon energy and number of photons
 import numpy as np
 from scipy.constants import Planck, lambda2nu

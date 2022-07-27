@@ -19,6 +19,7 @@ BEAM_CONFIG_2['y_offset'] = 0.1
 
 # spread ghosts
 BEAM_CONFIG_3 = deepcopy(BEAM_CONFIG_0)
+BEAM_CONFIG_3['beam_id'] = 3
 BEAM_CONFIG_3['x_offset'] = -0.1
 BEAM_CONFIG_3['y_offset'] = 0.3
 BEAM_CONFIG_3['x_euler'] = 3
