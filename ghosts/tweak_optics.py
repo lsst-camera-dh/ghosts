@@ -12,7 +12,7 @@ from ghosts.geom import get_optics_rotation, get_optics_translation
 from ghosts import reflectivity
 
 
-def get_list_of_optics(telescope):
+def get_list_of_optics(telescope, debug=False):
     """ Get a simple list of optical elements from a `batoid` telescope
 
     .. todo::
@@ -22,6 +22,8 @@ def get_list_of_optics(telescope):
     ----------
     telescope : `batoid.telescope`
         the optical setup as defined in `batoid`
+    debug : `bool`
+        print debug information or not
 
     Returns
     -------
@@ -31,7 +33,10 @@ def get_list_of_optics(telescope):
     optics = list()
     for one in telescope.items:
         if isinstance(one, batoid.optic.Baffle):
-            print('tweak_optics::get_list_of_optics - Ignoring fake baffle')
+            if debug:
+                print('tweak_optics::get_list_of_optics - Ignoring fake baffle')
+            else:
+                pass
         else:
             [optics.append(two.name) for two in telescope[one.name].items]
     return optics
