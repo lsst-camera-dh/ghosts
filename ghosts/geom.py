@@ -5,7 +5,7 @@ This module provides tools to manipulate telescope geometries, i.e. shifts and r
 
 import copy
 import pandas as pd
-from ghosts.geom_config import GEOM_CONFIG_0
+from ghosts.geom_configs import GEOM_CONFIG_0
 
 
 def get_optics_translation(optics, geom_config):
