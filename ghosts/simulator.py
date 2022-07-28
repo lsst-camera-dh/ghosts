@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from ghosts.tweak_optics import rotate_optic, make_optics_reflective, translate_optic, randomized_telescope
 from ghosts.tweak_optics import build_telescope_from_geom, build_telescope, tweak_telescope
-from ghosts.beam_configs import BEAM_CONFIG_0, BEAM_CONFIG_1
+from ghosts.beam_configs import BEAM_CONFIG_1
 from ghosts.beam import beam_on, concat_dicts
 from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separations, match_ghosts,\
                             compute_reduced_distance, compute_2d_reduced_distance
