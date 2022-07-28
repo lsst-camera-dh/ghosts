@@ -2,5 +2,5 @@
 
 try:
     from ._version import version
-except ImportWarning:
+except ImportWarning:  #pragma: no cover
     version = "unknown"
