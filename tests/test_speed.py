@@ -21,7 +21,7 @@ class SpeedTestCase(unittest.TestCase):
         stop_time = timeit.default_timer()
         time_diff = stop_time - start_time
         print(f'The time difference is :{time_diff:.3f} s')
-        self.assertLess(time_diff, 3.)
+        self.assertLess(time_diff, 5.)
 
     def test_randomize_telescope(self):
         """ Verify that building randomized telescope is not too slow
@@ -36,7 +36,7 @@ class SpeedTestCase(unittest.TestCase):
         stop_time = timeit.default_timer()
         time_diff = stop_time - start_time
         print(f'The time difference is :{time_diff:.3f} s')
-        self.assertLess(time_diff, 0.3)
+        self.assertLess(time_diff, 0.5)
 
 
 if __name__ == '__main__':
