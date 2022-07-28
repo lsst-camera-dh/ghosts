@@ -1,3 +1,11 @@
+"""analysis module
+
+This module provides functions to analyze ghosts spots on the full focal plane, like getting ghosts positions
+and features, computing separations between ghosts spots, associating ghosts spots and computing distances
+between to sets of ghosts spots.
+
+"""
+
 import pandas as pd
 import numpy as np
 import math
