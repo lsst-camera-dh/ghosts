@@ -117,7 +117,7 @@ def concat_dicts(geom_dict_list):
      geom_concat : `pandas.DataFrame`
         a `pandas` data frame with several configurations of shifts and rotations information
      """
-    frames = list()
+    frames = []
     for one in geom_dict_list:
         frames.append(to_panda(one))
     geom_concat = concat_frames(frames)
@@ -199,7 +199,7 @@ def build_translation_set(optic_name, axis, shifts_list, base_id=0):
      geoms : `list` of `geom_config`
         a list of geometry configuration dictionaries
     """
-    geoms = list()
+    geoms = []
     for i, shift in enumerate(shifts_list):
         geoms.append(translate_optic(optic_name, axis, shift, geom_id=base_id+i))
     return geoms
@@ -224,7 +224,7 @@ def build_rotation_set(optic_name, axis, angles_list, base_id=0):
      geoms : `list` of `geom_config`
         a list of geometry configuration dictionaries
     """
-    geoms = list()
+    geoms = []
     for i, angle in enumerate(angles_list):
         geoms.append(rotate_optic(optic_name, axis, angle, geom_id=base_id+i))
     return geoms

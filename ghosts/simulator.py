@@ -160,7 +160,7 @@ def run_and_analyze_simulation_for_configs_sets(geom_set, beam_set):
     # build one telescope to start with, as this is slow
     telescope = build_telescope("../data/LSST_CCOB_r.yaml")
     # go for the loops
-    spots_df_list = list()
+    spots_df_list = []
     for one_geom in geom_set:
         current_tel = tweak_telescope(telescope, one_geom)
         make_optics_reflective(current_tel, coating='smart', r_frac=[0.02, 0.02, 0.15])
@@ -268,8 +268,8 @@ def sim_scan_rotated_optic(telescope, optic_name, min_angle, max_angle, step_ang
         the list of the rotation angles used for the scan
     """
     print(f'Starting {optic_name} rotation scan.')
-    rotation_sims = list()
-    scan_angles = list()
+    rotation_sims = []
+    scan_angles = []
     for angle in np.arange(min_angle, max_angle, step_angle):
         scan_angles.append(angle)
         print(f'{angle:.3f}', end=' ')
@@ -360,8 +360,8 @@ def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_di
         the list of distance of translation used for the scan
     """
     print(f'Starting {optic_name} translation scan.')
-    sims = list()
-    scan_values = list()
+    sims = []
+    scan_values = []
     for shift in np.arange(min_dist, max_dist, step_dist):
         scan_values.append(shift)
         print(f'{shift:.6f}', end=' ')
@@ -439,8 +439,8 @@ def scan_dist_rotation(telescope, ref_data_frame, optic_name, axis, angles_list,
     distances_3d : `list` of `float`
         the list of 3D reduced distance computed for each angle
     """
-    distances_2d = list()
-    distances_3d = list()
+    distances_2d = []
+    distances_3d = []
     for angle in angles_list:
         df_i, gs_i = full_rotation(telescope, optic_name=optic_name, axis=axis, angle=angle,
                                    beam_config=BEAM_CONFIG_1)
@@ -485,8 +485,8 @@ def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_li
     distances_3d : `list` of `float`
         the list of 3D reduced distance computed for each angle
     """
-    distances_2d = list()
-    distances_3d = list()
+    distances_2d = []
+    distances_3d = []
     for delta in shifts_list:
         df_i, gs_i = full_translation(telescope, optic_name=optic_name, axis=axis, distance=delta,
                                       beam_config=BEAM_CONFIG_1)
@@ -521,9 +521,9 @@ def simulate_impact_points_for_beam_set(telescope, beam_set):
     -------
     """
     # initialize lists
-    impact_x = list()
-    impact_y = list()
-    impact_id = list()
+    impact_x = []
+    impact_y = []
+    impact_id = []
 
     # run simulation and get impact point
     for one_beam in beam_set:

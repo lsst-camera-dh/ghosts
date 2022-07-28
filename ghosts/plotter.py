@@ -217,7 +217,7 @@ def plot_ghosts_map(forward_rays):
     # get main impact point
     i_straight, direct_x, direct_y, direct_f = get_main_impact_point(forward_rays)
     # store some stats roughly
-    spots_data = list()
+    spots_data = []
     fig, ax = plt.subplots(7, 6)
     axs = ax.ravel()
     for i, ghost in enumerate(forward_rays):
@@ -366,8 +366,8 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
         0 if all is well
     """
     # Get list of signed maximum displacements in mm
-    x_max_diff = list()
-    y_max_diff = list()
+    x_max_diff = []
+    y_max_diff = []
     for df in merged_data_frame:
         # shift along x
         x_tmp_diff = df['pos_x_x'] - df['pos_x_y']

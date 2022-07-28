@@ -6,7 +6,6 @@ This module is used to build new telescope with a modified geometry from the def
 import batoid
 from scipy.spatial.transform import Rotation as transform_rotation
 import numpy as np
-import copy
 from ghosts.tools import get_vector
 from ghosts.geom import get_optics_rotation, get_optics_translation
 from ghosts import reflectivity
@@ -30,7 +29,7 @@ def get_list_of_optics(telescope, debug=False):
     optics : `list` of `string` objects
         a simple list of optical element names
     """
-    optics = list()
+    optics = []
     for one in telescope.items:
         if isinstance(one, batoid.optic.Baffle):
             if debug:
