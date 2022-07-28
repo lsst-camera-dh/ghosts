@@ -1,9 +1,15 @@
+"""simulator module
+
+This module provides tools to run full simulations from telescope geometries and beam configurations,
+some functions also run the full workflow to the beam spots data analysis.
+"""
+
 import math
 import numpy as np
 import pandas as pd
 from ghosts.tweak_optics import rotate_optic, make_optics_reflective, translate_optic, randomized_telescope
 from ghosts.tweak_optics import build_telescope_from_geom, build_telescope, tweak_telescope
-from ghosts.beam_configs import BEAM_CONFIG_0, BEAM_CONFIG_1
+from ghosts.beam_configs import BEAM_CONFIG_1
 from ghosts.beam import beam_on, concat_dicts
 from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separations, match_ghosts,\
                             compute_reduced_distance, compute_2d_reduced_distance
@@ -11,7 +17,7 @@ from ghosts.tools import get_main_impact_point
 
 
 # run a ray tracing simulation
-def run_simulation(telescope, beam_config=BEAM_CONFIG_0):
+def run_simulation(telescope, beam_config):
     """ Runs a ray tracing simulation of a light beam into the CCOB.
 
     Takes a telescope optical object and a beam configuration as a dictionary,
@@ -47,7 +53,7 @@ def run_simulation(telescope, beam_config=BEAM_CONFIG_0):
     return trace_full, forward_rays, reverse_rays, rays
 
 
-def run_and_analyze_simulation(telescope, geom_id, beam_config=BEAM_CONFIG_0):
+def run_and_analyze_simulation(telescope, geom_id, beam_config):
     """ Runs a ray tracing simulation of a light beam into the CCOB
     and analyze beam spots data.
 
@@ -66,8 +72,8 @@ def run_and_analyze_simulation(telescope, geom_id, beam_config=BEAM_CONFIG_0):
         a `pandas` data frame with ghost spot data information, including beam and geometry configurations,
         see :meth:`ghosts.analysis.make_data_frame`
     """
-    trace_full, forward_rays, reverse_rays, rays = run_simulation(telescope, beam_config)
-    spots_data, _spots = reduce_ghosts(forward_rays)
+    _, forward_rays, _, _ = run_simulation(telescope, beam_config)
+    spots_data, _ = reduce_ghosts(forward_rays)
     spots_data_frame = make_data_frame(spots_data,
                                        beam_id=beam_config['beam_id'],
                                        geom_id=geom_id)
@@ -129,8 +135,8 @@ def run_full_simulation_from_configs(geom_config, beam_config):
         a `pandas` data frame with ghost spot data information, including beam and geometry configurations,
         see :meth:`ghosts.analysis.make_data_frame`
     """
-    trace_full, forward_rays, reverse_rays, rays = run_simulation_from_configs(geom_config, beam_config)
-    spots_data, _spots = reduce_ghosts(forward_rays)
+    _, forward_rays, _, _ = run_simulation_from_configs(geom_config, beam_config)
+    spots_data, _ = reduce_ghosts(forward_rays)
     spots_data_frame = make_data_frame(spots_data,
                                        beam_id=beam_config['beam_id'],
                                        geom_id=geom_config['geom_id'])
@@ -160,7 +166,7 @@ def run_and_analyze_simulation_for_configs_sets(geom_set, beam_set):
     # build one telescope to start with, as this is slow
     telescope = build_telescope("../data/LSST_CCOB_r.yaml")
     # go for the loops
-    spots_df_list = list()
+    spots_df_list = []
     for one_geom in geom_set:
         current_tel = tweak_telescope(telescope, one_geom)
         make_optics_reflective(current_tel, coating='smart', r_frac=[0.02, 0.02, 0.15])
@@ -209,8 +215,8 @@ def full_rotation(telescope, optic_name='L2', axis='y', angle=0.1, beam_config=B
             f' {300 * math.tan(angle * math.pi / 180.):.3f}\
              mm of the lens border.')
     make_optics_reflective(rotated_optic)
-    trace_full, r_forward, r_reverse, rays = run_simulation(rotated_optic, beam_config)
-    spots_data, _spots = reduce_ghosts(r_forward)
+    _, r_forward, _, _ = run_simulation(rotated_optic, beam_config)
+    spots_data, _ = reduce_ghosts(r_forward)
     spots_data_frame = make_data_frame(spots_data)
     ghost_separations = compute_ghost_separations(spots_data_frame)
     return spots_data_frame, ghost_separations
@@ -268,8 +274,8 @@ def sim_scan_rotated_optic(telescope, optic_name, min_angle, max_angle, step_ang
         the list of the rotation angles used for the scan
     """
     print(f'Starting {optic_name} rotation scan.')
-    rotation_sims = list()
-    scan_angles = list()
+    rotation_sims = []
+    scan_angles = []
     for angle in np.arange(min_angle, max_angle, step_angle):
         scan_angles.append(angle)
         print(f'{angle:.3f}', end=' ')
@@ -314,8 +320,8 @@ def full_translation(telescope, optic_name, axis, distance, beam_config=BEAM_CON
     """
     translated_optic = translate_optic(telescope, optic_name, axis=axis, distance=distance)
     make_optics_reflective(translated_optic)
-    trace_full, forward_rays, reverse_rays, rays = run_simulation(translated_optic, beam_config=beam_config)
-    spots_data, _spots = reduce_ghosts(forward_rays)
+    _, forward_rays, _, _ = run_simulation(translated_optic, beam_config=beam_config)
+    spots_data, _ = reduce_ghosts(forward_rays)
     spots_data_frame = make_data_frame(spots_data)
     ghost_separations = compute_ghost_separations(spots_data_frame)
     return spots_data_frame, ghost_separations
@@ -360,8 +366,8 @@ def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_di
         the list of distance of translation used for the scan
     """
     print(f'Starting {optic_name} translation scan.')
-    sims = list()
-    scan_values = list()
+    sims = []
+    scan_values = []
     for shift in np.arange(min_dist, max_dist, step_dist):
         scan_values.append(shift)
         print(f'{shift:.6f}', end=' ')
@@ -373,7 +379,7 @@ def sim_scan_translated_optic(telescope, optic_name, min_dist, max_dist, step_di
     return merged_data_frame, scan_values
 
 
-def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_CONFIG_0):
+def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config):
     """ Runs a ray tracing simulation of a light beam into the CCOB, with optics with randomized positions
      and rotation angles.
 
@@ -404,8 +410,8 @@ def full_random_telescope_sim(telescope, max_angle, max_shift, beam_config=BEAM_
     """
     rnd_tel = randomized_telescope(telescope, max_angle, max_shift)
     make_optics_reflective(rnd_tel)
-    trace_full_r, r_forward_r, r_reverse_r, rays_r = run_simulation(rnd_tel, beam_config=beam_config)
-    spots_data_r, _spots = reduce_ghosts(r_forward_r)
+    _, r_forward_r, _, _ = run_simulation(rnd_tel, beam_config=beam_config)
+    spots_data_r, _ = reduce_ghosts(r_forward_r)
     data_frame_r = make_data_frame(spots_data_r)
     ghost_separations_r = compute_ghost_separations(data_frame_r)
     return data_frame_r, ghost_separations_r
@@ -439,10 +445,10 @@ def scan_dist_rotation(telescope, ref_data_frame, optic_name, axis, angles_list,
     distances_3d : `list` of `float`
         the list of 3D reduced distance computed for each angle
     """
-    distances_2d = list()
-    distances_3d = list()
+    distances_2d = []
+    distances_3d = []
     for angle in angles_list:
-        df_i, gs_i = full_rotation(telescope, optic_name=optic_name, axis=axis, angle=angle,
+        df_i, _ = full_rotation(telescope, optic_name=optic_name, axis=axis, angle=angle,
                                    beam_config=BEAM_CONFIG_1)
         match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=r_scale)
         dist_i = compute_reduced_distance(match_i)
@@ -485,10 +491,10 @@ def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_li
     distances_3d : `list` of `float`
         the list of 3D reduced distance computed for each angle
     """
-    distances_2d = list()
-    distances_3d = list()
+    distances_2d = []
+    distances_3d = []
     for delta in shifts_list:
-        df_i, gs_i = full_translation(telescope, optic_name=optic_name, axis=axis, distance=delta,
+        df_i, _ = full_translation(telescope, optic_name=optic_name, axis=axis, distance=delta,
                                       beam_config=BEAM_CONFIG_1)
         match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=r_scale)
         dist_i = compute_reduced_distance(match_i)
@@ -521,15 +527,15 @@ def simulate_impact_points_for_beam_set(telescope, beam_set):
     -------
     """
     # initialize lists
-    impact_x = list()
-    impact_y = list()
-    impact_id = list()
+    impact_x = []
+    impact_y = []
+    impact_id = []
 
     # run simulation and get impact point
     for one_beam in beam_set:
         print('Simulating beam id ', one_beam['beam_id'], end='\r')
-        _trace_full, forward_rays, _reverse_rays, _rays = run_simulation(telescope, one_beam)
-        _n, x, y, _f = get_main_impact_point(forward_rays)
+        _, forward_rays, _, _ = run_simulation(telescope, one_beam)
+        _, x, y, _ = get_main_impact_point(forward_rays)
         impact_x.append(x)
         impact_y.append(y)
         impact_id.append(one_beam['beam_id'])

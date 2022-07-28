@@ -1,3 +1,8 @@
+"""geom_configs module
+
+This module is used to define the geometry of telescope through dictionaries.
+
+"""
 from copy import deepcopy
 
 # Default geometry, all aligned, as the basic example

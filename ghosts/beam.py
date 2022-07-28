@@ -89,7 +89,7 @@ def concat_dicts(beam_dict_list):
      beam_concat : `pandas.DataFrame`
         a `pandas` data frame with several configurations of beams
      """
-    frames = list()
+    frames = []
     for one in beam_dict_list:
         frames.append(to_panda(one))
     beam_concat = concat_frames(frames)
@@ -224,7 +224,7 @@ def point_beam_to_target(beam_config, target_x=0., target_y=0.):
     return new_beam
 
 
-def beam_on(beam_config=BEAM_CONFIG_0):
+def beam_on(beam_config):
     """ Generates a beam of light rays to be used for a simulation
 
     Parameters
@@ -278,7 +278,7 @@ def beam_on(beam_config=BEAM_CONFIG_0):
 # define function to generate a round beam of light
 def simple_beam(x_offset=0.1, y_offset=0, wl=500e-9, n_photons=1000):
     """ Proxy to generate a simple beam of light rays to be used for a simulation
-    
+
     Offsets are with respect to the default beam configuration, see `BEAM_CONFIG_0` at :ref:`beam_configs`.
 
     Parameters
@@ -324,7 +324,7 @@ def build_translation_set(base_beam_config, axis, shifts_list, base_id=0):
      beams : `list` of `geom_config`
         a list of beam configuration dictionaries
     """
-    beams = list()
+    beams = []
     for i, shift in enumerate(shifts_list):
         beam_config = deepcopy(base_beam_config)
         beam_config['beam_id'] = base_id + i
@@ -353,7 +353,7 @@ def build_rotation_set(base_beam_config, axis, angles_list, base_id=0):
      beams : `list` of `geom_config`
         a list of geometry configuration dictionaries
     """
-    beams = list()
+    beams = []
     for i, angle in enumerate(angles_list):
         beam_config = deepcopy(base_beam_config)
         beam_config['beam_id'] = base_id + i
@@ -377,7 +377,7 @@ def build_square_set(distances, base_id=0):
      beams : `list` of `geom_config`
         a list of beam configuration dictionaries
     """
-    beams = list()
+    beams = []
     start_config = deepcopy(BEAM_CONFIG_0)
     start_config['n_photons'] = 100
 
@@ -461,7 +461,7 @@ def build_square_set_on_target(base_beam_config, distances,
         a list of beam configuration dictionaries
     """
     # starting with central beam
-    new_beams = list()
+    new_beams = []
     start_config = deepcopy(base_beam_config)
     start_config['beam_id'] = base_id
     # then build other configs
@@ -497,7 +497,7 @@ def build_polar_set(distances, angles, base_id=0):
         a list of beam configuration dictionaries
     """
     # starting with central beam
-    hex_beams = list()
+    hex_beams = []
     start_config = deepcopy(BEAM_CONFIG_0)
     start_config['n_photons'] = 100
     start_config['base_id'] = base_id
@@ -518,7 +518,7 @@ def build_polar_set(distances, angles, base_id=0):
 
 def build_first_quadrant_polar_set(delta=0.02, d_max=0.36, base_id=0):
     """ Build a set of beams for the given list of distances, and rotate on the first quadrant
-    
+
     Parameters
     ----------
     delta : `float`
@@ -527,7 +527,7 @@ def build_first_quadrant_polar_set(delta=0.02, d_max=0.36, base_id=0):
         maximum distance to go from center, up to ~0.26 m is fine, then beam does not converge on camera
     base_id : `int`
         the id of the first beam configuration created, following ids will be `id+1`
-    
+
     Returns
     -------
      beams : `list` of `geom_config`

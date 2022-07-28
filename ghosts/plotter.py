@@ -1,5 +1,12 @@
+"""plotter module
+
+This module provides functions to plot every single thing that the `ghosts` module produces.
+
+"""
+
 import batoid
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 from scipy import stats
 # import ipyvolume as ipv
 import numpy as np
@@ -50,8 +57,8 @@ def plot_setup(telescope, simulation):
     beam_spot = rays.positionAtTime(3.397)
     hb1 = f1_ax2.hexbin(beam_spot[:, 0], beam_spot[:, 1], reduce_C_function=np.sum,
                         extent=LSST_CAMERA_EXTENT, gridsize=(150, 150))
-    f1_ax2.set_aspect("equal")
-    f1_ax2.set_title(f"Beam spot")
+    f1_ax2.set_aspect('equal')
+    f1_ax2.set_title('Beam spot')
     f1_ax2.set_xlabel('x (m)', fontsize=16)
     f1_ax2.set_ylabel('y (m)', fontsize=16)
     fig1.colorbar(hb1, ax=f1_ax2)
@@ -61,7 +68,7 @@ def plot_setup(telescope, simulation):
                         extent=get_ranges(np.array(beam_spot[:, 0]), np.array(beam_spot[:, 1]), 0.01),
                         gridsize=(50, 50))
     f1_ax3.set_aspect("equal")
-    f1_ax3.set_title(f"Beam spot zoom")
+    f1_ax3.set_title('Beam spot zoom')
     f1_ax3.set_xlabel('x (m)', fontsize=16)
     f1_ax3.set_ylabel('y (m)', fontsize=16)
     fig1.colorbar(hb2, ax=f1_ax3)
@@ -80,7 +87,7 @@ def plot_setup(telescope, simulation):
     plt.text(direct_x, direct_y, '+', horizontalalignment='center',
              verticalalignment='center', color='m')
     f1_ax4.set_aspect("equal")
-    f1_ax4.set_title(f"Image with ghosts")
+    f1_ax4.set_title('Image with ghosts')
     f1_ax4.set_xlabel('x (m)', fontsize=16)
     f1_ax4.set_ylabel('y (m)', fontsize=16)
     fig1.colorbar(hb3, ax=f1_ax4)
@@ -127,19 +134,17 @@ def plot_zoom_on_ghosts(forward_rays):
     fig, ax = plt.subplots(2, 1)
     axs = ax.ravel()
     # ghost images
-    _hb1 = axs[0].hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
-                         extent=[-0.02, 0.27, -0.005, 0.005], gridsize=(100, 100))
+    _ = axs[0].hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
+                      extent=[-0.02, 0.27, -0.005, 0.005], gridsize=(100, 100))
     axs[0].set_aspect("equal")
-    axs[0].set_title(f"Beam spot")
+    axs[0].set_title('Beam spot')
 
     # "Projection" on the x-axis shows that ghosts spots are nicely separated
     axs[1].hist(all_x, bins=1000, weights=all_f, log=True)
-    axs[1].set_title("Projection of ghosts image on the x-axis")
+    axs[1].set_title('Projection of ghosts image on the x-axis')
     axs[1].set_xlabel('position x (m)')
     axs[1].set_ylabel('~n photons')
-    plt.show()
-    # return 0 if all is wel
-    return 0
+    return fig, ax
 
 
 def plot_full_camera(forward_rays, log_scale=False):
@@ -177,7 +182,7 @@ def plot_full_camera(forward_rays, log_scale=False):
     plt.text(direct_x, direct_y, '+', horizontalalignment='center',
              verticalalignment='center', color='m')
     ax.set_aspect("equal")
-    ax.set_title(f"Image with ghosts")
+    ax.set_title('Image with ghosts')
     ax.set_xlabel('x (m)', fontsize=16)
     ax.set_ylabel('y (m)', fontsize=16)
     fig.colorbar(hb, ax=ax)
@@ -215,21 +220,21 @@ def plot_ghosts_map(forward_rays):
     # plot all ghosts
     print("Ghosts map for 100 nW beam at 500 nm with a diameter of 2.5 mm")
     # get main impact point
-    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(forward_rays)
+    i_straight, direct_x, direct_y, _ = get_main_impact_point(forward_rays)
     # store some stats roughly
-    spots_data = list()
-    fig, ax = plt.subplots(7, 6)
+    spots_data = []
+    _, ax = plt.subplots(7, 6)
     axs = ax.ravel()
     for i, ghost in enumerate(forward_rays):
         # bin data (and make plot)
-        _hb_map = map_ghost(ghost, axs[i])
+        map_ghost(ghost, axs[i])
         axs[i].set_aspect("equal")
-        axs[i].set_title(f"Ghost image")
+        axs[i].set_title('Ghost image')
         axs[i].grid(True)
 
         ghost_spot_data = get_ghost_spot_data(i, ghost)
         # make nice plot on axis
-        x_min, _x_max, y_min, y_max = get_ranges(ghost.x, ghost.y, dr=0.01)
+        x_min, _, y_min, y_max = get_ranges(ghost.x, ghost.y, dr=0.01)
         axs[i].text(x_min, 0.9 * y_max, f'Pos. x = {ghost_spot_data["pos_x"] * 1000:.2f} mm', color='black')
         axs[i].text(x_min, 0.7 * y_max, f'Radius = {ghost_spot_data["radius"] * 1000:.2f} mm', color='black')
         axs[i].text(x_min, 0.5 * y_min, f'Spot S = {ghost_spot_data["surface"]:.3f} mm$^2$', color='black')
@@ -244,7 +249,6 @@ def plot_ghosts_map(forward_rays):
         # store data here
         spots_data.append(ghost_spot_data)
     plt.tight_layout()
-    plt.show()
     return spots_data
 
 
@@ -271,7 +275,7 @@ def plot_spots_stats(data_frame):
     for i, col in enumerate(['pos_x', 'pos_y', 'radius']):
         axs[i].hist(data_frame[col] * 1000)
         axs[i].set_title(col, fontsize=22)
-        axs[i].set_xlabel('%s (mm)' % col, fontsize=22)
+        axs[i].set_xlabel(f'{col} (mm)', fontsize=22)
 
     axs[i+1].hist(data_frame['surface'])
     axs[i+1].set_title('surface', fontsize=22)
@@ -297,24 +301,24 @@ def plot_ghosts_spots_distances(ghosts_separations):
     """
     plt.rcParams["figure.figsize"] = [18, 12]
     fig, ax = plt.subplots(2, 2)
-    _hd = ax[0][0].hist(ghosts_separations['distance'] * 1000)
+    ax[0][0].hist(ghosts_separations['distance'] * 1000)
     ax[0][0].set_title('Distance between ghost spot centers', fontsize=22)
     ax[0][0].set_xlabel('distance (mm)', fontsize=16)
 
-    _ho = ax[0][1].hist(ghosts_separations['overlap'] * 1000)
+    ax[0][1].hist(ghosts_separations['overlap'] * 1000)
     ax[0][1].set_title('Distance between ghost spot borders', fontsize=22)
     ax[0][1].set_xlabel('distance (mm)', fontsize=16)
 
-    _hs = ax[1][0].hist(np.log10(ghosts_separations['surface_ratio']))
+    ax[1][0].hist(np.log10(ghosts_separations['surface_ratio']))
     ax[1][0].set_title('Ghost spot surface ratio', fontsize=22)
     ax[1][0].set_xlabel('log10(ratio)', fontsize=16)
 
-    _hp = ax[1][1].hist(np.log10(ghosts_separations['signal_ratio']))
+    ax[1][1].hist(np.log10(ghosts_separations['signal_ratio']))
     ax[1][1].set_title('Ghost spot pixel signal ratio', fontsize=22)
     ax[1][1].set_xlabel('log10(ratio)', fontsize=16)
 
     print(f'{sum(ghosts_separations["overlap"] < 0)} ghost spots pairs are in overlap out of {len(ghosts_separations)}')
-    return ax
+    return fig, ax
 
 
 def plot_ghosts_displacements(merged_data_frame):
@@ -366,8 +370,8 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
         0 if all is well
     """
     # Get list of signed maximum displacements in mm
-    x_max_diff = list()
-    y_max_diff = list()
+    x_max_diff = []
+    y_max_diff = []
     for df in merged_data_frame:
         # shift along x
         x_tmp_diff = df['pos_x_x'] - df['pos_x_y']
@@ -420,7 +424,7 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
     # Residuals and fit for x
     x_residuals = np.array(x_interp_ys) - np.array(x_max_diff)
     (x_mu, x_sigma) = stats.norm.fit(x_residuals)
-    x_n, x_bins, x_patches = ax[1][0].hist(x_residuals, bins=10, density=True)
+    _, x_bins, _ = ax[1][0].hist(x_residuals, bins=10, density=True)
     x_bin_centers = 0.5 * (x_bins[1:] + x_bins[:-1])
     x_y = stats.norm.pdf(x_bin_centers, x_mu, x_sigma)
     ax[1][0].plot(x_bin_centers, x_y, 'r--', linewidth=2)
@@ -440,15 +444,13 @@ def plot_max_displacement_for_sim_scan(merged_data_frame, scan_values, trans_typ
     # Residuals and fit for y
     y_residuals = np.array(y_interp_ys) - np.array(y_max_diff)
     (y_mu, y_sigma) = stats.norm.fit(y_residuals)
-    y_n, y_bins, y_patches = ax[1][1].hist(y_residuals, bins=10, density=True)
+    _, y_bins, _ = ax[1][1].hist(y_residuals, bins=10, density=True)
     y_bin_centers = 0.5 * (y_bins[1:] + y_bins[:-1])
     y_y = stats.norm.pdf(y_bin_centers, y_mu, y_sigma)
     ax[1][1].plot(y_bin_centers, y_y, 'r--', linewidth=2)
     ax[1][1].set_title('Fit residuals (mm)')
 
-    plt.show()
-    # return 0 if all is well
-    return 0
+    return fig, ax
 
 
 def plot_spots(data_frame_list, spot_size_scaling=10, range_x=(-0.35, 0.35), range_y=(-0.35, 0.35)):
@@ -520,11 +522,11 @@ def plot_full_camera_and_spots(forward_rays, data_frame, log_scale=False, spot_s
     plt.plot(0.32 * np.cos(th), 0.32 * np.sin(th), c='r')
 
     # Plot direct path location on focal plane
-    i_straight, direct_x, direct_y, direct_f = get_main_impact_point(forward_rays)
+    _, direct_x, direct_y, _ = get_main_impact_point(forward_rays)
     plt.text(direct_x, direct_y, '+', horizontalalignment='center',
              verticalalignment='center', color='m')
     ax[0].set_aspect("equal")
-    ax[0].set_title(f"Image with ghosts")
+    ax[0].set_title('Image with ghosts')
     ax[0].set_xlabel('x (m)', fontsize=16)
     ax[0].set_ylabel('y (m)', fontsize=16)
     fig.colorbar(hb, ax=ax[0])
@@ -536,7 +538,7 @@ def plot_full_camera_and_spots(forward_rays, data_frame, log_scale=False, spot_s
     ax[1].scatter(spots_x, spots_y, s=spots_size, facecolors='none', edgecolors='black')
     ax[1].set_xlim((LSST_CAMERA_EXTENT[0], LSST_CAMERA_EXTENT[1]))
     ax[1].set_ylim((LSST_CAMERA_EXTENT[2], LSST_CAMERA_EXTENT[3]))
-    ax[1].set_title(f"Ghosts representation")
+    ax[1].set_title('Ghosts representation')
     ax[1].set_xlabel('x (m)', fontsize=16)
     ax[1].set_ylabel('y (m)', fontsize=16)
     ax[1].set_aspect("equal")
@@ -642,7 +644,7 @@ def plot_impact_point_vs_beam_offset(data_frame):
     ax[3][0].set_xlabel('beam distance to center (m)')
     ax[3][0].set_ylabel('displacement (m)')
     # 8 convergence histogram
-    c_x_n, c_x_bins, c_x_patches = ax[3][1].hist(data_frame['convergence'], bins=50, density=True)
+    _, c_x_bins, _ = ax[3][1].hist(data_frame['convergence'], bins=50, density=True)
     ax[3][1].set_xlabel('convergence (m)')
     ax[3][1].set_ylabel('density')
 
@@ -691,7 +693,6 @@ def plot_beam_pointing_precision(data_frame, target_x, target_y):
         the axis object
     """
     # have a look at the precision of the beam pointing to center
-    from matplotlib.ticker import MaxNLocator
     plt.rcParams["figure.figsize"] = [18, 9]
     # make figure
     fig, ax = plt.subplots(1, 2)

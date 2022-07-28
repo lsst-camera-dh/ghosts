@@ -1,3 +1,9 @@
+"""beam_configs module
+
+This module is used to define the CCOB-NB beam configuration through dictionaries.
+
+"""
+
 from copy import deepcopy
 
 # Default beam configs

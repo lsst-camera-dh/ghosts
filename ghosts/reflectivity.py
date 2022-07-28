@@ -52,6 +52,8 @@ def make_simple_coating(telescope, r_frac=[0.02, 0.02, 0.15], debug=False):
         the reflexion coefficient applied
     """
     coef = r_frac[0]
+    if debug:
+        print(f'Warning: simple coating: using {coef} reflexion coefficient for all optical elements')
     for surface in telescope.itemDict.values():
         if isinstance(surface, batoid.RefractiveInterface):
             surface.forwardCoating = batoid.SimpleCoating(coef, 1 - coef)

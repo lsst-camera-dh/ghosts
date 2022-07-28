@@ -1,3 +1,11 @@
+"""analysis module
+
+This module provides functions to analyze ghosts spots on the full focal plane, like getting ghosts positions
+and features, computing separations between ghosts spots, associating ghosts spots and computing distances
+between to sets of ghosts spots.
+
+"""
+
 import pandas as pd
 import numpy as np
 import math
@@ -194,8 +202,8 @@ def reduce_ghosts(r_forward):
         a list of images of ghosts as 2D histograms
     """
     # store some stats roughly
-    spots_data = list()
-    ghost_maps = list()
+    spots_data = []
+    ghost_maps = []
     _fig, ax = plt.subplots(len(r_forward))
     axs = ax.ravel()
     for i, ghost in enumerate(r_forward):
@@ -265,7 +273,7 @@ def compute_ghost_separations(data_frame):
         a pandas data frame with information on ghost spots data separations and ratios
     """
     # computing distances ghost to ghost, and ghosts overlap
-    dist_data = list()
+    dist_data = []
     n = len(data_frame['pos_x']) - 1
     for i in range(n):
         for k in range(1, n - i):
@@ -372,10 +380,10 @@ def find_nearest_ghost(ghost_slice, ghosts_df, radius_scale_factor=100):
     min_distance_3d_err : `float`
         the uncertainty on the distance with the nearest ghost spot for the 3D distance
     """
-    dist_2d_data = list()
-    dist_2d_err_data = list()
-    dist_3d_data = list()
-    dist_3d_err_data = list()
+    dist_2d_data = []
+    dist_2d_err_data = []
+    dist_3d_data = []
+    dist_3d_err_data = []
     n = len(ghosts_df['pos_x'])
     for i in range(n):
         dist_2d, dist_2d_err, dist_3d, dist_3d_err = \
@@ -416,13 +424,13 @@ def match_ghosts(ghosts_df_1, ghosts_df_2, radius_scale_factor=100):
     ghosts_match : `pandas.DataFrame`
         a `pandas` data frame with the indices of each ghost and nearest ghost, and the distance between the two
     """
-    match_i1 = list()
-    match_i2_2d = list()
-    match_i2_3d = list()
-    match_min_dist_2d = list()
-    match_min_dist_3d = list()
-    match_min_dist_2d_err = list()
-    match_min_dist_3d_err = list()
+    match_i1 = []
+    match_i2_2d = []
+    match_i2_3d = []
+    match_min_dist_2d = []
+    match_min_dist_3d = []
+    match_min_dist_2d_err = []
+    match_min_dist_3d_err = []
 
     n = len(ghosts_df_1['pos_x'])
     for i in range(n):
