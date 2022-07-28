@@ -13,4 +13,5 @@ dependencies:
   - jupyter
   - sphinx
   - sphinx_rtd_theme
+  - pylint
   - seaborn
