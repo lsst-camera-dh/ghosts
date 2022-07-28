@@ -34,7 +34,7 @@ def read_sensor_reflectivity(file_path='../data/sensor_reflectivity_qe_r+qe.xlsx
     return data_frame
 
 
-def make_simple_coating(telescope, r_frac=[0.02, 0.02, 0.15]):
+def make_simple_coating(telescope, r_frac=[0.02, 0.02, 0.15], debug=False):
     """ Applies a simple coating as a unique refraction index for each optical element surface
 
     Parameters
@@ -43,6 +43,8 @@ def make_simple_coating(telescope, r_frac=[0.02, 0.02, 0.15]):
         the optical setup as defined in `batoid`
     r_frac : `list` of `float`
         a refraction index, usually of the order of 0.02
+    debug : `bool`
+        print debug information or not
 
     Returns
     -------
@@ -59,7 +61,7 @@ def make_simple_coating(telescope, r_frac=[0.02, 0.02, 0.15]):
     return coef
 
 
-def make_smart_coating(telescope, r_frac=[0.02, 0.02, 0.15]):
+def make_smart_coating(telescope, r_frac=[0.02, 0.02, 0.15], debug=False):
     """ Applies a different reflexion index for each element type lens, filter, detector
 
     Parameters
@@ -69,12 +71,15 @@ def make_smart_coating(telescope, r_frac=[0.02, 0.02, 0.15]):
     r_frac : `list` of `float`
         the fraction of light that you wish surfaces to reflect, usually of the order of 0.02
         use a list of a unique element for simple coating, or of 3 elements for smart coating (lens, filter, detector)
+    debug : `bool`
+        print debug information or not
 
     Returns
     -------
     """
     r_lens, r_filter, r_detector = r_frac[0], r_frac[1], r_frac[2]
-    print("Smart coating: ", r_lens, r_filter, r_detector)
+    if debug:
+        print("Smart coating: ", r_lens, r_filter, r_detector)
     for surface in telescope.itemDict.values():
         if isinstance(surface, batoid.RefractiveInterface):
             if surface.name.split('_')[0] in ['L1', 'L2', 'L3']:

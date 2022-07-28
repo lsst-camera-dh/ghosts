@@ -42,7 +42,7 @@ def get_list_of_optics(telescope, debug=False):
     return optics
 
 
-def make_optics_reflective(telescope, coating='simple', r_frac=[0.02, 0.02, 0.15]):
+def make_optics_reflective(telescope, coating='simple', r_frac=[0.02, 0.02, 0.15], debug=False):
     """ Applies a simple coating as a unique refraction index for each optical element surface
 
     .. todo::
@@ -59,14 +59,16 @@ def make_optics_reflective(telescope, coating='simple', r_frac=[0.02, 0.02, 0.15
         the fraction of light that you wish surfaces to reflect, usually of the order of 0.02
         use a list of 3 elements, for simple coating only the first one is used
         for smart coating all 3 are used for lens, filter and detector
+    debug : `bool`
+        print debug information or not
 
     Returns
     -------
     """
     if coating == 'simple':
-        reflectivity.make_simple_coating(telescope, r_frac)
+        reflectivity.make_simple_coating(telescope, r_frac, debug=debug)
     elif coating == 'smart':
-        reflectivity.make_smart_coating(telescope, r_frac)
+        reflectivity.make_smart_coating(telescope, r_frac, debug=debug)
     return 0
 
 
