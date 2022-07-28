@@ -171,8 +171,10 @@ def run_and_analyze_simulation_for_configs_sets(geom_set, beam_set):
         current_tel = tweak_telescope(telescope, one_geom)
         make_optics_reflective(current_tel, coating='smart', r_frac=[0.02, 0.02, 0.15])
         for one_beam in beam_set:
+            print(f'Run and analyze simulation: geom {one_geom["geom_id"]}, beam {one_beam["beam_id"]}', end='\r')
             results_data_frame = run_and_analyze_simulation(telescope, one_geom['geom_id'], one_beam)
             spots_df_list.append(results_data_frame)
+
     return spots_df_list
 
 
@@ -495,7 +497,7 @@ def scan_dist_translation(telescope, ref_data_frame, optic_name, axis, shifts_li
     distances_3d = []
     for delta in shifts_list:
         df_i, _ = full_translation(telescope, optic_name=optic_name, axis=axis, distance=delta,
-                                      beam_config=BEAM_CONFIG_1)
+                                   beam_config=BEAM_CONFIG_1)
         match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=r_scale)
         dist_i = compute_reduced_distance(match_i)
         distances_3d.append(dist_i)

@@ -552,7 +552,10 @@ def build_full_frame_polar_set(base_id=0, set_size='large'):
      beams : `list` of `geom_config`
         a list of beam configuration dictionaries
     """
-    if set_size == 'small':
+    if set_size == 'test':
+        distances = list(np.arange(0, 0.36, 0.18))
+        thetas = list(np.arange(0, 375, 120))
+    elif set_size == 'small':
         distances = list(np.arange(0, 0.36, 0.06))
         thetas = list(np.arange(0, 375, 60))
     elif set_size == 'medium':
