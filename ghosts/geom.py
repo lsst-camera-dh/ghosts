@@ -5,6 +5,7 @@ This module provides tools to manipulate telescope geometries, i.e. shifts and r
 
 import copy
 import pandas as pd
+import numpy as np
 from ghosts.geom_configs import GEOM_CONFIG_0
 
 
@@ -228,3 +229,36 @@ def build_rotation_set(optic_name, axis, angles_list, base_id=0):
     for i, angle in enumerate(angles_list):
         geoms.append(rotate_optic(optic_name, axis, angle, geom_id=base_id+i))
     return geoms
+
+
+def build_random_geom(max_angle=0.1, max_shift=0.001):
+    """ Build a random geometry from a base geometry configuration
+
+    Parameters
+    ----------
+    max_angle : `float`
+        the maximum value of the rotation angle in degree
+    max_shift : `floats`
+        the maximum value of the shift in meters
+
+    Returns
+    -------
+     rnd_geom : `geom.geom_configs`
+        a random geometry
+    """
+    # generate 30 random numbers
+    numbers = np.random.random([30])
+    rnd_geom_dict = copy.deepcopy(GEOM_CONFIG_0)
+    optics_keys = list(rnd_geom_dict.keys())
+    optics_keys.remove('geom_id')
+    for optic, rnd in zip(optics_keys, numbers):
+        mv_type = optic.split('_')[1]
+        if mv_type in ['dx', 'dy', 'dz']:
+            rnd_shift = max_shift * 2 * (rnd - 0.5)
+            rnd_geom_dict[optic] = np.round(rnd_shift, 6)
+        elif mv_type in ['rx', 'ry', 'rz']:
+            rnd_euler_angle = max_angle * 2 * (rnd - 0.5)
+            rnd_geom_dict[optic] = np.round(rnd_euler_angle, 6)
+    # assign a random id
+    rnd_geom_dict['geom_id'] = np.random.randint(1e9)
+    return rnd_geom_dict
