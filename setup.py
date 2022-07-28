@@ -28,5 +28,6 @@ setup(
                       "openpyxl",
                       "pyyaml",
                       "seaborn",
+                      "pyarrow",
                       "setuptools_scm"]
 )
