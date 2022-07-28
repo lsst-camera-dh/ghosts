@@ -2,9 +2,9 @@ import math
 import numpy as np
 import pandas as pd
 from ghosts.tweak_optics import rotate_optic, make_optics_reflective, translate_optic, randomized_telescope
+from ghosts.tweak_optics import build_telescope_from_geom, build_telescope, tweak_telescope
 from ghosts.beam_configs import BEAM_CONFIG_0, BEAM_CONFIG_1
 from ghosts.beam import beam_on, concat_dicts
-from ghosts.tweak_optics import build_telescope_from_geom
 from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separations, match_ghosts,\
                             compute_reduced_distance, compute_2d_reduced_distance
 from ghosts.tools import get_main_impact_point
@@ -45,6 +45,33 @@ def run_simulation(telescope, beam_config=BEAM_CONFIG_0):
     forward_rays, reverse_rays = telescope.traceSplit(rays, minFlux=1e-4)
     trace_full = telescope.traceFull(rays)
     return trace_full, forward_rays, reverse_rays, rays
+
+
+def run_and_analyze_simulation(telescope, geom_id, beam_config=BEAM_CONFIG_0):
+    """ Runs a ray tracing simulation of a light beam into the CCOB
+    and analyze beam spots data.
+
+    Parameters
+    ----------
+    telescope : `batoid.telescope`
+        the optical setup
+    geom_id : `int`
+        an integer corresponding to the id of the geometry of the telescope
+    beam_config : `dict`
+        a dictionary with the light beam configuration, see :ref:`beam_configs`.
+
+    Returns
+    -------
+    spots_data_frame : `pandas.DataFrame`
+        a `pandas` data frame with ghost spot data information, including beam and geometry configurations,
+        see :meth:`ghosts.analysis.make_data_frame`
+    """
+    trace_full, forward_rays, reverse_rays, rays = run_simulation(telescope, beam_config)
+    spots_data, _spots = reduce_ghosts(forward_rays)
+    spots_data_frame = make_data_frame(spots_data,
+                                       beam_id=beam_config['beam_id'],
+                                       geom_id=geom_id)
+    return spots_data_frame
 
 
 # run a ray tracing simulation
@@ -114,6 +141,9 @@ def run_and_analyze_simulation_for_configs_sets(geom_set, beam_set):
     """ Runs and analyze a ray tracing simulation of a light beam into the CCOB
     for a set of beam configurations and geometry configurations
 
+    Note that we first build a reference telescope and then tweak it at will,
+    as building a telescope from yaml file is slow.
+
     Parameters
     ----------
     geom_set : `list` of `dict`
@@ -127,11 +157,16 @@ def run_and_analyze_simulation_for_configs_sets(geom_set, beam_set):
         a `pandas` data frame with ghost spot data information, including beam configuration,
         see :meth:`ghosts.analysis.make_data_frame`, merged from different configurations
     """
+    # build one telescope to start with, as this is slow
+    telescope = build_telescope("../data/LSST_CCOB_r.yaml")
+    # go for the loops
     spots_df_list = list()
     for one_geom in geom_set:
+        current_tel = tweak_telescope(telescope, one_geom)
+        make_optics_reflective(current_tel, coating='smart', r_frac=[0.02, 0.02, 0.15])
         for one_beam in beam_set:
-            spots_df_list.append(run_full_simulation_from_configs(one_geom, one_beam))
-
+            results_data_frame = run_and_analyze_simulation(telescope, one_geom['geom_id'], one_beam)
+            spots_df_list.append(results_data_frame)
     return spots_df_list
 
 
