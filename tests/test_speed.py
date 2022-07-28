@@ -7,8 +7,8 @@ import batoid
 from ghosts import tweak_optics
 
 
-class BeamTestCase(unittest.TestCase):
-    """ Test class for the ghosts.beam module"""
+class SpeedTestCase(unittest.TestCase):
+    """ Test class for the ghosts module"""
     def test_build_geom_from_yaml(self):
         """ Verify that the building telescope from yaml is not too slow
         """
@@ -22,6 +22,21 @@ class BeamTestCase(unittest.TestCase):
         time_diff = stop_time - start_time
         print(f'The time difference is :{time_diff:.3f} s')
         self.assertLess(time_diff, 3.)
+
+    def test_randomize_telescope(self):
+        """ Verify that building randomized telescope is not too slow
+        """
+        start_time = timeit.default_timer()
+        # build one telescope and tweak it around
+        telescope = batoid.Optic.fromYaml("./data/LSST_CCOB_r.yaml")
+        tels = list()
+        for i in range(100):
+            rnd_tel = tweak_optics.randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=False)
+            tels.append(rnd_tel)
+        stop_time = timeit.default_timer()
+        time_diff = stop_time - start_time
+        print(f'The time difference is :{time_diff:.3f} s')
+        self.assertLess(time_diff, 0.3)
 
 
 if __name__ == '__main__':
