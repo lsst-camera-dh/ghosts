@@ -1,3 +1,9 @@
+"""plotter module
+
+This module provides functions to plot every single thing that the `ghosts` module produces.
+
+"""
+
 import batoid
 import matplotlib.pyplot as plt
 from scipy import stats
