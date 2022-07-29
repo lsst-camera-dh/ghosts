@@ -13,7 +13,7 @@ from ghosts.beam_configs import BEAM_CONFIG_1
 from ghosts.beam import beam_on, concat_dicts
 from ghosts.analysis import reduce_ghosts, make_data_frame, compute_ghost_separations, match_ghosts,\
                             compute_reduced_distance, compute_2d_reduced_distance
-from ghosts.tools import get_main_impact_point
+from ghosts.tools import get_main_impact_point, get_default_yaml_path
 
 
 # run a ray tracing simulation
@@ -164,7 +164,7 @@ def run_and_analyze_simulation_for_configs_sets(geom_set, beam_set):
         see :meth:`ghosts.analysis.make_data_frame`, merged from different configurations
     """
     # build one telescope to start with, as this is slow
-    telescope = build_telescope("../data/LSST_CCOB_r.yaml")
+    telescope = build_telescope(get_default_yaml_path())
     # go for the loops
     spots_df_list = []
     for one_geom in geom_set:

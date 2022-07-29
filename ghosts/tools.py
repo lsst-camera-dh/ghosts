@@ -4,8 +4,20 @@ This module provides a number of generic tools.
 
 """
 
-
+import os
 import numpy as np
+
+
+def get_default_yaml_path():
+    """ Hack to find where the default yaml is, to be fixed properly
+    """
+    first_path = '../data/LSST_CCOB_r.yaml'
+    if os.path.exists(first_path):
+        return first_path
+    second_path = './data/LSST_CCOB_r.yaml'
+    if os.path.exists(second_path):
+        return second_path
+    return None
 
 
 def get_vector(axis, value):
