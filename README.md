@@ -37,6 +37,4 @@ or
 
 The code in this repository is available for re-use under the GPL v3 license.
 
-See code coverage at: [codecov](https://app.codecov.io/gh/bregeon/ghosts)
-
-[![codecov](https://codecov.io/gh/bregeon/ghosts/branch/main/graph/badge.svg?token=AJSQUL5IEO)](https://codecov.io/gh/bregeon/ghosts)
+See code coverage at: [![codecov](https://codecov.io/gh/bregeon/ghosts/branch/main/graph/badge.svg?token=AJSQUL5IEO)](https://codecov.io/gh/bregeon/ghosts)
