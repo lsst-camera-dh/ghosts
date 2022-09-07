@@ -6,6 +6,17 @@ API Documentation for ghosts
 
 Stuff
 
+camera interface
+===================
+.. _camera:
+
+`ghosts.camera`
+---------------------
+
+.. automodule:: ghosts.camera
+    :members:
+    :undoc-members:
+
 beam configuration interface
 ============================
 .. _beam_configs:
