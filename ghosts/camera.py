@@ -219,3 +219,20 @@ def build_camera():
     amps_col = PatchCollection(amps, facecolor='none', edgecolor='red', linewidth=1, linestyle='dotted')
 
     return amps_col, ccds_col, rafts_col
+
+
+def show_camera(axis, camera):
+    """ Add camera to an axis
+
+    Parameters
+    ----------
+    axis : `matplotlib.axes.Axes`
+        the matplotlib figure axis on which to add the camera
+    camera : `tuple`
+        a tuple of collections containing the camera rectangles
+
+    Returns
+    -------
+    """
+    [axis.add_collection(col) for col in camera]
+    return axis
