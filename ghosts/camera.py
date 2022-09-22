@@ -6,7 +6,7 @@ This module provides functions to display a dummy camera, with rafts, CCDs and a
 import numpy as np
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
-
+from ghosts.constants import LSST_CAMERA_AMP_DX, LSST_CAMERA_AMP_DY, LSST_CAMERA_CCD_DX, LSST_CAMERA_RAFT_DX
 
 def make_amp(x, y):
     """ Build an amplifier rectangle
@@ -23,7 +23,7 @@ def make_amp(x, y):
     - : `matplotlib.patches.Rectangle`
        a `Rectangle` object
     """
-    return Rectangle((x, y), 5.4125, 21.665)
+    return Rectangle((x, y), LSST_CAMERA_AMP_DX, LSST_CAMERA_AMP_DY)
 
 
 def make_ccd(x, y):
@@ -41,7 +41,7 @@ def make_ccd(x, y):
     - : `matplotlib.patches.Rectangle`
        a `Rectangle` object
     """
-    return Rectangle((x, y), 43.333, 43.333)
+    return Rectangle((x, y), LSST_CAMERA_CCD_DX, LSST_CAMERA_CCD_DX)
 
 
 def make_raft(x, y):
@@ -59,7 +59,7 @@ def make_raft(x, y):
     - : `matplotlib.patches.Rectangle`
        a `Rectangle` object
     """
-    return Rectangle((x, y), 130, 130)
+    return Rectangle((x, y), LSST_CAMERA_RAFT_DX, LSST_CAMERA_RAFT_DX)
 
 
 def make_ccd_with_amp(x, y):
@@ -77,8 +77,8 @@ def make_ccd_with_amp(x, y):
        a list of CCDs with amplifiers
     """
     ccd = []
-    amp_x = np.arange(x, x+43.3, 5.4125)
-    amp_y = np.arange(y, y+43.3, 21.665)
+    amp_x = np.arange(x, x+LSST_CAMERA_CCD_DX*0.99, LSST_CAMERA_AMP_DX)
+    amp_y = np.arange(y, y+LSST_CAMERA_CCD_DX*0.99, LSST_CAMERA_AMP_DY)
     for rx in amp_x:
         for ry in amp_y:
             ccd.append(make_amp(rx, ry))
@@ -101,8 +101,8 @@ def make_raft_with_ccd(x, y):
        a list of rafts with CCDs
     """
     raft = []
-    ccd_x = np.arange(x, x+129, 43.333)
-    ccd_y = np.arange(y, y+129, 43.333)
+    ccd_x = np.arange(x, x+LSST_CAMERA_RAFT_DX*0.99, LSST_CAMERA_CCD_DX)
+    ccd_y = np.arange(y, y+LSST_CAMERA_RAFT_DX*0.99, LSST_CAMERA_CCD_DX)
     for rx in ccd_x:
         for ry in ccd_y:
             raft.append(make_ccd(rx, ry))
@@ -125,8 +125,8 @@ def make_raft_with_ccd_with_amp(x, y):
        a list of CCDs with amplifiers
     """
     raft = []
-    ccd_x = np.arange(x, x+129, 43.333)
-    ccd_y = np.arange(y, y+129, 43.333)
+    ccd_x = np.arange(x, x+LSST_CAMERA_RAFT_DX*0.99, LSST_CAMERA_CCD_DX)
+    ccd_y = np.arange(y, y+LSST_CAMERA_RAFT_DX*0.99, LSST_CAMERA_CCD_DX)
     for rx in ccd_x:
         for ry in ccd_y:
             raft.extend(make_ccd_with_amp(rx, ry))
@@ -151,8 +151,8 @@ def make_raft_with_one_ccd_with_amp(x, y, i_ccd):
        a list of CCDs and some amplifiers
     """
     raft = []
-    ccd_x = np.arange(x, x+129, 43.333)
-    ccd_y = np.arange(y, y+129, 43.333)
+    ccd_x = np.arange(x, x+LSST_CAMERA_RAFT_DX*0.99, LSST_CAMERA_CCD_DX)
+    ccd_y = np.arange(y, y+LSST_CAMERA_RAFT_DX*0.99, LSST_CAMERA_CCD_DX)
     i = 0
     for rx in ccd_x:
         for ry in ccd_y:
@@ -180,8 +180,8 @@ def build_camera():
             a collection of rectangles that looks like the Amplifiers of the Rubin LSST Camera
     """
     # Rafts range with no gaps
-    raft_x = np.arange(-325, 325, 130)
-    raft_y = np.arange(-325, 325, 130)
+    raft_x = np.arange(-0.325, 0.325, LSST_CAMERA_RAFT_DX)
+    raft_y = np.arange(-0.325, 0.325, LSST_CAMERA_RAFT_DX)
 
     # List of rectangles
     rafts = []
