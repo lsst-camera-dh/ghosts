@@ -35,3 +35,9 @@ LSST_CAMERA_PIXEL_FULL_WELL = 75000  # 75k to 130k ~ 120k mostly >100k
 
 # Distance from CCOB head to focal plane - tested in test_geom
 CCOB_DISTANCE_TO_FOCAL_PLANE = 2.229424
+
+# Approximate Camera geometry in meters
+LSST_CAMERA_AMP_DX = 5.4125/1000.
+LSST_CAMERA_AMP_DY = 21.665/1000.
+LSST_CAMERA_CCD_DX = 43.333/1000.
+LSST_CAMERA_RAFT_DX = 130./1000.
