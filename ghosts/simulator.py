@@ -488,7 +488,7 @@ def scan_dist_rotation(telescope, ref_data_frame, optic_name, axis, angles_list,
     distances_3d = []
     for angle in angles_list:
         df_i, _ = full_rotation(telescope, optic_name=optic_name, axis=axis, angle=angle,
-                                   beam_config=BEAM_CONFIG_1)
+                                beam_config=BEAM_CONFIG_1)
         match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=r_scale)
         dist_i = compute_reduced_distance(match_i)
         distances_3d.append(dist_i)
