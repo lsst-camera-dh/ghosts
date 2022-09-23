@@ -9,9 +9,16 @@ from ghosts.constants import CCOB_DISTANCE_TO_FOCAL_PLANE
 
 class GeomTestCase(unittest.TestCase):
     """ Test class for the ghosts.geom module"""
-    def test_CCOB_geometry(self):
+    def test_CCOB_default_geometry(self):
         """ Verify that the default geometry is a CCOB"""
         telescope = batoid.Optic.fromYaml("./data/LSST_CCOB_r.yaml")
+        self.assertEqual(tweak_optics.get_list_of_optics(telescope),
+                         ['L1', 'L2', 'L3', 'Detector'],
+                         'Not a CCOB optical setup')
+
+    def test_CCOB_geometry_with_filter(self):
+        """ Verify that the default geometry is a CCOB"""
+        telescope = batoid.Optic.fromYaml("./data/LSST_CCOB_r_with_filter.yaml")
         self.assertEqual(tweak_optics.get_list_of_optics(telescope),
                          ['L1', 'L2', 'Filter', 'L3', 'Detector'],
                          'Not a CCOB optical setup')

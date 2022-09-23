@@ -99,6 +99,33 @@ opticalSystem:
                 z: 0.03
         -
           type: Lens
+          name: Filter
+          medium: *silica
+          coordSys:
+            z: 0.87445202
+          items:
+            -
+              type: RefractiveInterface
+              name: Filter_entrance
+              surface:
+                type: Sphere
+                R: 5.632
+              obscuration:
+                type: ClearCircle
+                radius: 0.375
+            -
+              type: RefractiveInterface
+              name: Filter_exit
+              surface:
+                type: Sphere
+                R: 5.606
+              obscuration:
+                type: ClearCircle
+                radius: 0.375
+              coordSys:
+                z: 0.0179
+        -
+          type: Lens
           name: L3
           medium: *silica
           coordSys:
