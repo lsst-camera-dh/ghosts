@@ -181,10 +181,11 @@ def run_and_analyze_simulation_for_configs_sets(geom_set, beam_set):
 
 def run_and_analyze_simulation_for_configs_sets_parallel(geom_set, beam_set):
     """ Runs and analyze a ray tracing simulation of a light beam into the CCOB
-    for a set of beam configurations and geometry configurations
+    for a set of beam configurations and geometry configurations, multithread version.
 
     Note that we first build a reference telescope and then tweak it at will,
-    as building a telescope from yaml file is slow.
+    as building a telescope from yaml file is slow. Threading is done with a pool
+    on beam configuration for each geometry.
 
     Parameters
     ----------
