@@ -4,6 +4,7 @@ This module provides tools to run full simulations from telescope geometries and
 some functions also run the full workflow to the beam spots data analysis.
 """
 
+import concurrent
 import math
 import numpy as np
 import pandas as pd
@@ -174,6 +175,43 @@ def run_and_analyze_simulation_for_configs_sets(geom_set, beam_set):
             print(f'Run and analyze simulation: geom {one_geom["geom_id"]}, beam {one_beam["beam_id"]}', end='\r')
             results_data_frame = run_and_analyze_simulation(telescope, one_geom['geom_id'], one_beam)
             spots_df_list.append(results_data_frame)
+
+    return spots_df_list
+
+
+def run_and_analyze_simulation_for_configs_sets_parallel(geom_set, beam_set):
+    """ Runs and analyze a ray tracing simulation of a light beam into the CCOB
+    for a set of beam configurations and geometry configurations, multithread version.
+
+    Note that we first build a reference telescope and then tweak it at will,
+    as building a telescope from yaml file is slow. Threading is done with a pool
+    on beam configuration for each geometry.
+
+    Parameters
+    ----------
+    geom_set : `list` of `dict`
+        a dictionary with the  geometry configuration, see :ref:`geom_configs`.
+    beam_set : `list` of `dict`
+        a dictionary with the light beam configuration, see :ref:`beam_configs`.
+
+    Returns
+    -------
+    spots_data_frame : `pandas.DataFrame`
+        a `pandas` data frame with ghost spot data information, including beam configuration,
+        see :meth:`ghosts.analysis.make_data_frame`, merged from different configurations
+    """
+    # build one telescope to start with, as this is slow
+    telescope = build_telescope(get_default_yaml_path())
+    # go for the loops
+    spots_df_list = []
+    for one_geom in geom_set:
+        current_tel = tweak_telescope(telescope, one_geom)
+        make_optics_reflective(current_tel, coating='smart', r_frac=[0.02, 0.02, 0.15])
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            futures = [executor.submit(run_and_analyze_simulation, telescope, one_geom['geom_id'], one_beam) for
+                       one_beam in beam_set]
+            for future in concurrent.futures.as_completed(futures):
+                spots_df_list.append(future.result())
 
     return spots_df_list
 
@@ -451,7 +489,7 @@ def scan_dist_rotation(telescope, ref_data_frame, optic_name, axis, angles_list,
     distances_3d = []
     for angle in angles_list:
         df_i, _ = full_rotation(telescope, optic_name=optic_name, axis=axis, angle=angle,
-                                   beam_config=BEAM_CONFIG_1)
+                                beam_config=BEAM_CONFIG_1)
         match_i = match_ghosts(ref_data_frame, df_i, radius_scale_factor=r_scale)
         dist_i = compute_reduced_distance(match_i)
         distances_3d.append(dist_i)
