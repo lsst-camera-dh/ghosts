@@ -8,7 +8,7 @@ from copy import deepcopy
 
 # Default beam configs
 BEAM_CONFIG_0 = {'beam_id': 0, 'wl': 500e-9, 'n_photons': 1000, 'radius': 0.00125,
-                 'x_offset': 0., 'y_offset': 0, 'z_offset': 2.2,
+                 'x_offset': 0., 'y_offset': 0, 'z_offset': 2.229424,
                  'z_euler': 0., 'y_euler': 0., 'x_euler': 0.}
 
 BEAM_CONFIG_1 = deepcopy(BEAM_CONFIG_0)
