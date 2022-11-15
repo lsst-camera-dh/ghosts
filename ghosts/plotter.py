@@ -3,7 +3,6 @@
 This module provides functions to plot every single thing that the `ghosts` module produces.
 
 """
-
 import batoid
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -223,36 +222,50 @@ def plot_ghosts_map(forward_rays):
     i_straight, direct_x, direct_y, _ = get_main_impact_point(forward_rays)
     # store some stats roughly
     spots_data = []
-    _, ax = plt.subplots(7, 6)
+    # adjust rows and columns
+    n_spots = len(forward_rays)
+    if n_spots > 30:
+        n_cols = 6
+        n_rows = 6
+    else:
+        n_cols = 5
+        n_rows = 4
+    # build plot
+    _, ax = plt.subplots(n_cols, n_rows, constrained_layout=True, figsize=(24, 24))
     axs = ax.ravel()
     for i, ghost in enumerate(forward_rays):
+        # get ghost stats
+        ghost_spot_data = get_ghost_spot_data(i, ghost)
         # bin data (and make plot)
         map_ghost(ghost, axs[i])
-        axs[i].set_aspect("equal")
-        axs[i].set_title('Ghost image')
+        # adjust plots
+        axs[i].set_title(ghost_spot_data['name'])
         axs[i].grid(True)
-
-        ghost_spot_data = get_ghost_spot_data(i, ghost)
         # make nice plot on axis
-        x_min, _, y_min, y_max = get_ranges(ghost.x, ghost.y, dr=0.01)
-        axs[i].text(x_min, 0.9 * y_max, f'Pos. x = {ghost_spot_data["pos_x"] * 1000:.2f} mm', color='black')
-        axs[i].text(x_min, 0.7 * y_max, f'Radius = {ghost_spot_data["radius"] * 1000:.2f} mm', color='black')
-        axs[i].text(x_min, 0.5 * y_min, f'Spot S = {ghost_spot_data["surface"]:.3f} mm$^2$', color='black')
-        axs[i].text(x_min, 0.7 * y_min, f'Phot. density = {ghost_spot_data["photon_density"]:.2e} ph/mm$^2$',
-                    color='black')
-        axs[i].text(x_min, 0.9 * y_min, f'Signal = {ghost_spot_data["pixel_signal"]:.2e} e$^-$/pixel', color='black')
-
+        x_min = 0.05
+        axs[i].text(x_min, 0.95, f'Pos. x = {ghost_spot_data["pos_x"] * 1000:.2f} mm',
+                    color='black', transform=axs[i].transAxes)
+        axs[i].text(x_min, 0.9, f'Radius = {ghost_spot_data["radius"] * 1000:.2f} mm',
+                    color='black', transform=axs[i].transAxes)
+        axs[i].text(x_min, 0.85, f'Spot S = {ghost_spot_data["surface"]:.3f} mm$^2$',
+                    color='black', transform=axs[i].transAxes)
+        axs[i].text(x_min, 0.8, f'Phot. density = {ghost_spot_data["photon_density"]:.2e} ph/mm$^2$',
+                    color='black', transform=axs[i].transAxes)
+        axs[i].text(x_min, 0.75, f'Signal = {ghost_spot_data["pixel_signal"]:.2e} e$^-$/pixel',
+                    color='black', transform=axs[i].transAxes)
+        axs[i].set_aspect("equal")
         if i == i_straight:
             axs[i].text(direct_x, direct_y, '+', horizontalalignment='center',
                         verticalalignment='center', color='m')
             axs[i].set_title('Main image', color='m')
         # store data here
         spots_data.append(ghost_spot_data)
-    plt.tight_layout()
+    for i in range(n_spots, len(axs)):
+        axs[i].set_axis_off()
     return spots_data
 
 
-# Looking at overal spots stats
+# Looking at overall spots stats
 def plot_spots_stats(data_frame):
     """ Plots overall ghosts image spots statistics
 
@@ -465,9 +478,9 @@ def plot_spots(data_frame_list, spot_size_scaling=10, range_x=(-0.35, 0.35), ran
     spot_size_scaling : `int`
         a scaling factor to see large or small circles
     range_x : `tuple` of `floats`
-        min and max of the x axis in meters, default is full camera
+        min and max of the x-axis in meters, default is full camera
     range_y : `tuple` of `floats`
-        min and max of the y axis in meters, default is full camera
+        min and max of the y-axis in meters, default is full camera
     Returns
     -------
     fig: `matplotlib.Figure`
