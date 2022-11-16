@@ -147,7 +147,7 @@ def get_ghost_spot_data(i, ghost, p=100, wl=600):
     mean_x, std_x, mean_y, std_y, x_width, y_width, radius, radius_err, \
             weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2 = get_ghost_stats(ghost)
     # number of pixels
-    n_pixels = spot_surface_mm2 * LSST_CAMERA_PIXEL_DENSITY_MM2
+    n_pixels = round(spot_surface_mm2 * LSST_CAMERA_PIXEL_DENSITY_MM2)
     # number of photons for 100 nW at 600 nm
     n_phot_total = get_n_phot_for_power_nw_wl_nm(p, wl)
     n_e_pixel = density_phot_mm2 / LSST_CAMERA_PIXEL_DENSITY_MM2 * n_phot_total * LSST_CAMERA_PIXEL_QE
@@ -253,7 +253,7 @@ def make_data_frame(spots_data, beam_id=0, geom_id=0):
             "radius_err": np.array([data['radius_err'] for data in spots_data], dtype="float"),
             "flux": np.array([data['flux'] for data in spots_data], dtype="float"),
             "surface": np.array([data['surface'] for data in spots_data], dtype="float"),
-            "n_pixels": np.array([data['n_pixels'] for data in spots_data], dtype="float"),
+            "n_pixels": np.array([data['n_pixels'] for data in spots_data], dtype="int"),
             "pixel_signal": np.array([data['pixel_signal'] for data in spots_data], dtype="float"),
         }
     )
