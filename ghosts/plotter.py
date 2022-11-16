@@ -225,13 +225,13 @@ def plot_ghosts_map(forward_rays):
     # adjust rows and columns
     n_spots = len(forward_rays)
     if n_spots > 30:
-        n_cols = 6
+        n_cols = 7
         n_rows = 6
     else:
         n_cols = 5
-        n_rows = 4
+        n_rows = 5
     # build plot
-    _, ax = plt.subplots(n_cols, n_rows, constrained_layout=True, figsize=(24, 24))
+    _, ax = plt.subplots(n_cols, n_rows, constrained_layout=True, figsize=(32, 32))
     axs = ax.ravel()
     for i, ghost in enumerate(forward_rays):
         # get ghost stats
