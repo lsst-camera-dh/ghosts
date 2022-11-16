@@ -31,6 +31,13 @@ BEAM_CONFIG_3['y_offset'] = 0.3
 BEAM_CONFIG_3['x_euler'] = 3
 BEAM_CONFIG_3['y_euler'] = 6
 
+BEAM_CONFIG_4 = deepcopy(BEAM_CONFIG_0)
+BEAM_CONFIG_3['beam_id'] = 4
+BEAM_CONFIG_4['x_offset'] = -0.25
+BEAM_CONFIG_4['y_offset'] = 0.25
+BEAM_CONFIG_4['x_euler'] = 3
+BEAM_CONFIG_4['y_euler'] = 6
+
 # 4 symmetrical spread ghosts beam configurations
 BEAM_CONFIG_10 = deepcopy(BEAM_CONFIG_0)
 BEAM_CONFIG_10['beam_id'] = 10
