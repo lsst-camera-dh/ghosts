@@ -49,7 +49,7 @@ def run_simulation(telescope, beam_config):
     # Beam On
     rays = beam_on(beam_config)
     # Trace full optics and plot on the camera system
-    forward_rays, reverse_rays = telescope.traceSplit(rays, minFlux=1e-4)
+    forward_rays, reverse_rays = telescope.traceSplit(rays, minFlux=1e-5)
     trace_full = telescope.traceFull(rays)
     return trace_full, forward_rays, reverse_rays, rays
 

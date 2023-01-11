@@ -18,7 +18,7 @@ opticalSystem:
   items:
     -
       type: Baffle  # this thing is to be able to draw light rays from where they really start
-      name: M1CaBaffle2
+      name: FakeBaffle
       surface:
         type: Plane
       obscuration:
@@ -26,7 +26,7 @@ opticalSystem:
         inner: 1.5
         outer: 1.4
       coordSys:
-        z: 2.2
+        z: 2.7974725882045593  # 60 cm from L1S1
     -
       type: CompoundOptic
       name: LSSTCamera

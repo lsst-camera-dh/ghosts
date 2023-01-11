@@ -107,7 +107,7 @@ def get_ghost_stats(ghost):
     std_y = ghost.x.std()
     x_width = ghost.x.max() - ghost.x.min()
     y_width = ghost.y.max() - ghost.y.min()
-    radius = (x_width + y_width) / 2.  # simple mean
+    radius = (x_width/2. + y_width/2.) / 2.  # simple mean of the radius
     radius_err = math.fabs(x_width - y_width) / 2.
     weights_sum = ghost.flux.sum()
     mean_intensity = weights_sum / len(ghost.x)
@@ -118,7 +118,7 @@ def get_ghost_stats(ghost):
         weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2
 
 
-def get_ghost_spot_data(i, ghost, p=100, wl=500):
+def get_ghost_spot_data(i, ghost, p=100, wl=600):
     """ Get some basic information for a simulated ghost spot image
 
     .. todo::
@@ -133,20 +133,22 @@ def get_ghost_spot_data(i, ghost, p=100, wl=500):
     p : `float`
         beam power in nW to compute the photon density
     wl : `int`
-        the beam wavelength
+        the beam wavelength in nm
 
     Returns
     -------
     ghost_spot_data : `dict`
-        a dictionnary with ghost spot information : index, name, pos_x, width_x, pos_x, width_y, surface,
-        pixel_signal and photon_density
+        a dictionary with ghost spot information : index, name, pos_x, width_x, pos_x, width_y, surface,
+        n_pixels, pixel_signal and photon_density
     """
     # identify ghost
     ghost_name = get_ghost_name(ghost)
     # normalized stats
     mean_x, std_x, mean_y, std_y, x_width, y_width, radius, radius_err, \
-        weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2 = get_ghost_stats(ghost)
-    # number of photons for 100 nW at 500 nm
+            weights_sum, mean_intensity, spot_surface_mm2, density_phot_mm2 = get_ghost_stats(ghost)
+    # number of pixels
+    n_pixels = round(spot_surface_mm2 * LSST_CAMERA_PIXEL_DENSITY_MM2)
+    # number of photons for 100 nW at 600 nm
     n_phot_total = get_n_phot_for_power_nw_wl_nm(p, wl)
     n_e_pixel = density_phot_mm2 / LSST_CAMERA_PIXEL_DENSITY_MM2 * n_phot_total * LSST_CAMERA_PIXEL_QE
 
@@ -155,8 +157,8 @@ def get_ghost_spot_data(i, ghost, p=100, wl=500):
                        'pos_y': mean_y, 'std_y': std_y, 'width_y': y_width,
                        'radius': radius, 'radius_err': radius_err,
                        'flux': weights_sum,
-                       'surface': spot_surface_mm2, 'pixel_signal': n_e_pixel,
-                       'photon_density': density_phot_mm2}
+                       'surface': spot_surface_mm2, 'n_pixels': n_pixels,
+                       'pixel_signal': n_e_pixel, 'photon_density': density_phot_mm2}
 
     return ghost_spot_data
 
@@ -251,6 +253,7 @@ def make_data_frame(spots_data, beam_id=0, geom_id=0):
             "radius_err": np.array([data['radius_err'] for data in spots_data], dtype="float"),
             "flux": np.array([data['flux'] for data in spots_data], dtype="float"),
             "surface": np.array([data['surface'] for data in spots_data], dtype="float"),
+            "n_pixels": np.array([data['n_pixels'] for data in spots_data], dtype="int"),
             "pixel_signal": np.array([data['pixel_signal'] for data in spots_data], dtype="float"),
         }
     )

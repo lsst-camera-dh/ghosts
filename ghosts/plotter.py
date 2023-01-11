@@ -3,7 +3,6 @@
 This module provides functions to plot every single thing that the `ghosts` module produces.
 
 """
-
 import batoid
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -130,12 +129,12 @@ def plot_zoom_on_ghosts(forward_rays):
     all_x, all_y, all_f = get_full_light_on_camera(forward_rays)
     # Trying to zoom in on ghosts images
 
-    plt.rcParams["figure.figsize"] = [18, 6]
-    fig, ax = plt.subplots(2, 1)
+    plt.rcParams["figure.figsize"] = [18, 9]
+    fig, ax = plt.subplots(3, 1)
     axs = ax.ravel()
     # ghost images
     _ = axs[0].hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
-                      extent=[-0.02, 0.27, -0.005, 0.005], gridsize=(100, 100))
+                      extent=[-0.05, 0.35, -0.010, 0.010], gridsize=(100, 100))
     axs[0].set_aspect("equal")
     axs[0].set_title('Beam spot')
 
@@ -144,6 +143,12 @@ def plot_zoom_on_ghosts(forward_rays):
     axs[1].set_title('Projection of ghosts image on the x-axis')
     axs[1].set_xlabel('position x (m)')
     axs[1].set_ylabel('~n photons')
+
+    # "Projection" on the x-axis shows that ghosts spots are nicely separated
+    axs[2].hist(all_y, bins=1000, weights=all_f, log=True)
+    axs[2].set_title('Projection of ghosts image on the y-axis')
+    axs[2].set_xlabel('position y (m)')
+    axs[2].set_ylabel('~n photons')
     return fig, ax
 
 
@@ -223,36 +228,50 @@ def plot_ghosts_map(forward_rays):
     i_straight, direct_x, direct_y, _ = get_main_impact_point(forward_rays)
     # store some stats roughly
     spots_data = []
-    _, ax = plt.subplots(7, 6)
+    # adjust rows and columns
+    n_spots = len(forward_rays)
+    if n_spots > 30:
+        n_cols = 7
+        n_rows = 6
+    else:
+        n_cols = 5
+        n_rows = 5
+    # build plot
+    _, ax = plt.subplots(n_cols, n_rows, constrained_layout=True, figsize=(32, 32))
     axs = ax.ravel()
     for i, ghost in enumerate(forward_rays):
+        # get ghost stats
+        ghost_spot_data = get_ghost_spot_data(i, ghost)
         # bin data (and make plot)
         map_ghost(ghost, axs[i])
-        axs[i].set_aspect("equal")
-        axs[i].set_title('Ghost image')
+        # adjust plots
+        axs[i].set_title(ghost_spot_data['name'])
         axs[i].grid(True)
-
-        ghost_spot_data = get_ghost_spot_data(i, ghost)
         # make nice plot on axis
-        x_min, _, y_min, y_max = get_ranges(ghost.x, ghost.y, dr=0.01)
-        axs[i].text(x_min, 0.9 * y_max, f'Pos. x = {ghost_spot_data["pos_x"] * 1000:.2f} mm', color='black')
-        axs[i].text(x_min, 0.7 * y_max, f'Radius = {ghost_spot_data["radius"] * 1000:.2f} mm', color='black')
-        axs[i].text(x_min, 0.5 * y_min, f'Spot S = {ghost_spot_data["surface"]:.3f} mm$^2$', color='black')
-        axs[i].text(x_min, 0.7 * y_min, f'Phot. density = {ghost_spot_data["photon_density"]:.2e} ph/mm$^2$',
-                    color='black')
-        axs[i].text(x_min, 0.9 * y_min, f'Signal = {ghost_spot_data["pixel_signal"]:.2e} e$^-$/pixel', color='black')
-
+        x_min = 0.05
+        axs[i].text(x_min, 0.95, f'Pos. x = {ghost_spot_data["pos_x"] * 1000:.2f} mm',
+                    color='black', transform=axs[i].transAxes)
+        axs[i].text(x_min, 0.9, f'Radius = {ghost_spot_data["radius"] * 1000:.2f} mm',
+                    color='black', transform=axs[i].transAxes)
+        axs[i].text(x_min, 0.85, f'Spot S = {ghost_spot_data["surface"]:.3f} mm$^2$',
+                    color='black', transform=axs[i].transAxes)
+        axs[i].text(x_min, 0.8, f'Phot. density = {ghost_spot_data["photon_density"]:.2e} ph/mm$^2$',
+                    color='black', transform=axs[i].transAxes)
+        axs[i].text(x_min, 0.75, f'Signal = {ghost_spot_data["pixel_signal"]:.2e} e$^-$/pixel',
+                    color='black', transform=axs[i].transAxes)
+        axs[i].set_aspect("equal")
         if i == i_straight:
             axs[i].text(direct_x, direct_y, '+', horizontalalignment='center',
                         verticalalignment='center', color='m')
             axs[i].set_title('Main image', color='m')
         # store data here
         spots_data.append(ghost_spot_data)
-    plt.tight_layout()
+    for i in range(n_spots, len(axs)):
+        axs[i].set_axis_off()
     return spots_data
 
 
-# Looking at overal spots stats
+# Looking at overall spots stats
 def plot_spots_stats(data_frame):
     """ Plots overall ghosts image spots statistics
 
@@ -465,9 +484,9 @@ def plot_spots(data_frame_list, spot_size_scaling=10, range_x=(-0.35, 0.35), ran
     spot_size_scaling : `int`
         a scaling factor to see large or small circles
     range_x : `tuple` of `floats`
-        min and max of the x axis in meters, default is full camera
+        min and max of the x-axis in meters, default is full camera
     range_y : `tuple` of `floats`
-        min and max of the y axis in meters, default is full camera
+        min and max of the y-axis in meters, default is full camera
     Returns
     -------
     fig: `matplotlib.Figure`
@@ -475,7 +494,6 @@ def plot_spots(data_frame_list, spot_size_scaling=10, range_x=(-0.35, 0.35), ran
     ax: `matplotlib.Axis`
         the axis object
     """
-    plt.rcParams["figure.figsize"] = [12, 12]
     fig, ax = plt.subplots(1, 1)
     colors = ['black', 'r', 'b', 'g', 'c', 'm', 'y', 'k']
     for df, color in zip(data_frame_list, colors):
@@ -508,7 +526,7 @@ def plot_full_camera_and_spots(forward_rays, data_frame, log_scale=False, spot_s
     0 : 0
         0 if all is well
     """
-    plt.rcParams["figure.figsize"] = [18, 9]
+    plt.rcParams["figure.figsize"] = [22, 9]
     fig, ax = plt.subplots(1, 2)
 
     # first the camera ghosts image
@@ -516,7 +534,6 @@ def plot_full_camera_and_spots(forward_rays, data_frame, log_scale=False, spot_s
     hb = ax[0].hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
                       extent=LSST_CAMERA_EXTENT, gridsize=(150, 150),
                       bins='log' if log_scale else None)
-
     # Plot approximate focal plane radius
     th = np.linspace(0, 2 * np.pi, 1000)
     plt.plot(0.32 * np.cos(th), 0.32 * np.sin(th), c='r')
@@ -529,7 +546,7 @@ def plot_full_camera_and_spots(forward_rays, data_frame, log_scale=False, spot_s
     ax[0].set_title('Image with ghosts')
     ax[0].set_xlabel('x (m)', fontsize=16)
     ax[0].set_ylabel('y (m)', fontsize=16)
-    fig.colorbar(hb, ax=ax[0])
+    fig.colorbar(hb, ax=ax[0], fraction=0.046, pad=0.04)
 
     # Now visualize ghosts on the right
     spots_x = data_frame['pos_x']
