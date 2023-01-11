@@ -129,12 +129,12 @@ def plot_zoom_on_ghosts(forward_rays):
     all_x, all_y, all_f = get_full_light_on_camera(forward_rays)
     # Trying to zoom in on ghosts images
 
-    plt.rcParams["figure.figsize"] = [18, 6]
-    fig, ax = plt.subplots(2, 1)
+    plt.rcParams["figure.figsize"] = [18, 9]
+    fig, ax = plt.subplots(3, 1)
     axs = ax.ravel()
     # ghost images
     _ = axs[0].hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
-                      extent=[-0.02, 0.27, -0.005, 0.005], gridsize=(100, 100))
+                      extent=[-0.05, 0.35, -0.010, 0.010], gridsize=(100, 100))
     axs[0].set_aspect("equal")
     axs[0].set_title('Beam spot')
 
@@ -143,6 +143,12 @@ def plot_zoom_on_ghosts(forward_rays):
     axs[1].set_title('Projection of ghosts image on the x-axis')
     axs[1].set_xlabel('position x (m)')
     axs[1].set_ylabel('~n photons')
+
+    # "Projection" on the x-axis shows that ghosts spots are nicely separated
+    axs[2].hist(all_y, bins=1000, weights=all_f, log=True)
+    axs[2].set_title('Projection of ghosts image on the y-axis')
+    axs[2].set_xlabel('position y (m)')
+    axs[2].set_ylabel('~n photons')
     return fig, ax
 
 
@@ -488,7 +494,6 @@ def plot_spots(data_frame_list, spot_size_scaling=10, range_x=(-0.35, 0.35), ran
     ax: `matplotlib.Axis`
         the axis object
     """
-    plt.rcParams["figure.figsize"] = [12, 12]
     fig, ax = plt.subplots(1, 1)
     colors = ['black', 'r', 'b', 'g', 'c', 'm', 'y', 'k']
     for df, color in zip(data_frame_list, colors):
@@ -521,7 +526,7 @@ def plot_full_camera_and_spots(forward_rays, data_frame, log_scale=False, spot_s
     0 : 0
         0 if all is well
     """
-    plt.rcParams["figure.figsize"] = [18, 9]
+    plt.rcParams["figure.figsize"] = [22, 9]
     fig, ax = plt.subplots(1, 2)
 
     # first the camera ghosts image
@@ -529,7 +534,6 @@ def plot_full_camera_and_spots(forward_rays, data_frame, log_scale=False, spot_s
     hb = ax[0].hexbin(all_x, all_y, C=all_f, reduce_C_function=np.sum,
                       extent=LSST_CAMERA_EXTENT, gridsize=(150, 150),
                       bins='log' if log_scale else None)
-
     # Plot approximate focal plane radius
     th = np.linspace(0, 2 * np.pi, 1000)
     plt.plot(0.32 * np.cos(th), 0.32 * np.sin(th), c='r')
@@ -542,7 +546,7 @@ def plot_full_camera_and_spots(forward_rays, data_frame, log_scale=False, spot_s
     ax[0].set_title('Image with ghosts')
     ax[0].set_xlabel('x (m)', fontsize=16)
     ax[0].set_ylabel('y (m)', fontsize=16)
-    fig.colorbar(hb, ax=ax[0])
+    fig.colorbar(hb, ax=ax[0], fraction=0.046, pad=0.04)
 
     # Now visualize ghosts on the right
     spots_x = data_frame['pos_x']
