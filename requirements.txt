@@ -1,14 +1,17 @@
 cmake
-batoid
+batoid == 0.4
 matplotlib
 numpy
 scipy
 pandas
 openpyxl
 pyyaml
-jupyter
+jupyterlab
 sphinx
 sphinx_rtd_theme
 pylint
+pytest-cov
 seaborn
 pyarrow
+tabulate
+
