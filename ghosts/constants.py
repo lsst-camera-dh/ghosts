@@ -33,8 +33,8 @@ LSST_CAMERA_DARK_CURRENT = 2  # electrons per second
 LSST_CAMERA_PIXEL_FULL_WELL = 75000  # 75k to 130k ~ 120k mostly >100k
 # PTC_CALIB = 1.16 e-/ADU
 
-# Distance from CCOB head to focal plane - tested in test_geom
-CCOB_DISTANCE_TO_FOCAL_PLANE = 2.229424
+# Distance from CCOB head to focal plane, for geometry v3.12 - tested in test_geom
+CCOB_DISTANCE_TO_FOCAL_PLANE = 2.2278012
 
 # Approximate Camera geometry in meters
 LSST_CAMERA_AMP_DX = 5.4125/1000.
