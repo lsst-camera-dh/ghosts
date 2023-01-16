@@ -20,7 +20,7 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         ],
-    install_requires=["batoid",
+    install_requires=["batoid==0.4.0",
                       "matplotlib",
                       "numpy",
                       "scipy",
@@ -29,5 +29,6 @@ setup(
                       "pyyaml",
                       "seaborn",
                       "pyarrow",
+                      "tabulate",
                       "setuptools_scm"]
 )
