@@ -108,6 +108,49 @@ def plot_setup(telescope, simulation):
     return 0
 
 
+def plot_setup_3d(telescope, simulation):
+    """ Plots a CCOB optical setup for standard projection XZ and a 3D view
+
+    Parameters
+    ----------
+    telescope : `batoid.telescope`
+        the optical setup as defined in `batoid`
+    simulation : `list` of rays from the simulation
+        a list with like this `[trace_full, forward_rays, rReverse, rays]`, `r_reverse` is not used.
+        This list is provided by the output of :meth:`ghosts.simulator.run_simulation`
+
+    Returns
+    -------
+    0 : 0
+        0 if all is well
+    """
+    trace_full = simulation[0]
+    forward_rays = simulation[1]
+    # r_reverse = simulation[2]
+    rays = simulation[3]
+
+    # Create figure with 2 columns
+    plt.rcParams["figure.figsize"] = [18, 12]
+    fig = plt.figure(figsize=(12, 11), constrained_layout=True)
+    ax0 = fig.add_subplot(1, 2, 1)
+    # Draw camera on the left
+    telescope.draw2d(ax0, c='k')
+    # now draw ray tracing on top of telescope
+    batoid.drawTrace2d(ax0, trace_full, c='orange')
+    # set axis titles and draw small referential
+    ax0.set_xlabel('x (m)', fontsize=20)
+    ax0.set_ylabel('z (m)', fontsize=20)
+
+    # Same thing on the right but on the YZ plane
+    ax1 = fig.add_subplot(1, 2, 2, projection='3d')
+    telescope.draw3d(ax1, c='k')
+    batoid.drawTrace3d(ax1, trace_full, c='orange')
+    ax1.set_xlabel('x (m)', fontsize=20)
+    ax1.set_ylabel('y (m)', fontsize=20)
+    ax1.set_zlabel('z (m)', fontsize=20)
+
+    return 0
+
 def plot_zoom_on_ghosts(forward_rays):
     """ Plots the 2D image of the focal plane, and its projection along the x-axis
 
