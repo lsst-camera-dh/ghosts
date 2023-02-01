@@ -30,7 +30,7 @@ class GeomTestCase(unittest.TestCase):
         # Second CCOB like geometry, i.e. lenses + filters
         telescope = batoid.Optic.fromYaml("./data/LSST_CCOB_r.yaml")
         distance = tweak_optics.get_optics_position_z(telescope, 'Detector') - \
-            tweak_optics.get_optics_position_z(telescope, 'M1CaBaffle2')
+            tweak_optics.get_optics_position_z(telescope, 'FakeBaffle')
         self.assertAlmostEqual(CCOB_DISTANCE_TO_FOCAL_PLANE, distance, delta=1e-6)
 
 
