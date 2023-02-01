@@ -305,6 +305,41 @@ def simple_beam(x_offset=0.1, y_offset=0, wl=500e-9, n_photons=1000):
     return beam_on(beam_config)
 
 
+def rotate_config_to_ub(beam_config, u, b):
+    """ Rotate a beam configuration to given b and u CCOB motor angles
+
+    Email from Andy:
+    - Check that U=0, B rotates around the Y axis, B>0 -> +X, B<0 -> -X
+    - Check that U>0 rotates around -Z in the right-handed sense.
+
+    Euler angles in extrinsic rotations
+    https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_extrinsic_rotations
+
+    Parameters
+    ----------
+    beam_config : `ghost.beam_config`
+        a beam configuration as a dictionary
+    u : `float`
+        the value of the rotation angle in degrees around "-Z" (when b=0)
+    b : `float`
+        the value of the rotation angle in degrees around "Y" (when u=0)
+
+    Returns
+    -------
+    new_beam : `ghost.beam_config`
+        a new beam configuration corresponding to CCOB motor set as (u, b) angles
+    """
+    # copy input beam configuration
+    new_beam = deepcopy(beam_config)
+    # Convert ub angles to Euler angles
+    rot = transform_rotation.from_euler('zxy', [u, 0., b], degrees=True)
+    euler_angles = rot.as_euler('ZXY', degrees=True)
+    new_beam['z_euler'] = euler_angles[0]
+    new_beam['x_euler'] = euler_angles[1]
+    new_beam['y_euler'] = euler_angles[2]
+    return new_beam
+
+
 def build_translation_set(base_beam_config, axis, shifts_list, base_id=0):
     """ Build a set of beams for the given list of translations
 
