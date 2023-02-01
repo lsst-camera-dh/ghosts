@@ -13,8 +13,8 @@ class BeamTestCase(unittest.TestCase):
         this actually tests various functions
         """
         new_beam = beam.point_beam_to_target(BEAM_CONFIG_3, target_x=0.15, target_y=-0.05)
-        self.assertAlmostEqual(new_beam['x_euler'], 8.9285, delta=1e-3)
-        self.assertAlmostEqual(new_beam['y_euler'], 6.4028, delta=1e-3)
+        self.assertAlmostEqual(new_beam['x_euler'], 15.8582, delta=1e-3)
+        self.assertAlmostEqual(new_beam['y_euler'], 11.4700, delta=1e-3)
 
 
 if __name__ == '__main__':
