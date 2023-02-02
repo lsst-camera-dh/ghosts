@@ -17,3 +17,5 @@ dependencies:
   - pytest-cov
   - seaborn
   - pyarrow
+  - ipyvolume
+

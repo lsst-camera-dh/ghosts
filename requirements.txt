@@ -3,6 +3,7 @@ batoid == 0.4
 matplotlib
 numpy
 scipy
+ipyvolume
 pandas
 openpyxl
 pyyaml
