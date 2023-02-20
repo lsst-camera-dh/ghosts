@@ -15,4 +15,4 @@ pytest-cov
 seaborn
 pyarrow
 tabulate
-
+scikit-optimize

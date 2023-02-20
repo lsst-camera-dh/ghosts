@@ -30,5 +30,6 @@ setup(
                       "seaborn",
                       "pyarrow",
                       "tabulate",
+                      "scikit-optimize",
                       "setuptools_scm"]
 )
