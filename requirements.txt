@@ -16,3 +16,4 @@ seaborn
 pyarrow
 tabulate
 scikit-optimize
+iminuit
