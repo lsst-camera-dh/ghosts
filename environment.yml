@@ -18,4 +18,6 @@ dependencies:
   - seaborn
   - pyarrow
   - ipyvolume
+  - scikit-optimize
+  - iminuit
 
