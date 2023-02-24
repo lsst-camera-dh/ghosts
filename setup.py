@@ -31,6 +31,6 @@ setup(
                       "pyarrow",
                       "tabulate",
                       "scikit-optimize",
-                      "iminuit"
+                      "iminuit",
                       "setuptools_scm"]
 )
