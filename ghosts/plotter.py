@@ -7,7 +7,6 @@ import batoid
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from scipy import stats
-# import ipyvolume as ipv
 import numpy as np
 from ghosts.tools import get_ranges, get_main_impact_point
 from ghosts.analysis import get_full_light_on_camera, map_ghost, get_ghost_spot_data

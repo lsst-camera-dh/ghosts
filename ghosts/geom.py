@@ -24,7 +24,7 @@ def get_optics_translation(optics, geom_config):
     translation_vector : `list` of `float`
         a vector of translations for the optical element
     """
-    translation_vector = [geom_config[f'{optics}_d{axis}'] for axis in ['x', 'y', 'z']]
+    translation_vector = [geom_config.get(f'{optics}_d{axis}', 0.) for axis in ['x', 'y', 'z']]
     return translation_vector
 
 
@@ -44,7 +44,7 @@ def get_optics_rotation(optics, geom_config):
         a vector of rotations for the optical element
     """
 
-    return [geom_config[f'{optics}_r{axis}'] for axis in ['x', 'y', 'z']]
+    return [geom_config.get(f'{optics}_r{axis}', 0.) for axis in ['x', 'y', 'z']]
 
 
 def to_panda(geom_config):
