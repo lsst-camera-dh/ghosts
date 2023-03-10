@@ -6,15 +6,12 @@ import numpy as np
 from iminuit import Minuit
 
 import batoid
-import ghosts.plotter as plotter
 import ghosts.simulator as simulator
 import ghosts.tweak_optics as tweak_optics
 
-from ghosts.constants import *
 from ghosts.beam_configs import BEAM_CONFIG_0
 from ghosts.geom_configs import GEOM_LABELS_15
-from ghosts.analysis import reduce_ghosts, compute_ghost_separations
-from ghosts.analysis import match_ghosts, compute_2d_reduced_distance
+from ghosts.analysis import reduce_ghosts, match_ghosts, compute_2d_reduced_distance
 from ghosts.analysis import make_data_frame
 
 
@@ -55,10 +52,8 @@ def build_ref_telescope(yaml_geom="./data/LSST_CCOB_r_aligned.yaml"):
     ref_telescope : `batoid.telescope`
         the reference optical setup as defined in `batoid`
     """
-    # A few numbers, sepcific to 600 nm
-    beam_power_600nm = 13  # 13 Watt for the full spot according to measurements done in Grenoble
+    # A few numbers, specific to 600 nm
     ccd_reflectivity_600nm = 0.141338
-    ccd_qe_600nm = 0.843274
     lens_reflectivity_600nm = 0.004  # 0.4% code by Julien Bolmont
     filter_reflectivity_600nm = 0.038  # r band filter documentation stated transmission is 96.2%
 
@@ -91,18 +86,15 @@ def build_ref_ghosts_catalog(telescope, beam):
     """
     # Ray trace one config for debugging
     trace_full, r_forward, r_reverse, rays = simulator.run_simulation(telescope, beam_config=beam)
-    simulation = [trace_full, r_forward, r_reverse, rays]
 
     # reduce ghosts
     ref_spots_data, _spots = reduce_ghosts(r_forward)
     ref_spots_data_frame = make_data_frame(ref_spots_data, beam_id=beam['beam_id'], geom_id=0)
-    # ref_gh_sep = compute_ghost_separations(ref_spots_data_frame)
-    # ref_spots_data_frame.sort_values(by=['name'])
     return ref_spots_data_frame
 
 
 def get_beam_for_fit(ref_beam, n_photons=1000):
-    """ Build a beam configuration matching the reference one, but with less photons so that the simulations
+    """ Build a beam configuration matching the reference one, but with fewer photons so that the simulations
     called by the fit are faster
 
     Parameters
@@ -117,14 +109,14 @@ def get_beam_for_fit(ref_beam, n_photons=1000):
     fit_beam : `dict`
         the beam configuration to be used during the fit simulations
     """
-    # make a copy with less photons for the fit
+    # make a copy with fewer photons for the fit
     fit_beam = copy.deepcopy(ref_beam)
     fit_beam['n_photons'] = n_photons
     return fit_beam
 
 
 def unpack_geom_params(geom_params, geom_labels=GEOM_LABELS_15):
-    """ Convert a list of geometry parameters into a dictionnary as a telescope geometry configuration
+    """ Convert a list of geometry parameters into a dictionary as a telescope geometry configuration
 
     Parameters
     ----------
@@ -136,7 +128,7 @@ def unpack_geom_params(geom_params, geom_labels=GEOM_LABELS_15):
     Returns
     -------
     fitted_geom_config : `dict`
-        a dictionnary with the geometry of the telescope to fit
+        a dictionary with the geometry of the telescope to fit
     """
 
     fitted_geom_config = {}
@@ -152,8 +144,8 @@ def build_telescope_to_fit(ref_telescope, geom_params):
     ----------
     ref_telescope : `batoid.telescope`
         the reference optical setup as defined in `batoid`
-    geom_params : `dict`
-        a dictionnary with the geometry of the telescope to fit
+    geom_params : `list`
+        a list with the geometry of the telescope to fit
 
     Returns
     -------
@@ -175,9 +167,9 @@ def build_telescope_to_fit(ref_telescope, geom_params):
 
 # prepare reference catalog
 GLOBAL_REF_TELESCOPE = build_ref_telescope(yaml_geom="./data/LSST_CCOB_r_aligned.yaml")
-ref_beam = build_ref_beam(base_config=BEAM_CONFIG_0)
-GLOBAL_SPOTS_DF = build_ref_ghosts_catalog(GLOBAL_REF_TELESCOPE, ref_beam)
-GLOBAL_FIT_BEAM = get_beam_for_fit(ref_beam, n_photons=1000)
+GLOBAL_REF_BEAM = build_ref_beam(base_config=BEAM_CONFIG_0)
+GLOBAL_SPOTS_DF = build_ref_ghosts_catalog(GLOBAL_REF_TELESCOPE, GLOBAL_REF_BEAM)
+GLOBAL_FIT_BEAM = get_beam_for_fit(GLOBAL_REF_BEAM, n_photons=1000)
 
 
 def compute_distance_for_fit(geom_params_array):
@@ -190,7 +182,7 @@ def compute_distance_for_fit(geom_params_array):
     Returns
     -------
     dist_2d : `double`
-        the distance between the two catalogs of ghosts, to be minimize by the fitting procedure
+        the distance between the two catalogs of ghosts, to be minimized by the fitting procedure
     """
     # reference objects
     geom_params=geom_params_array.tolist()
@@ -270,8 +262,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
     # Run!
-    m = run(int(args.n_calls), float(args.precision))
+    minuit = run(int(args.n_calls), float(args.precision))
 
     # Log results
-    logging.info(m.values)
-    logging.info(m.errors)
+    logging.info(minuit.values)
+    logging.info(minuit.errors)
