@@ -101,3 +101,25 @@ def get_main_impact_point(r_forward):
     direct_y = np.mean(r_forward[i_straight].y)
     direct_f = r_forward[i_straight].flux[0]  # these are all equal
     return i_straight, direct_x, direct_y, direct_f
+
+
+def unpack_geom_params(geom_params, geom_labels=GEOM_LABELS_15):
+    """ Convert a list of geometry parameters into a dictionary as a telescope geometry configuration
+
+    Parameters
+    ----------
+    geom_params : `list`
+        an ordered list of parameters corresponding to a geometry configuration
+    geom_labels : `list`
+        a list of the geometry parameter labels (names) matching the list above
+
+    Returns
+    -------
+    fitted_geom_config : `dict`
+        a dictionary with the geometry of the telescope to fit
+    """
+
+    fitted_geom_config = {}
+    for i, lab in enumerate(geom_labels):
+        fitted_geom_config[lab]=geom_params[i]
+        return fitted_geom_config
