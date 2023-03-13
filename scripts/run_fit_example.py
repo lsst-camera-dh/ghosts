@@ -8,6 +8,7 @@ from iminuit import Minuit
 import batoid
 import ghosts.simulator as simulator
 import ghosts.tweak_optics as tweak_optics
+import ghosts.tools as tools
 
 from ghosts.beam_configs import BEAM_CONFIG_0
 from ghosts.geom_configs import GEOM_LABELS_15
@@ -115,28 +116,6 @@ def get_beam_for_fit(ref_beam, n_photons=1000):
     return fit_beam
 
 
-def unpack_geom_params(geom_params, geom_labels=GEOM_LABELS_15):
-    """ Convert a list of geometry parameters into a dictionary as a telescope geometry configuration
-
-    Parameters
-    ----------
-    geom_params : `list`
-        an ordered list of parameters corresponding to a geometry configuration
-    geom_labels : `list`
-        a list of the geometry parameter labels (names) matching the list above
-
-    Returns
-    -------
-    fitted_geom_config : `dict`
-        a dictionary with the geometry of the telescope to fit
-    """
-
-    fitted_geom_config = {}
-    for i, lab in enumerate(geom_labels):
-        fitted_geom_config[lab]=geom_params[i]
-    return fitted_geom_config
-
-
 def build_telescope_to_fit(ref_telescope, geom_params):
     """ Build telescope to fit from reference telescope
 
@@ -154,14 +133,15 @@ def build_telescope_to_fit(ref_telescope, geom_params):
     """
 
     # Build telescope
-    fitted_geom_config = unpack_geom_params(geom_params)
+    fitted_geom_config = tools.unpack_geom_params(geom_params, GEOM_LABELS_15)
     fitted_telescope = tweak_optics.tweak_telescope(ref_telescope, fitted_geom_config)
     # Make refractive interfaces partially reflective
     ccd_reflectivity_600nm = 0.141338
     lens_reflectivity_600nm = 0.004  # 0.4% code by Julien Bolmont
     filter_reflectivity_600nm = 0.038  # r band filter documentation stated transmission is 96.2%
     tweak_optics.make_optics_reflective(fitted_telescope, coating='smart',
-                                        r_frac=[lens_reflectivity_600nm, filter_reflectivity_600nm, ccd_reflectivity_600nm])
+                                        r_frac=[lens_reflectivity_600nm, filter_reflectivity_600nm,
+                                                ccd_reflectivity_600nm])
     return fitted_telescope
 
 
@@ -185,18 +165,16 @@ def compute_distance_for_fit(geom_params_array):
         the distance between the two catalogs of ghosts, to be minimized by the fitting procedure
     """
     # reference objects
-    geom_params=geom_params_array.tolist()
+    geom_params = geom_params_array.tolist()
     # new telescope
     fitted_telescope = build_telescope_to_fit(GLOBAL_REF_TELESCOPE, geom_params)
     fit_spots_df = simulator.run_and_analyze_simulation(fitted_telescope, geom_id=0, beam_config=GLOBAL_FIT_BEAM)
-    # save spots figure
-    #save_spot_fig(fit_spots_df)
     # match ghosts
     match = match_ghosts(GLOBAL_SPOTS_DF, fit_spots_df, radius_scale_factor=10)
     dist_2d = compute_2d_reduced_distance(match)
-    fitted_geom_config = unpack_geom_params(geom_params)
+    fitted_geom_config = tools.unpack_geom_params(geom_params, GEOM_LABELS_15)
     # Minuit can actually take a callback function
-    if not np.random.randint(10)%9:
+    if not np.random.randint(10) % 9:
         msg = f'{dist_2d:.6f} {fitted_geom_config["L1_dx"]:.6f} {fitted_geom_config["L1_dy"]:.6f} {fitted_geom_config["L1_dz"]:.6f} {fitted_geom_config["L1_rx"]:.6f} {fitted_geom_config["L1_ry"]:.6f} '
         msg += f'{dist_2d:.6f} {fitted_geom_config["L2_dx"]:.6f} {fitted_geom_config["L2_dy"]:.6f} {fitted_geom_config["L2_dz"]:.6f} {fitted_geom_config["L2_rx"]:.6f} {fitted_geom_config["L2_ry"]:.6f} '
         msg += f'{dist_2d:.6f} {fitted_geom_config["L3_dx"]:.6f} {fitted_geom_config["L3_dy"]:.6f} {fitted_geom_config["L3_dz"]:.6f} {fitted_geom_config["L3_rx"]:.6f} {fitted_geom_config["L3_ry"]:.6f}'

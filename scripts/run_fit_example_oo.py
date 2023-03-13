@@ -1,4 +1,4 @@
-""" A very simple script to run a fit of the geometry
+""" A simple script to run a fit of the geometry, using an OO implementation
 """
 import logging
 import copy
@@ -20,9 +20,22 @@ class SimpleGhostsFitter(object):
     """ Class to handle the fitting procedure
 
     Needed because some functions have to share some data
+
+    Attributes
+    ----------
+    ref_telescope : `batoid.telescope`
+        the reference optical setup as defined in `batoid`
+    ref_beam : `dict`
+        the reference beam configuration to be used for thed fit
+    spots_df : `pandas.DataFrame`
+        a panda data frame with ghost spot data information, including beam and geometry configuration ids
+    fit_beam : `dict`
+        the beam configuration to be used during the fit simulations
+    minuit : `iminuit.Minuit`
+        the Minuit object at the end of the fitting procedure
     """
     def __init__(self):
-        """ Build object so that it holds the reference telescope, beam and ghosts catalog
+        """ Constructor, builds an object so that it holds the reference telescope, beam and ghosts catalog
         """
         # reference telescope
         self.ref_telescope = self.build_ref_telescope(yaml_geom="./data/LSST_CCOB_r_aligned.yaml")
@@ -129,14 +142,15 @@ class SimpleGhostsFitter(object):
         """
 
         # Build telescope
-        fitted_geom_config = tools.unpack_geom_params(geom_params)
+        fitted_geom_config = tools.unpack_geom_params(geom_params, GEOM_LABELS_15)
         fitted_telescope = tweak_optics.tweak_telescope(ref_telescope, fitted_geom_config)
         # Make refractive interfaces partially reflective
         ccd_reflectivity_600nm = 0.141338
         lens_reflectivity_600nm = 0.004  # 0.4% code by Julien Bolmont
         filter_reflectivity_600nm = 0.038  # r band filter documentation stated transmission is 96.2%
         tweak_optics.make_optics_reflective(fitted_telescope, coating='smart',
-                                            r_frac=[lens_reflectivity_600nm, filter_reflectivity_600nm, ccd_reflectivity_600nm])
+                                            r_frac=[lens_reflectivity_600nm, filter_reflectivity_600nm,
+                                                    ccd_reflectivity_600nm])
         return fitted_telescope
 
     def compute_distance_for_fit(self, geom_params_array):
@@ -152,18 +166,16 @@ class SimpleGhostsFitter(object):
             the distance between the two catalogs of ghosts, to be minimized by the fitting procedure
         """
         # reference objects
-        geom_params=geom_params_array.tolist()
+        geom_params = geom_params_array.tolist()
         # new telescope
         fitted_telescope = self.build_telescope_to_fit(self.ref_telescope, geom_params)
         fit_spots_df = simulator.run_and_analyze_simulation(fitted_telescope, geom_id=0, beam_config=self.fit_beam)
-        # save spots figure
-        #save_spot_fig(fit_spots_df)
         # match ghosts
         match = match_ghosts(self.spots_df, fit_spots_df, radius_scale_factor=10)
         dist_2d = compute_2d_reduced_distance(match)
-        fitted_geom_config = tools.unpack_geom_params(geom_params)
+        fitted_geom_config = tools.unpack_geom_params(geom_params, GEOM_LABELS_15)
         # Minuit can actually take a callback function
-        if not np.random.randint(10)%9:
+        if not np.random.randint(10) % 9:
             msg = f'{dist_2d:.6f} {fitted_geom_config["L1_dx"]:.6f} {fitted_geom_config["L1_dy"]:.6f} {fitted_geom_config["L1_dz"]:.6f} {fitted_geom_config["L1_rx"]:.6f} {fitted_geom_config["L1_ry"]:.6f} '
             msg += f'{dist_2d:.6f} {fitted_geom_config["L2_dx"]:.6f} {fitted_geom_config["L2_dy"]:.6f} {fitted_geom_config["L2_dz"]:.6f} {fitted_geom_config["L2_rx"]:.6f} {fitted_geom_config["L2_ry"]:.6f} '
             msg += f'{dist_2d:.6f} {fitted_geom_config["L3_dx"]:.6f} {fitted_geom_config["L3_dy"]:.6f} {fitted_geom_config["L3_dz"]:.6f} {fitted_geom_config["L3_rx"]:.6f} {fitted_geom_config["L3_ry"]:.6f}'
@@ -171,6 +183,7 @@ class SimpleGhostsFitter(object):
         # clean up
         del fitted_telescope
         return dist_2d
+
     def run(self, n_calls=50, precision=1e-6):
         """ Run the fit
 
@@ -183,7 +196,7 @@ class SimpleGhostsFitter(object):
 
         Returns
         -------
-        m : `Minuit`
+        m : `iminuit.Minuit`
             the Minuit object at the end of the fitting procedure
         """
         logging.info(f'Fitting for {args.n_calls} calls to get a precision of {args.precision}')
