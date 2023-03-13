@@ -3,7 +3,9 @@
 import logging
 import copy
 import numpy as np
+import pickle
 from iminuit import Minuit
+
 
 import batoid
 import ghosts.simulator as simulator
@@ -250,3 +252,16 @@ if __name__ == '__main__':
     # Log results
     logging.info(minuit.values)
     logging.info(minuit.errors)
+
+    # Save fitter to disk with pickle
+    with open('fit.pickle', 'wb') as f:
+        pickle.dump(fit, f)
+
+    # To reload the fitter, use
+    # from scripts.run_fit_example_oo import SimpleGhostsFitter
+    # >>> with open('fit.pickle', 'rb') as f:
+    # ...     fit = pickle.load(f)
+    # >>> fit
+    # <scripts.run_fit_example_oo.SimpleGhostsFitter object at 0x7f61eff5d950>
+
+
