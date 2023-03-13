@@ -15,6 +15,10 @@ GEOM_CONFIG_0 = {'geom_id': 0,
                  'Detector_dx': 0.0, 'Detector_dy': 0.0, 'Detector_dz': 0.0,
                  'Detector_rx': 0.0, 'Detector_ry': 0.0, 'Detector_rz': 0.0}
 
+# Geometry labels for the fitting procedure -
+GEOM_LABELS_15 = ["L1_dx", "L1_dy", "L1_dz", "L1_rx", "L1_ry",
+                  "L2_dx", "L2_dy", "L2_dz", "L2_rx", "L2_ry",
+                  "L3_dx", "L3_dy", "L3_dz", "L3_rx", "L3_ry"]
 
 # Rotate L1 over X axis by 0.1 degrees
 GEOM_CONFIG_1 = deepcopy(GEOM_CONFIG_0)

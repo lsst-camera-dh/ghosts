@@ -43,7 +43,7 @@ BEAM_CONFIG_10 = deepcopy(BEAM_CONFIG_0)
 BEAM_CONFIG_10['beam_id'] = 10
 BEAM_CONFIG_10['n_photons'] = 100
 BEAM_CONFIG_10['x_offset'] = -0.3
-BEAM_CONFIG_10['y_offset'] = 0.6
+BEAM_CONFIG_10['y_offset'] = 0.55
 BEAM_CONFIG_10['x_euler'] = 17
 BEAM_CONFIG_10['y_euler'] = 6
 
@@ -51,7 +51,7 @@ BEAM_CONFIG_11 = deepcopy(BEAM_CONFIG_0)
 BEAM_CONFIG_11['beam_id'] = 11
 BEAM_CONFIG_11['n_photons'] = 100
 BEAM_CONFIG_11['x_offset'] = +0.3
-BEAM_CONFIG_11['y_offset'] = 0.6
+BEAM_CONFIG_11['y_offset'] = 0.55
 BEAM_CONFIG_11['x_euler'] = 17
 BEAM_CONFIG_11['y_euler'] = -6
 
@@ -59,7 +59,7 @@ BEAM_CONFIG_12 = deepcopy(BEAM_CONFIG_0)
 BEAM_CONFIG_12['beam_id'] = 12
 BEAM_CONFIG_12['n_photons'] = 100
 BEAM_CONFIG_12['x_offset'] = +0.3
-BEAM_CONFIG_12['y_offset'] = -0.6
+BEAM_CONFIG_12['y_offset'] = -0.55
 BEAM_CONFIG_12['x_euler'] = -17
 BEAM_CONFIG_12['y_euler'] = -6
 
@@ -67,7 +67,7 @@ BEAM_CONFIG_13 = deepcopy(BEAM_CONFIG_0)
 BEAM_CONFIG_13['beam_id'] = 13
 BEAM_CONFIG_13['n_photons'] = 100
 BEAM_CONFIG_13['x_offset'] = -0.3
-BEAM_CONFIG_13['y_offset'] = -0.6
+BEAM_CONFIG_13['y_offset'] = -0.55
 BEAM_CONFIG_13['x_euler'] = -17
 BEAM_CONFIG_13['y_euler'] = +6
 
