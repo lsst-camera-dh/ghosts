@@ -309,6 +309,9 @@ def randomized_telescope(telescope, max_angle=0.1, max_shift=0.001, verbose=Fals
 def tweak_telescope(telescope, geom_config):
     """ Tweak a telescope using rotations and shifts from a dictionary
 
+    .. todo::
+        `tweak_telescope` should preserve coating
+
     Parameters
     ----------
     telescope : `batoid.telescope`
@@ -352,6 +355,35 @@ def build_telescope(yaml_geometry="../data/LSST_CCOB_r.yaml"):
     # Make refractive interfaces partially reflective
     make_optics_reflective(telescope)
     return telescope
+
+
+def build_telescope_at_600nm(yaml_geometry):
+    """ Build the reference telescope from a yaml geometry.
+
+    Parameters
+    ----------
+    yaml_geometry : `string`
+        path to the yaml file with the reference geometry to be used.
+
+    Returns
+    -------
+    ref_telescope : `batoid.telescope`
+        the reference optical setup as defined in `batoid` with reflectivity at 600 nm
+    """
+    # A few numbers, specific to 600 nm
+    ccd_reflectivity_600nm = 0.141338
+    lens_reflectivity_600nm = 0.004  # 0.4% code by Julien Bolmont
+    filter_reflectivity_600nm = 0.038  # r band filter documentation stated transmission is 96.2%
+
+    # CCOB like geometry, i.e. lenses but no filter
+    ref_telescope = batoid.Optic.fromYaml(yaml_geometry)
+
+    # Make refractive interfaces partially reflective
+    # Call on current telescope, smart coating is [lens, filter, camera]
+    make_optics_reflective(ref_telescope, coating='smart',
+                           r_frac=[lens_reflectivity_600nm, filter_reflectivity_600nm,
+                                   ccd_reflectivity_600nm])
+    return ref_telescope
 
 
 def build_telescope_from_geom(geom_config):

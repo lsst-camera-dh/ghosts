@@ -6,7 +6,6 @@ import numpy as np
 import pickle
 from iminuit import Minuit
 
-
 import batoid
 import ghosts.simulator as simulator
 import ghosts.tweak_optics as tweak_optics
@@ -201,7 +200,7 @@ class SimpleGhostsFitter(object):
         m : `iminuit.Minuit`
             the Minuit object at the end of the fitting procedure
         """
-        logging.info(f'Fitting for {args.n_calls} calls to get a precision of {args.precision}')
+        logging.info(f'Fitting for {n_calls} calls to get a precision of {precision}')
         # init
         geom_params_init = np.array([0.0] * 15)
         # bounds

@@ -600,3 +600,27 @@ def build_full_frame_polar_set(base_id=0, set_size='large'):
         distances = list(np.arange(0, 0.36, 0.02))
         thetas = list(np.arange(0, 375, 15))
     return build_polar_set(distances, thetas, base_id=base_id)
+
+
+def set_n_photons_on_beam_set(beam_set, n_photons=1000):
+    """ Build a beam configuration matching the reference one, but with fewer photons so that the simulations
+    called by the fit are faster
+
+    Parameters
+    ----------
+    beam_set : `list` of `dict`
+        the list of beam configurations to adjust
+    n_photons : `int`
+        the number of rays to simulate for the new configuration
+
+    Returns
+    -------
+    fix_beam_set : `list` of `dict`
+        the list of beam configuration with the adjusted number of photons
+    """
+    fix_beam_set = []
+    for beam in beam_set:
+        fit_beam = deepcopy(beam)
+        fit_beam['n_photons'] = n_photons
+        fix_beam_set.append(fit_beam)
+    return fix_beam_set
