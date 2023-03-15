@@ -4,7 +4,7 @@ This module provides tools to run full simulations from telescope geometries and
 some functions also run the full workflow to the beam spots data analysis.
 """
 
-import concurrent
+import concurrent.futures
 import math
 import numpy as np
 import pandas as pd
@@ -160,9 +160,9 @@ def run_and_analyze_simulation_for_configs_sets(geom_set, beam_set):
 
     Returns
     -------
-    spots_data_frame : `pandas.DataFrame`
-        a `pandas` data frame with ghost spot data information, including beam configuration,
-        see :meth:`ghosts.analysis.make_data_frame`, merged from different configurations
+    spots_df_list : `pandas.DataFrame`
+        a `list` of `pandas` data frame with ghost spot data information, including beam configuration,
+        see :meth:`ghosts.analysis.make_data_frame`
     """
     # build one telescope to start with, as this is slow
     telescope = build_telescope(get_default_yaml_path())
@@ -196,9 +196,9 @@ def run_and_analyze_simulation_for_configs_sets_parallel(geom_set, beam_set):
 
     Returns
     -------
-    spots_data_frame : `pandas.DataFrame`
-        a `pandas` data frame with ghost spot data information, including beam configuration,
-        see :meth:`ghosts.analysis.make_data_frame`, merged from different configurations
+    spots_df_list : `pandas.DataFrame`
+        a `list` of `pandas` data frame with ghost spot data information, including beam configuration,
+        see :meth:`ghosts.analysis.make_data_frame`
     """
     # build one telescope to start with, as this is slow
     telescope = build_telescope(get_default_yaml_path())
@@ -212,6 +212,39 @@ def run_and_analyze_simulation_for_configs_sets_parallel(geom_set, beam_set):
                        one_beam in beam_set]
             for future in concurrent.futures.as_completed(futures):
                 spots_df_list.append(future.result())
+
+    return spots_df_list
+
+
+def run_and_analyze_simulation_for_telescope_and_beam_set(telescope, geom_id, beam_set):
+    """ Runs and analyze a ray tracing simulation of a light beam into the CCOB
+    for a set of beam configurations given a telescope.
+
+    Note that we first build a reference telescope and then tweak it at will,
+    as building a telescope from yaml file is slow. Threading is done with a pool
+    on beam configuration for each geometry.
+
+    Parameters
+    ----------
+    telescope : `batoid.telescope`
+        the optical setup
+    geom_id : `int`
+        an integer corresponding to the id of the geometry of the telescope
+    beam_set : `list` of `dict`
+        a dictionary with the light beam configuration, see :ref:`beam_configs`.
+
+    Returns
+    -------
+    spots_df_list : `pandas.DataFrame`
+        a `list` of `pandas` data frame with ghost spot data information, including beam configuration,
+        see :meth:`ghosts.analysis.make_data_frame`
+    """
+    spots_df_list = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(run_and_analyze_simulation, telescope, geom_id, one_beam) for
+                   one_beam in beam_set]
+        for future in concurrent.futures.as_completed(futures):
+            spots_df_list.append(future.result())
 
     return spots_df_list
 
