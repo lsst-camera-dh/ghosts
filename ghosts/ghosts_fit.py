@@ -139,9 +139,6 @@ class GhostsFitter(object):
             msg = f'{uber_dist:.6f} '
             for lab in GEOM_LABELS_15:
                 msg += f'{fitted_geom_config[lab]:.6f} '
-            # msg = f'{dist_2d:.6f} {fitted_geom_config["L1_dx"]:.6f} {fitted_geom_config["L1_dy"]:.6f} {fitted_geom_config["L1_dz"]:.6f} {fitted_geom_config["L1_rx"]:.6f} {fitted_geom_config["L1_ry"]:.6f} '
-            # msg += f'{fitted_geom_config["L2_dx"]:.6f} {fitted_geom_config["L2_dy"]:.6f} {fitted_geom_config["L2_dz"]:.6f} {fitted_geom_config["L2_rx"]:.6f} {fitted_geom_config["L2_ry"]:.6f} '
-            # msg += f'{fitted_geom_config["L3_dx"]:.6f} {fitted_geom_config["L3_dy"]:.6f} {fitted_geom_config["L3_dz"]:.6f} {fitted_geom_config["L3_rx"]:.6f} {fitted_geom_config["L3_ry"]:.6f}'
             logging.debug(msg)
         return uber_dist
 
@@ -181,13 +178,14 @@ class GhostsFitter(object):
         logging.info(f'\n{m.params}')
 
         m.migrad(ncall=n_calls, iterate=5)  # run optimiser
-        # run covariance estimator
-        if with_cov:
-            m.hesse()
-            m.minos()
-        logging.info(f'Is covariance matrix valid ? -> {m.valid}')
+        logging.info(f'Is covariance matrix valid and accurate ? -> {m.valid} / {m.accurate}')
+
         # attach minuit object to GhostsFitter object
         self.minuit = m
+        # run covariance estimator if possible and requested
+        if m.valid and with_cov:
+            self.minuit.hesse()
+            self.minuit.minos()
         return self.minuit
 
 
@@ -208,3 +206,7 @@ if __name__ == '__main__':
     # Log results
     logging.info(fitter.minuit.values)
     logging.info(fitter.minuit.errors)
+
+    # Matrix
+    fig, ax = fitter.minuit.draw_mnmatrix(cl=[1, 2, 3])
+    fig.savefig('matrix.png')
