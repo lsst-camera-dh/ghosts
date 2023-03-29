@@ -17,7 +17,7 @@ from ghosts.geom_configs import GEOM_LABELS_15
 from ghosts.analysis import match_ghosts, compute_2d_reduced_distance
 
 
-class GhostsFitter(object):
+class GhostsFitter():
     """ Class to handle the fitting procedure
 
     Needed because some functions have to share some data
@@ -53,7 +53,7 @@ class GhostsFitter(object):
         self.fit_beam_set = None
         self.minuit = None
 
-    def setup(self):
+    def setup_reference_ghosts(self):
         """ Setup fitter by generating the reference telescope, running the simulation for all the beams
         in the beam set and producing the output spots data frame.
 
@@ -134,7 +134,7 @@ class GhostsFitter(object):
 
         # Verification of what's happening
         fitted_geom_config = tools.unpack_geom_params(geom_params, GEOM_LABELS_15)
-        # Minuit can actually take a callback function
+        # Log debug info - Minuit can actually take a callback function
         if not np.random.randint(10) % 9:
             msg = f'{uber_dist:.6f} '
             for lab in GEOM_LABELS_15:
@@ -144,26 +144,73 @@ class GhostsFitter(object):
 
     @staticmethod
     def match_and_dist(ref_df, fit_df):
+        """ Match ghosts catalogs and compute 2D distance
+
+        Parameters
+        ----------
+        ref_df : `pandas.DataFrame`
+            reference ghost catalog
+        fit_df : `pandas.DataFrame`
+            ghost catalog from the fit
+
+        Returns
+        -------
+        dist_2d : `double`
+            2D distance between the two ghosts catalogs
+        """
         match = match_ghosts(ref_df, fit_df, radius_scale_factor=10)
         dist_2d = compute_2d_reduced_distance(match)
         return dist_2d
 
-    def run(self, n_calls=50, precision=1e-6, with_cov=True):
-        """ Run the fit
+    def free_optics(self, ref_list=GEOM_LABELS_15):
+        """ Free parameters of all elements in the list
 
         Parameters
         ----------
-        n_calls : `int`
-            maximum number of calls to the fit callable allowed for the fit
+        ref_list : `list[str]`
+            list of geometrical parameters ("L1_dx", "L1_dy", ...)
+
+        Returns
+        -------
+        None
+        """
+        for key in ref_list:
+            self.minuit.fixed[key] = False
+
+    def fix_optic(self, optic, ref_list=GEOM_LABELS_15):
+        """ Fix all parameters of the given optical element
+
+        Parameters
+        ----------
+        optic : `str`
+            optical element of the geometry, e.g. "L1"
+        ref_list : `list[str]`
+            list of geometrical parameters ("L1_dx", "L1_dy", ...)
+
+        Returns
+        -------
+        None
+        """
+        for key in ref_list:
+            if key.find(optic) >= 0:
+                self.minuit.fixed[key] = False
+            else:
+                self.minuit.fixed[key] = True
+
+    def setup_minuit(self, precision):
+        """ Setup Minuit and attach it to the GhostFitter object
+
+        Includes parameters initial values and limits
+        
+        Parameters
+        ----------
         precision : `double`
             target precision of the fitted parameters
 
         Returns
         -------
-        m : `iminuit.Minuit`
-            the Minuit object at the end of the fitting procedure
+        None
         """
-        logging.info(f'Fitting for {n_calls} calls to get a precision of {precision}')
         # init
         geom_params_init = np.array([0.0] * 15)
         # bounds
@@ -171,22 +218,107 @@ class GhostsFitter(object):
         rxs = [(-0.01, 0.01)] * 2
         list_of_bounds = (dxs + rxs) + (dxs + rxs) + (dxs + rxs)
 
-        # Minuit
+        # Setup Minuit
         m = Minuit(self.compute_distance_for_fit, geom_params_init, name=tuple(GEOM_LABELS_15))
         m.limits = list_of_bounds
         m.precision = precision
-        logging.info(f'\n{m.params}')
-
-        m.migrad(ncall=n_calls, iterate=5)  # run optimiser
-        logging.info(f'Is covariance matrix valid and accurate ? -> {m.valid} / {m.accurate}')
-
+        logging.info('Minuit now setup\n%s', m.params)
         # attach minuit object to GhostsFitter object
         self.minuit = m
+
+    def run_fit_everything(self, n_calls=50, with_cov=True):
+        """ Run the fit, all parameters free
+
+        Parameters
+        ----------
+        n_calls : `int`
+            maximum number of calls to the fit callable allowed for the fit
+        with_cov : `bool`
+            True if you wish to compute the HESSE asymptotic errors and MINOS confidence intervals,
+            will be done only if the function minimum is valid and the covariance matrix accurate
+
+        Returns
+        -------
+        None
+        """
+        # make sure all parameters are free
+        self.free_optics()
+        # run optimiser
+        self.minuit.migrad(ncall=n_calls, iterate=5)
+        logging.info('Is covariance matrix valid and accurate ? -> %s / %s', self.minuit.valid, self.minuit.accurate)
         # run covariance estimator if possible and requested
-        if m.valid and with_cov:
+        if self.minuit.valid and with_cov:
             self.minuit.hesse()
             self.minuit.minos()
-        return self.minuit
+
+    def run_iterative_fit_per_element(self, optics_list, n_sub_calls=50):
+        """ Run the fit, iteratively on each optical element
+
+        Parameters
+        ----------
+        n_sub_calls : `int`
+            maximum number of calls for the fit on a single optical element
+        optics_list : `list[str]`
+            list of optics to iterate over for the fit
+
+        Returns
+        -------
+        None
+        """
+        # Set default here
+        if optics_list is None:
+            optics_list = ['L1', 'L2', 'L3']
+        # Iterative fitting
+        for optic in optics_list:
+            self.fix_optic(optic)
+            logging.info('Now fitting on %s', optic)
+            self.minuit.migrad(ncall=n_sub_calls, iterate=5)  # run optimiser
+            logging.info('Is covariance matrix valid and accurate ? -> %s / %s',
+                         self.minuit.valid, self.minuit.accurate)
+            logging.info(self.minuit.values)
+
+    def run(self, mode="standard", n_calls=50, precision=1e-6, with_cov=True, optics_list=None, n_sub_calls=50):
+        """ Run the fit
+
+        Parameters
+        ----------
+        mode : `string`
+            fitting mode as "standard", "iterative", "combined"
+        n_calls : `int`
+            maximum number of calls to the fit callable allowed for the fit
+        precision : `double`
+            target precision of the fitted parameters
+        with_cov : `bool`
+            True if you wish to compute the HESSE asymptotic errors and MINOS confidence intervals,
+            will be done only if the function minimum is valid and the covariance matrix accurate
+        optics_list : `list[str]`
+            list of optics to iterate over for the fit, for the "iterative" mode
+        n_sub_calls : `int`
+            maximum number of calls for the fit on a single optical element, for the "iterative" mode
+
+        Returns
+        -------
+        valid : `bool`
+            True if the function minimum is valid
+        """
+        # setup Minuit
+        self.setup_minuit(precision=precision)
+        logging.info('Fitting for %d calls to get a precision of %.1e in %s mode.',
+                     n_calls, precision, mode)
+        # Mode
+        match mode:
+            case 'standard':
+                self.run_fit_everything(n_calls=n_calls, with_cov=with_cov)
+            case 'iterative':
+                self.run_iterative_fit_per_element(n_sub_calls=n_sub_calls, optics_list=optics_list)
+            case 'combined':
+                self.run_iterative_fit_per_element(n_sub_calls=n_sub_calls, optics_list=optics_list)
+                self.run_fit_everything(n_calls=n_calls, with_cov=with_cov)
+            case _:  # default
+                self.run_fit_everything(n_calls=n_calls, with_cov=with_cov)
+
+        # Return if the function minimum is valid
+        return self.minuit.valid
 
 
 if __name__ == '__main__':
@@ -200,13 +332,15 @@ if __name__ == '__main__':
 
     # test ghost_fit class
     fitter = GhostsFitter()
-    fitter.setup()
-    fitter.run(n_calls=1000, precision=1e-7)
+    fitter.setup_reference_ghosts()
+    fitter.run()
+    # fitter.run(n_calls=10, precision=1e-5)
+    # fitter.run(mode="standard", n_calls=200, precision=1e-6, with_cov=True, n_sub_calls=50)
 
     # Log results
     logging.info(fitter.minuit.values)
     logging.info(fitter.minuit.errors)
 
     # Matrix
-    fig, ax = fitter.minuit.draw_mnmatrix(cl=[1, 2, 3])
-    fig.savefig('matrix.png')
+    # fig, ax = fitter.minuit.draw_mnmatrix(cl=[1, 2, 3])
+    # fig.savefig('matrix.png')
