@@ -17,7 +17,7 @@ class FitTestCase(unittest.TestCase):
         mpl.use('Agg')
         # test ghost_fit class
         fitter = GhostsFitter()
-        fitter.setup()
+        fitter.setup_reference_ghosts()
         fitter.run(n_calls=5, precision=1e-4, with_cov=False)
         with open('fit.pickle', 'wb') as f:
             pickle.dump(fitter, f)
