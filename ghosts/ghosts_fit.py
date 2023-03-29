@@ -1,6 +1,6 @@
 """ghosts_fit module
 
-This module provides classes and functions to fit the camera geometry using ghosts images catalogs.
+This module provides a class to fit the camera geometry using ghosts images catalogs.
 
 """
 
@@ -17,7 +17,7 @@ from ghosts.geom_configs import GEOM_LABELS_15
 from ghosts.analysis import match_ghosts, compute_2d_reduced_distance
 
 
-class GhostsFitter():
+class GhostsFitter:
     """ Class to handle the fitting procedure
 
     Needed because some functions have to share some data
