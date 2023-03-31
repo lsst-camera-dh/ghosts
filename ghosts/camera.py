@@ -234,5 +234,6 @@ def show_camera(axis, camera):
     Returns
     -------
     """
-    [axis.add_collection(col) for col in camera]
+    for col in camera:
+        axis.add_collection(col)
     return axis
