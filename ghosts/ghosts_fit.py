@@ -7,14 +7,13 @@ This module provides a class to fit the camera geometry using ghosts images cata
 import logging
 import numpy as np
 import pandas as pd
-import concurrent.futures
 from iminuit import Minuit
 
 from ghosts import simulator, tweak_optics, tools, beam
 
 from ghosts.beam_configs import BASE_BEAM_SET
 from ghosts.geom_configs import GEOM_LABELS_15
-from ghosts.analysis import match_ghosts, compute_2d_reduced_distance
+from ghosts.analysis import compute_uber_distance_2d
 
 
 class GhostsFitter:
@@ -113,54 +112,28 @@ class GhostsFitter:
         # new telescope
         fitted_telescope = self.build_telescope_to_fit(geom_params)
         # simulate the fit geometry through the full set of beams in the beam set
-        # as the function is multithread, the list is not ordered
+        # as the function uses futures, the list is not ordered
         fit_spots_df_list = simulator.run_and_analyze_simulation_for_telescope_and_beam_set(
                                                         fitted_telescope, geom_id=0, beam_set=self.fit_beam_set)
-        # rebuild ordered list for futures
+        # rebuild ordered list for futures in `compute_uber_distance_2d`
         merged_fit_df = pd.concat(fit_spots_df_list)
         ordered_fit_df = []
         for df in self.spots_df_list:
             ordered_fit_df.append(merged_fit_df.loc[merged_fit_df['beam_id'] == df['beam_id'][0]])
-        # now compute distance
-        dist_list = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-            futures = [executor.submit(self.match_and_dist, ref_df, fit_df)
-                       for ref_df, fit_df in zip(self.spots_df_list, ordered_fit_df)]
-            for future in concurrent.futures.as_completed(futures):
-                dist_list.append(future.result())
 
-        # compute Uber distance
-        uber_dist = np.sqrt(np.square(dist_list).sum())/len(dist_list)
+        # compute distance between the 2 list of ghosts catalogs
+        uber_dist = compute_uber_distance_2d(self.spots_df_list, ordered_fit_df)
 
-        # Verification of what's happening
-        fitted_geom_config = tools.unpack_geom_params(geom_params, GEOM_LABELS_15)
         # Log debug info - Minuit can actually take a callback function
         if not np.random.randint(10) % 9:
+            # unpack parameters
+            fitted_geom_config = tools.unpack_geom_params(geom_params, GEOM_LABELS_15)
+            # build message
             msg = f'{uber_dist:.6f} '
             for lab in GEOM_LABELS_15:
                 msg += f'{fitted_geom_config[lab]:.6f} '
             logging.debug(msg)
         return uber_dist
-
-    @staticmethod
-    def match_and_dist(ref_df, fit_df):
-        """ Match ghosts catalogs and compute 2D distance
-
-        Parameters
-        ----------
-        ref_df : `pandas.DataFrame`
-            reference ghost catalog
-        fit_df : `pandas.DataFrame`
-            ghost catalog from the fit
-
-        Returns
-        -------
-        dist_2d : `double`
-            2D distance between the two ghosts catalogs
-        """
-        match = match_ghosts(ref_df, fit_df, radius_scale_factor=10)
-        dist_2d = compute_2d_reduced_distance(match)
-        return dist_2d
 
     def free_optics(self, ref_list=GEOM_LABELS_15):
         """ Free parameters of all elements in the list
@@ -340,7 +313,3 @@ if __name__ == '__main__':
     # Log results
     logging.info(fitter.minuit.values)
     logging.info(fitter.minuit.errors)
-
-    # Matrix
-    # fig, ax = fitter.minuit.draw_mnmatrix(cl=[1, 2, 3])
-    # fig.savefig('matrix.png')

@@ -6,6 +6,7 @@ between to sets of ghosts spots.
 
 """
 
+import concurrent.futures
 import pandas as pd
 import numpy as np
 import math
@@ -509,3 +510,50 @@ def compute_2d_reduced_distance(ghosts_match):
     reduced_distance = math.sqrt(sum(ghosts_match['distance_2d'] * ghosts_match['distance_2d'] /
                                      ghosts_match['distance_2d_err'] * ghosts_match['distance_2d_err'])) / n_matches
     return reduced_distance
+
+
+def match_and_dist_2d(ref_df, fit_df):
+    """ Match ghosts catalogs and compute 2D distance
+
+    Parameters
+    ----------
+    ref_df : `pandas.DataFrame`
+        reference ghost catalog
+    fit_df : `pandas.DataFrame`
+        ghost catalog from the fit
+
+    Returns
+    -------
+    dist_2d : `double`
+        2D distance between the two ghosts catalogs
+    """
+    match = match_ghosts(ref_df, fit_df, radius_scale_factor=10)
+    dist_2d = compute_2d_reduced_distance(match)
+    return dist_2d
+
+
+def compute_uber_distance_2d(spots_df_list, ordered_fit_df):
+    """ Compute a simple 2D reduced distance between two lists of ghosts
+
+    Parameters
+    ----------
+    spots_df_list : `list[pandas.DataFrame]`
+        list of data frame of ghosts spots
+    ordered_fit_df : `list[pandas.DataFrame]`
+        list of data frame of ghosts spots
+
+    Returns
+    -------
+    uber_dist : `float`
+        Uber distance between 2 list of ghosts matches
+    """
+    # now compute distance
+    dist_list = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(match_and_dist_2d, ref_df, fit_df)
+                   for ref_df, fit_df in zip(spots_df_list, ordered_fit_df)]
+        for future in concurrent.futures.as_completed(futures):
+            dist_list.append(future.result())
+    # compute Uber distance
+    uber_dist = np.sqrt(np.square(dist_list).sum()) / len(dist_list)
+    return uber_dist

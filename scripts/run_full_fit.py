@@ -8,6 +8,9 @@ from ghosts.beam_configs import BASE_BEAM_SET
 if __name__ == '__main__':
     ''' This script runs a full fit calling the GhostFitter class
         
+    > python -i scripts/run_full_fit.py standard 50 1e-6
+    > python -i scripts/run_full_fit.py combined 200 1e-7  
+
     Comments
     --------
     Typical displacement values (L3)
@@ -26,7 +29,7 @@ if __name__ == '__main__':
 
     # Create Matplotlib GUI here
     import matplotlib as mpl
-    mpl.use('qtagg')
+    mpl.use('agg')
 
     # Set logging level
     logging.basicConfig(level=logging.DEBUG)
