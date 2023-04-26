@@ -334,7 +334,6 @@ if __name__ == '__main__':
     # fitter.run(mode="standard", n_calls=200, precision=1e-6, with_cov=True, n_sub_calls=50)
     # fitter.run(mode="standard", n_calls=200, precision=1e-6, with_cov=True, n_sub_calls=50)
 
-    iterate_beam_sets_and_optics
     # Log results
     logging.info(fitter.minuit.values)
     logging.info(fitter.minuit.errors)
