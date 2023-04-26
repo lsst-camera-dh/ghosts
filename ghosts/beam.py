@@ -96,6 +96,26 @@ def concat_dicts(beam_dict_list):
     return beam_concat
 
 
+def to_beam_set(beam_frame):
+    """ Convert a data frame of many beam configurations to a beam set (list of dicts)
+
+     Parameters
+     ----------
+     beam_frame : `pandas.DataFrame`
+        a `pandas` data frame with several configurations of beams
+
+     Returns
+     -------
+     beam_set : `list` of `dict`
+         a beam set as a list of beam configuration dictionaries
+     """
+    beam_set = []
+    for i, id in enumerate(list(beam_frame['beam_id'])):
+        conf = to_dict((beam_frame[beam_frame['beam_id']==id]))
+        beam_set.append(conf)
+    return beam_set
+
+
 def get_photon_energy(beam_nu):
     """ Compute the energy of a photon at a given frequency
 
