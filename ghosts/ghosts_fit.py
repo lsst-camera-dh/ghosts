@@ -118,11 +118,14 @@ class GhostsFitter:
         # rebuild ordered list for futures in `compute_uber_distance_2d`
         merged_fit_df = pd.concat(fit_spots_df_list)
         ordered_fit_df = []
-        for df in self.spots_df_list:
+        # loop on merged_fit_df that may contain a subset of spots_df_list beam ids
+        # for df in self.spots_df_list:
+        #     ordered_fit_df.append(merged_fit_df.loc[merged_fit_df['beam_id'] == df['beam_id'][0]])
+        for df in fit_spots_df_list:
             ordered_fit_df.append(merged_fit_df.loc[merged_fit_df['beam_id'] == df['beam_id'][0]])
 
         # compute distance between the 2 list of ghosts catalogs
-        uber_dist = compute_uber_distance_2d(self.spots_df_list, ordered_fit_df)
+        uber_dist = compute_uber_distance_2d(ordered_fit_df, fit_spots_df_list)
 
         # Log debug info - Minuit can actually take a callback function
         if not np.random.randint(10) % 9:
@@ -282,10 +285,30 @@ class GhostsFitter:
         match mode:
             case 'standard':
                 self.run_fit_everything(n_calls=n_calls, with_cov=with_cov)
-            case 'iterative':
-                self.run_iterative_fit_per_element(n_sub_calls=n_sub_calls, optics_list=optics_list)
             case 'combined':
                 self.run_iterative_fit_per_element(n_sub_calls=n_sub_calls, optics_list=optics_list)
+                self.run_fit_everything(n_calls=n_calls, with_cov=with_cov)
+            case 'iterate_optics':
+                self.run_iterative_fit_per_element(n_sub_calls=n_sub_calls, optics_list=optics_list)
+            case 'iterate_beam_sets':
+                n = 4
+                for i in range(0, len(self.ref_beam_set), n):
+                    sub_beam_set = self.ref_beam_set[i:i+n]
+                    logging.info('Now running with beams subset %d-%d', i, i+n-1)
+                    self.fit_beam_set = beam.set_n_photons_on_beam_set(sub_beam_set, n_photons=1000)
+                    self.run_fit_everything(n_calls=n_calls, with_cov=with_cov)
+                logging.info('Finalizing fit full reference beam set.')
+                self.fit_beam_set = beam.set_n_photons_on_beam_set(self.ref_beam_set, n_photons=1000)
+                self.run_fit_everything(n_calls=n_calls, with_cov=with_cov)
+            case 'iterate_beam_sets_and_optics':
+                n = 4
+                for i in range(0, len(self.ref_beam_set), n):
+                    sub_beam_set = self.ref_beam_set[i:i+n]
+                    logging.info('Now running with beams subset %d-%d', i, i+n-1)
+                    self.fit_beam_set = beam.set_n_photons_on_beam_set(sub_beam_set, n_photons=1000)
+                    self.run_iterative_fit_per_element(n_sub_calls=n_sub_calls, optics_list=optics_list)
+                logging.info('Finalizing fit full reference beam set.')
+                self.fit_beam_set = beam.set_n_photons_on_beam_set(self.ref_beam_set, n_photons=1000)
                 self.run_fit_everything(n_calls=n_calls, with_cov=with_cov)
             case _:  # default
                 self.run_fit_everything(n_calls=n_calls, with_cov=with_cov)
@@ -309,7 +332,9 @@ if __name__ == '__main__':
     fitter.run()
     # fitter.run(n_calls=10, precision=1e-5)
     # fitter.run(mode="standard", n_calls=200, precision=1e-6, with_cov=True, n_sub_calls=50)
+    # fitter.run(mode="standard", n_calls=200, precision=1e-6, with_cov=True, n_sub_calls=50)
 
+    iterate_beam_sets_and_optics
     # Log results
     logging.info(fitter.minuit.values)
     logging.info(fitter.minuit.errors)
