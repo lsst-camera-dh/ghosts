@@ -539,10 +539,15 @@ def plot_spots(data_frame_list, spot_size_scaling=10, range_x=(-0.35, 0.35), ran
     fig, ax = plt.subplots(1, 1)
     colors = ['black', 'r', 'b', 'g', 'c', 'm', 'y', 'k']
     for df, color in zip(data_frame_list, colors):
+        # plot all spots
         spots_x = df['pos_x']
         spots_y = df['pos_y']
         spots_size = ((df['radius'] * 1000) ** 2) * spot_size_scaling
         ax.scatter(spots_x, spots_y, s=spots_size, facecolors='none', edgecolors=color)
+        # plot main beam
+        imp = df.loc[df["flux"].idxmax()]
+        ax.scatter(imp.pos_x, imp.pos_y, marker='+')
+
     ax.set_xlim(range_x)
     ax.set_ylim(range_y)
     return fig, ax
