@@ -3,8 +3,8 @@
 This module provides tools to manipulate beam geometries,
 and generate light rays as `batoid.RayVector`
 """
-
 # Beam intensity, photon energy and number of photons
+import math
 import numpy as np
 from scipy.constants import Planck, lambda2nu
 from scipy.spatial.transform import Rotation as transform_rotation
@@ -355,8 +355,8 @@ def rotate_config_to_ub(beam_config, u, b):
     rot = transform_rotation.from_euler('zxy', [u, 0., b], degrees=True)
     euler_angles = rot.as_euler('ZXY', degrees=True)
     new_beam['z_euler'] = euler_angles[0]
-    new_beam['x_euler'] = euler_angles[1]
-    new_beam['y_euler'] = euler_angles[2]
+    new_beam['x_euler'] = -euler_angles[2] - math.sin(math.radians(new_beam['z_euler']))*0.7
+    new_beam['y_euler'] = -euler_angles[1] + math.cos(math.radians(new_beam['z_euler']))*0.7
     return new_beam
 
 
