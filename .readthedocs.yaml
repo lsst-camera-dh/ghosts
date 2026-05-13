@@ -7,7 +7,7 @@ version: 2
 
 # Use mamba
 build:
-  os: "ubuntu-test"
+  os: "ubuntu-26.04"
   tools:
     python: "miniforge3-latest"
 
