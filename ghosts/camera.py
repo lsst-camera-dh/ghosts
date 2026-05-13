@@ -8,6 +8,7 @@ from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 from ghosts.constants import LSST_CAMERA_AMP_DX, LSST_CAMERA_AMP_DY, LSST_CAMERA_CCD_DX, LSST_CAMERA_RAFT_DX
 
+
 def make_amp(x, y):
     """ Build an amplifier rectangle
 

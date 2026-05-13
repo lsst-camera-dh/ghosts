@@ -125,7 +125,7 @@ class GhostsFitter:
             ordered_fit_df.append(merged_fit_df.loc[merged_fit_df['beam_id'] == df['beam_id'][0]])
 
         # compute distance between the 2 list of ghosts catalogs
-        uber_dist = compute_uber_distance_2d(ordered_fit_df, fit_spots_df_list)
+        uber_dist = compute_uber_distance_2d(ordered_fit_df, self.spots_df_list)
 
         # Log debug info - Minuit can actually take a callback function
         if not np.random.randint(10) % 9:

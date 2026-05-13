@@ -339,7 +339,7 @@ def compute_distance_spot_to_spot(df_slice_1, df_slice_2, radius_scale_factor=10
     dist_3d_err : `float`
         the error on that distance from the std error on the position centers and radius  for the 3D distance
     """
-    dist_2d = math.dist([df_slice_1['pos_x'], df_slice_1['pos_y']],
+    dist_2d = math.dist([df_slice   _1['pos_x'], df_slice_1['pos_y']],
                         [df_slice_2['pos_x'], df_slice_2['pos_y']])
     d1_2d_sq = df_slice_1['std_x'] * df_slice_1['std_x'] + df_slice_1['std_y'] * df_slice_1['std_y']
     d2_2d_sq = df_slice_2['std_x'] * df_slice_2['std_x'] + df_slice_2['std_y'] * df_slice_2['std_y']

@@ -1,5 +1,6 @@
 cmake
 batoid == 0.4
+pip
 matplotlib
 numpy
 scipy

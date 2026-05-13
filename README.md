@@ -7,9 +7,9 @@ Read documentation on ReadTheDocs: [latest](https://ghosts.readthedocs.io/en/lat
 ## Install
 ### conda, then pip
 ```
-> git clone https://github.com/bregeon/ghosts.git
+> git clone https://github.com/lsst-camera-dh/ghosts.git
 or
-> git clone git@github.com:bregeon/ghosts.git
+> git clone git@github.com:lsst-camera-dh/ghosts.git
 > cd ghosts
 > conda env create -f environment.yml
 > conda activate ghosts
@@ -20,9 +20,9 @@ or
 ### pip only
 ```
 > conda create -n my_ghosts_env python=3.9
-> git clone https://github.com/bregeon/ghosts.git
+> git clone https://github.com/lsst-camera-dh/ghosts.git
 or
-> git clone git@github.com:bregeon/ghosts.git
+> git clone git@github.com:lsst-camera-dh/ghosts.git
 > cd ghosts
 > pip install -r requirements.txt
 > pip install -e .
